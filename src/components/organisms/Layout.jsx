@@ -1,27 +1,33 @@
 import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import TimerWidget from "@/components/molecules/TimerWidget";
+import { TimerProvider } from "@/contexts/TimerContext";
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  return (
-    <div className="h-screen flex bg-gray-50">
-      <Sidebar 
-        isOpen={sidebarOpen} 
-        onClose={() => setSidebarOpen(false)} 
-      />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header onMenuClick={() => setSidebarOpen(true)} />
+return (
+    <TimerProvider>
+      <div className="h-screen flex bg-gray-50">
+        <Sidebar 
+          isOpen={sidebarOpen} 
+          onClose={() => setSidebarOpen(false)} 
+        />
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="container mx-auto px-4 py-6">
-            {children}
-          </div>
-        </main>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header onMenuClick={() => setSidebarOpen(true)} />
+          
+          <main className="flex-1 overflow-x-hidden overflow-y-auto">
+            <div className="container mx-auto px-4 py-6">
+              {children}
+            </div>
+          </main>
+        </div>
+        
+        <TimerWidget />
       </div>
-    </div>
+    </TimerProvider>
   );
 };
 

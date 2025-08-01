@@ -27,8 +27,22 @@ class TimeEntryService {
       .sort((a, b) => new Date(b.date) - new Date(a.date));
   }
 
-  async create(timeEntryData) {
+async create(timeEntryData) {
     await this.delay(400);
+    const newId = this.timeEntries.length > 0 ? Math.max(...this.timeEntries.map(entry => entry.Id)) + 1 : 1;
+    const newTimeEntry = {
+      Id: newId,
+      ...timeEntryData,
+      projectId: parseInt(timeEntryData.projectId),
+      duration: parseFloat(timeEntryData.duration),
+      createdAt: new Date().toISOString()
+    };
+    this.timeEntries.push(newTimeEntry);
+    return { ...newTimeEntry };
+  }
+
+  async createFromTimer(timeEntryData) {
+    // Specialized method for timer-generated entries (no delay for better UX)
     const newId = this.timeEntries.length > 0 ? Math.max(...this.timeEntries.map(entry => entry.Id)) + 1 : 1;
     const newTimeEntry = {
       Id: newId,
