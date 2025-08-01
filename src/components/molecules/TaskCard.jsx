@@ -1,0 +1,78 @@
+import React from "react";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
+
+const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete }) => {
+  const handleToggleComplete = () => {
+    onToggleComplete(task.Id, !task.completed);
+  };
+
+  return (
+    <Card className="p-6 hover:card-shadow-hover transition-all duration-200">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start space-x-3 flex-1">
+          <button
+            onClick={handleToggleComplete}
+            className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+              task.completed
+                ? "bg-green-500 border-green-500 text-white"
+                : "border-gray-300 hover:border-green-400"
+            }`}
+          >
+            {task.completed && <ApperIcon name="Check" size={12} />}
+          </button>
+          <div className="flex-1 min-w-0">
+            <h3 className={`font-semibold text-gray-900 mb-2 ${task.completed ? 'line-through text-gray-500' : ''}`}>
+              {task.name}
+            </h3>
+            {task.description && (
+              <p className={`text-sm mb-3 ${task.completed ? 'text-gray-400' : 'text-gray-600'}`}>
+                {task.description}
+              </p>
+            )}
+            {project && (
+              <div className="flex items-center text-xs text-gray-500">
+                <ApperIcon name="Briefcase" size={12} className="mr-1" />
+                {project.name}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center space-x-1 ml-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onEdit(task)}
+            className="p-2"
+          >
+            <ApperIcon name="Edit2" size={14} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(task.Id)}
+            className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            <ApperIcon name="Trash2" size={14} />
+          </Button>
+        </div>
+      </div>
+      
+      <div className="flex items-center justify-between text-xs text-gray-500">
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          task.completed 
+            ? 'bg-green-100 text-green-800' 
+            : 'bg-yellow-100 text-yellow-800'
+        }`}>
+          {task.completed ? 'Completed' : 'In Progress'}
+        </span>
+        <span>
+          Created {new Date(task.createdAt).toLocaleDateString()}
+        </span>
+      </div>
+    </Card>
+  );
+};
+
+export default TaskCard;

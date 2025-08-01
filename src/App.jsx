@@ -5,15 +5,16 @@ import Layout from "@/components/organisms/Layout";
 import Dashboard from "@/components/pages/Dashboard";
 import Clients from "@/components/pages/Clients";
 import Projects from "@/components/pages/Projects";
-
+import Tasks from "@/components/pages/Tasks";
 function App() {
   return (
-    <BrowserRouter>
+<BrowserRouter>
       <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/projects" element={<Projects />} />
+          <Route path="/tasks" element={<Tasks />} />
         </Routes>
       </Layout>
       

@@ -3,10 +3,11 @@ import { NavLink } from "react-router-dom";
 import ApperIcon from "@/components/ApperIcon";
 
 const Sidebar = ({ isOpen, onClose }) => {
-  const navigation = [
+const navigation = [
     { name: "Dashboard", href: "/", icon: "LayoutDashboard" },
     { name: "Clients", href: "/clients", icon: "Users" },
-    { name: "Projects", href: "/projects", icon: "Briefcase" }
+    { name: "Projects", href: "/projects", icon: "Briefcase" },
+    { name: "Tasks", href: "/tasks", icon: "CheckSquare" }
   ];
 
   return (
