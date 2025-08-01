@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { addDays, differenceInDays, endOfDay, format, parseISO, startOfDay } from "date-fns";
+import { addDays, addMonths, differenceInDays, endOfDay, endOfMonth, endOfWeek, format, getDay, isFuture, isPast, isSameDay, isSameMonth, isToday, parseISO, startOfDay, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import taskService from "@/services/api/taskService";
 import clientService from "@/services/api/clientService";
 import projectService from "@/services/api/projectService";
@@ -20,6 +20,8 @@ import Projects from "@/components/pages/Projects";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 import Card from "@/components/atoms/Card";
+
+const ProjectDetail = () => {
 const ProjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -40,6 +42,8 @@ const [project, setProject] = useState(null);
   const [activeTab, setActiveTab] = useState('grid');
   const [timelineView, setTimelineView] = useState('month');
   const [timelineStart, setTimelineStart] = useState(new Date());
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(null);
   const timelineRef = useRef(null);
   const loadProjectData = async () => {
     try {
@@ -338,6 +342,303 @@ return (
 const taskStats = getTaskStats();
   const milestoneStats = getMilestoneStats();
 
+  // Calendar helper functions
+  const getCalendarDates = () => {
+    const start = startOfWeek(startOfMonth(calendarDate));
+    const end = endOfWeek(endOfMonth(calendarDate));
+    const dates = [];
+    let current = start;
+    
+    while (current <= end) {
+      dates.push(current);
+      current = addDays(current, 1);
+    }
+    
+    return dates;
+  };
+
+  const getDateTasks = (date) => {
+    return tasks.filter(task => {
+      if (!task.dueDate) return false;
+      return isSameDay(parseISO(task.dueDate), date);
+    });
+  };
+
+  const getDateMilestones = (date) => {
+    return milestones.filter(milestone => {
+      if (!milestone.dueDate) return false;
+      return isSameDay(parseISO(milestone.dueDate), date);
+    });
+  };
+
+  const isProjectDeadline = (date) => {
+    if (!project?.deadline) return false;
+    return isSameDay(parseISO(project.deadline), date);
+  };
+
+  const getDateEventCount = (date) => {
+    const dateTasks = getDateTasks(date);
+    const dateMilestones = getDateMilestones(date);
+    const hasProjectDeadline = isProjectDeadline(date);
+    
+    return dateTasks.length + dateMilestones.length + (hasProjectDeadline ? 1 : 0);
+  };
+
+  const getDatePriorityLevel = (date) => {
+    const dateTasks = getDateTasks(date);
+    const hasProjectDeadline = isProjectDeadline(date);
+    
+    if (hasProjectDeadline) return 'project';
+    if (dateTasks.some(task => task.priority === 'High')) return 'high';
+    if (dateTasks.some(task => task.priority === 'Medium')) return 'medium';
+    if (dateTasks.length > 0) return 'low';
+    
+    return null;
+  };
+
+  const getDateHighlightClass = (date) => {
+    const priorityLevel = getDatePriorityLevel(date);
+    const isOverdue = isPast(date) && !isToday(date);
+    const eventCount = getDateEventCount(date);
+    
+    if (eventCount === 0) return '';
+    
+    let baseClass = '';
+    
+    if (priorityLevel === 'project') {
+      baseClass = isOverdue ? 'bg-red-600 text-white' : 'bg-purple-500 text-white';
+    } else if (priorityLevel === 'high') {
+      baseClass = isOverdue ? 'bg-red-500 text-white' : 'bg-orange-500 text-white';
+    } else if (priorityLevel === 'medium') {
+      baseClass = isOverdue ? 'bg-red-400 text-white' : 'bg-blue-500 text-white';
+    } else {
+      baseClass = isOverdue ? 'bg-red-300 text-white' : 'bg-gray-500 text-white';
+    }
+    
+    return baseClass;
+  };
+
+  const renderCalendarWidget = () => {
+    const calendarDates = getCalendarDates();
+    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    return (
+      <Card className="p-6">
+        {/* Calendar Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Project Calendar
+            </h3>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCalendarDate(subMonths(calendarDate, 1))}
+              >
+                <ApperIcon name="ChevronLeft" size={16} />
+              </Button>
+              <span className="text-sm font-medium text-gray-700 min-w-[140px] text-center">
+                {format(calendarDate, 'MMMM yyyy')}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCalendarDate(addMonths(calendarDate, 1))}
+              >
+                <ApperIcon name="ChevronRight" size={16} />
+              </Button>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCalendarDate(new Date())}
+          >
+            Today
+          </Button>
+        </div>
+
+        {/* Calendar Grid */}
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {weekDays.map(day => (
+            <div key={day} className="p-2 text-center text-sm font-medium text-gray-700">
+              {day}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-1">
+          {calendarDates.map((date, index) => {
+            const isCurrentMonth = isSameMonth(date, calendarDate);
+            const isCurrentDay = isToday(date);
+            const eventCount = getDateEventCount(date);
+            const highlightClass = getDateHighlightClass(date);
+            const dateTasks = getDateTasks(date);
+            const dateMilestones = getDateMilestones(date);
+            const hasProjectDeadline = isProjectDeadline(date);
+            
+            return (
+              <div
+                key={date.toISOString()}
+                className={`
+                  relative min-h-[80px] p-1 border border-gray-200 cursor-pointer transition-all duration-200
+                  ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
+                  ${isCurrentDay ? 'ring-2 ring-blue-500' : ''}
+                  ${selectedCalendarDate && isSameDay(date, selectedCalendarDate) ? 'ring-2 ring-purple-500' : ''}
+                  hover:bg-gray-50
+                `}
+                onClick={() => setSelectedCalendarDate(selectedCalendarDate && isSameDay(date, selectedCalendarDate) ? null : date)}
+              >
+                {/* Date Number */}
+                <div className={`
+                  text-sm font-medium mb-1
+                  ${highlightClass ? 'text-white' : (isCurrentMonth ? 'text-gray-900' : 'text-gray-400')}
+                `}>
+                  {format(date, 'd')}
+                </div>
+
+                {/* Event Indicators */}
+                {eventCount > 0 && (
+                  <div className="space-y-1">
+                    {/* Project Deadline */}
+                    {hasProjectDeadline && (
+                      <div className="w-full h-1 bg-purple-500 rounded text-xs text-white px-1 truncate">
+                        <div className="flex items-center gap-1">
+                          <ApperIcon name="Flag" size={8} />
+                          <span className="text-[10px]">Project Due</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Tasks */}
+                    {dateTasks.slice(0, 2).map((task, taskIndex) => (
+                      <div
+                        key={task.Id}
+                        className={`
+                          text-xs px-1 py-0.5 rounded truncate
+                          ${task.priority === 'High' ? 'bg-red-100 text-red-800' : 
+                            task.priority === 'Medium' ? 'bg-blue-100 text-blue-800' : 
+                            'bg-gray-100 text-gray-800'}
+                          ${task.completed ? 'line-through opacity-60' : ''}
+                        `}
+                        title={task.name}
+                      >
+                        {task.name}
+                      </div>
+                    ))}
+                    
+                    {/* Milestones */}
+                    {dateMilestones.slice(0, 1).map((milestone, milestoneIndex) => (
+                      <div
+                        key={milestone.Id}
+                        className="text-xs px-1 py-0.5 bg-purple-100 text-purple-800 rounded truncate flex items-center gap-1"
+                        title={milestone.title}
+                      >
+                        <ApperIcon name="Diamond" size={8} />
+                        {milestone.title}
+                      </div>
+                    ))}
+                    
+                    {/* More indicator */}
+                    {eventCount > 3 && (
+                      <div className="text-xs text-gray-600 px-1">
+                        +{eventCount - 3} more
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Today indicator */}
+                {isCurrentDay && (
+                  <div className="absolute bottom-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Calendar Legend */}
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-purple-500 rounded"></div>
+            <span>Project Deadline</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-red-500 rounded"></div>
+            <span>High Priority</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-blue-500 rounded"></div>
+            <span>Medium Priority</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-gray-500 rounded"></div>
+            <span>Low Priority</span>
+          </div>
+        </div>
+
+        {/* Selected Date Details */}
+        {selectedCalendarDate && (
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <h4 className="font-medium text-gray-900 mb-3">
+              {format(selectedCalendarDate, 'EEEE, MMMM d, yyyy')}
+            </h4>
+            
+            {isProjectDeadline(selectedCalendarDate) && (
+              <div className="mb-3 p-2 bg-purple-100 border border-purple-200 rounded flex items-center gap-2">
+                <ApperIcon name="Flag" size={16} className="text-purple-600" />
+                <span className="text-purple-800 font-medium">Project Deadline: {project.name}</span>
+              </div>
+            )}
+            
+            {getDateTasks(selectedCalendarDate).length > 0 && (
+              <div className="mb-3">
+                <h5 className="font-medium text-gray-700 mb-2">Tasks Due:</h5>
+                <div className="space-y-1">
+                  {getDateTasks(selectedCalendarDate).map(task => (
+                    <div key={task.Id} className="flex items-center justify-between text-sm">
+                      <span className={task.completed ? 'line-through text-gray-500' : 'text-gray-900'}>
+                        {task.name}
+                      </span>
+                      <span className={`
+                        px-2 py-1 text-xs rounded
+                        ${task.priority === 'High' ? 'bg-red-100 text-red-700' : 
+                          task.priority === 'Medium' ? 'bg-blue-100 text-blue-700' : 
+                          'bg-gray-100 text-gray-700'}
+                      `}>
+                        {task.priority}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {getDateMilestones(selectedCalendarDate).length > 0 && (
+              <div>
+                <h5 className="font-medium text-gray-700 mb-2">Milestones:</h5>
+                <div className="space-y-1">
+                  {getDateMilestones(selectedCalendarDate).map(milestone => (
+                    <div key={milestone.Id} className="flex items-center gap-2 text-sm">
+                      <ApperIcon name="Diamond" size={12} className="text-purple-600" />
+                      <span className={milestone.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}>
+                        {milestone.title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {getDateEventCount(selectedCalendarDate) === 0 && (
+              <p className="text-gray-500 text-sm">No tasks or milestones on this date.</p>
+            )}
+          </div>
+        )}
+      </Card>
+    );
+  };
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -428,31 +729,28 @@ const taskStats = getTaskStats();
         </div>
       </Card>
 
-      {/* Milestone Progress */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Milestone Progress</h3>
-              <span className="text-2xl font-bold text-blue-600">{milestoneStats.completionRate}%</span>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Completed: {milestoneStats.completed}</span>
-                <span>Pending: {milestoneStats.pending}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div 
-                  className="milestone-progress-bar h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${milestoneStats.completionRate}%` }}
-                ></div>
-              </div>
-              <p className="text-xs text-gray-500">
-                {milestoneStats.total} total milestones
-              </p>
-            </div>
-          </Card>
+{/* Milestone Progress */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Milestone Progress</h3>
+          <span className="text-2xl font-bold text-blue-600">{milestoneStats.completionRate}%</span>
         </div>
+        <div className="space-y-3">
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Completed: {milestoneStats.completed}</span>
+            <span>Pending: {milestoneStats.pending}</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <div 
+              className="milestone-progress-bar h-3 rounded-full transition-all duration-300"
+              style={{ width: `${milestoneStats.completionRate}%` }}
+            ></div>
+          </div>
+          <p className="text-xs text-gray-500">
+            {milestoneStats.total} total milestones
+          </p>
+        </div>
+        
         {project.deliverables && (
           <div className="mt-6 pt-6 border-t border-gray-200">
             <label className="block text-sm font-medium text-gray-700 mb-2">Deliverables</label>
@@ -661,9 +959,7 @@ Add Task
             ))}
           </div>
 ) : (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-yellow-800">Timeline view is coming soon!</p>
-          </div>
+          renderCalendarWidget()
         )}
       </div>
 
@@ -710,7 +1006,7 @@ Add Task
           onCancel={closeModals}
         />
       </Modal>
-    </div>
+</div>
   );
 };
 
