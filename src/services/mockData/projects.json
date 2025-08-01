@@ -1,0 +1,37 @@
+[
+  {
+    "Id": 1,
+    "name": "Website Redesign",
+    "clientId": 1,
+    "description": "Complete redesign of the company website with modern UI/UX, responsive design, and improved user experience. The project includes user research, wireframing, design mockups, and development.",
+    "createdAt": "2024-01-16T11:00:00.000Z"
+  },
+  {
+    "Id": 2,
+    "name": "Mobile App Development",
+    "clientId": 2,
+    "description": "Development of a cross-platform mobile application for iOS and Android. Features include user authentication, real-time notifications, data synchronization, and offline capabilities.",
+    "createdAt": "2024-01-22T10:30:00.000Z"
+  },
+  {
+    "Id": 3,
+    "name": "Brand Identity Package",
+    "clientId": 3,
+    "description": "Complete brand identity design including logo, color palette, typography, business cards, letterheads, and brand guidelines. The package will establish a cohesive visual identity across all touchpoints.",
+    "createdAt": "2024-02-02T13:15:00.000Z"
+  },
+  {
+    "Id": 4,
+    "name": "E-commerce Platform",
+    "clientId": 1,
+    "description": "Custom e-commerce solution with product catalog, shopping cart, payment integration, inventory management, and admin dashboard. Built with scalability and performance in mind.",
+    "createdAt": "2024-02-05T15:45:00.000Z"
+  },
+  {
+    "Id": 5,
+    "name": "Data Analytics Dashboard",
+    "clientId": 4,
+    "description": "Interactive dashboard for visualizing business metrics and KPIs. Features real-time data updates, customizable charts, export functionality, and role-based access control.",
+    "createdAt": "2024-02-12T09:30:00.000Z"
+  }
+]

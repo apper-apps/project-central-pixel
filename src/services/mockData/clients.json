@@ -1,0 +1,34 @@
+[
+  {
+    "Id": 1,
+    "name": "Sarah Johnson",
+    "company": "TechStart Inc.",
+    "email": "sarah@techstart.com",
+    "phone": "(555) 123-4567",
+    "createdAt": "2024-01-15T10:30:00.000Z"
+  },
+  {
+    "Id": 2,
+    "name": "Michael Chen",
+    "company": "Global Solutions",
+    "email": "michael@globalsolutions.com",
+    "phone": "(555) 234-5678",
+    "createdAt": "2024-01-20T14:15:00.000Z"
+  },
+  {
+    "Id": 3,
+    "name": "Emily Rodriguez",
+    "company": "Creative Agency",
+    "email": "emily@creativeagency.com",
+    "phone": "(555) 345-6789",
+    "createdAt": "2024-02-01T09:45:00.000Z"
+  },
+  {
+    "Id": 4,
+    "name": "David Thompson",
+    "company": "Innovation Labs",
+    "email": "david@innovationlabs.com",
+    "phone": "(555) 456-7890",
+    "createdAt": "2024-02-10T16:20:00.000Z"
+  }
+]
