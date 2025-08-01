@@ -70,12 +70,30 @@ delete: (id) => {
     });
   },
 
-  getByProjectId: (projectId) => {
+getByProjectId: (projectId) => {
     return new Promise((resolve) => {
       setTimeout(() => {
         const projectTasks = tasks.filter(task => task.projectId === parseInt(projectId));
         resolve([...projectTasks]);
       }, 200);
+    });
+  },
+
+  markComplete: (id) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const index = tasks.findIndex(t => t.Id === parseInt(id));
+        if (index !== -1) {
+          tasks[index] = { 
+            ...tasks[index], 
+            completed: true,
+            completedAt: new Date().toISOString()
+          };
+          resolve({ ...tasks[index] });
+        } else {
+          reject(new Error("Task not found"));
+        }
+      }, 300);
     });
   }
 };

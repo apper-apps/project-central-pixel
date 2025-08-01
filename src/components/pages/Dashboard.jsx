@@ -7,6 +7,8 @@ import projectService from "@/services/api/projectService";
 import taskService from "@/services/api/taskService";
 import Card from "@/components/atoms/Card";
 import ApperIcon from "@/components/ApperIcon";
+import TodaysTasks from "@/components/molecules/TodaysTasks";
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
 const [stats, setStats] = useState({
@@ -14,10 +16,11 @@ const [stats, setStats] = useState({
     activeProjects: 0,
     tasksDueToday: 0,
     overdueTasks: 0
-  });
+});
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
 const loadDashboardData = async () => {
     try {
@@ -117,6 +120,7 @@ const loadDashboardData = async () => {
     } catch (err) {
       console.error("Failed to load dashboard data:", err);
       setError("Failed to load dashboard data. Please try again.");
+      toast.error("Failed to load dashboard data. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -149,6 +153,10 @@ const loadDashboardData = async () => {
       </div>
     );
   }
+// Trigger refresh of Today's Tasks when dashboard data changes
+  useEffect(() => {
+    setRefreshKey(prev => prev + 1);
+  }, [stats]);
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -207,6 +215,11 @@ const formatDate = (dateString) => {
           icon="AlertTriangle"
           color="red"
         />
+</div>
+
+      {/* Today's Tasks */}
+      <div className="mb-8">
+        <TodaysTasks key={refreshKey} />
       </div>
 
       {/* Recent Activity */}
