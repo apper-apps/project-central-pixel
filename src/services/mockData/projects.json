@@ -4,6 +4,9 @@
     "name": "Website Redesign",
     "clientId": 1,
     "description": "Complete redesign of the company website with modern UI/UX, responsive design, and improved user experience. The project includes user research, wireframing, design mockups, and development.",
+    "status": "In Progress",
+    "deadline": "2024-03-15",
+    "deliverables": "Wireframes, UI mockups, responsive website, SEO optimization, content migration, testing documentation",
     "createdAt": "2024-01-16T11:00:00.000Z"
   },
   {
@@ -11,6 +14,9 @@
     "name": "Mobile App Development",
     "clientId": 2,
     "description": "Development of a cross-platform mobile application for iOS and Android. Features include user authentication, real-time notifications, data synchronization, and offline capabilities.",
+    "status": "Planning",
+    "deadline": "2024-05-20",
+    "deliverables": "Technical requirements, app architecture, iOS app, Android app, API documentation, user manual",
     "createdAt": "2024-01-22T10:30:00.000Z"
   },
   {
@@ -18,6 +24,9 @@
     "name": "Brand Identity Package",
     "clientId": 3,
     "description": "Complete brand identity design including logo, color palette, typography, business cards, letterheads, and brand guidelines. The package will establish a cohesive visual identity across all touchpoints.",
+    "status": "Completed",
+    "deadline": "2024-02-28",
+    "deliverables": "Logo variations, brand guidelines, business card design, letterhead template, brand assets package",
     "createdAt": "2024-02-02T13:15:00.000Z"
   },
   {
@@ -25,6 +34,9 @@
     "name": "E-commerce Platform",
     "clientId": 1,
     "description": "Custom e-commerce solution with product catalog, shopping cart, payment integration, inventory management, and admin dashboard. Built with scalability and performance in mind.",
+    "status": "On Hold",
+    "deadline": "2024-06-30",
+    "deliverables": "Database design, frontend application, admin dashboard, payment gateway integration, inventory system, user documentation",
     "createdAt": "2024-02-05T15:45:00.000Z"
   },
   {
@@ -32,6 +44,9 @@
     "name": "Data Analytics Dashboard",
     "clientId": 4,
     "description": "Interactive dashboard for visualizing business metrics and KPIs. Features real-time data updates, customizable charts, export functionality, and role-based access control.",
+    "status": "In Progress",
+    "deadline": "2024-04-10",
+    "deliverables": "Dashboard mockups, data visualization components, reporting system, user access controls, API integration",
     "createdAt": "2024-02-12T09:30:00.000Z"
   }
 ]

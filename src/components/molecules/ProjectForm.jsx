@@ -3,25 +3,31 @@ import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
 
 const ProjectForm = ({ project, clients, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     name: "",
     clientId: "",
-    description: ""
+    description: "",
+    status: "Planning",
+    deadline: "",
+    deliverables: ""
   });
 
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
+useEffect(() => {
     if (project) {
       setFormData({
         name: project.name || "",
         clientId: project.clientId || "",
-        description: project.description || ""
+        description: project.description || "",
+        status: project.status || "Planning",
+        deadline: project.deadline || "",
+        deliverables: project.deliverables || ""
       });
     }
   }, [project]);
 
-  const validateForm = () => {
+const validateForm = () => {
     const newErrors = {};
     
     if (!formData.name.trim()) {
@@ -34,6 +40,14 @@ const ProjectForm = ({ project, clients, onSubmit, onCancel }) => {
     
     if (!formData.description.trim()) {
       newErrors.description = "Description is required";
+    }
+    
+    if (!formData.deadline) {
+      newErrors.deadline = "Deadline is required";
+    }
+    
+    if (!formData.deliverables.trim()) {
+      newErrors.deliverables = "Deliverables are required";
     }
     
     setErrors(newErrors);
@@ -63,7 +77,7 @@ const ProjectForm = ({ project, clients, onSubmit, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+<form onSubmit={handleSubmit} className="space-y-4">
       <Input
         label="Project Name"
         name="name"
@@ -98,18 +112,65 @@ const ProjectForm = ({ project, clients, onSubmit, onCancel }) => {
       
       <div className="space-y-1">
         <label className="block text-sm font-medium text-gray-700 mb-1">
+          Status *
+        </label>
+        <select
+          name="status"
+          value={formData.status}
+          onChange={handleChange}
+          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400"
+        >
+          <option value="Planning">Planning</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+          <option value="On Hold">On Hold</option>
+        </select>
+        {errors.status && (
+          <p className="text-xs text-red-600 mt-1">{errors.status}</p>
+        )}
+      </div>
+      
+      <Input
+        label="Deadline"
+        name="deadline"
+        type="date"
+        value={formData.deadline}
+        onChange={handleChange}
+        error={errors.deadline}
+        required
+      />
+      
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
           Description *
         </label>
         <textarea
           name="description"
           value={formData.description}
           onChange={handleChange}
-          rows={4}
+          rows={3}
           className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 resize-none"
           placeholder="Describe the project details..."
         />
         {errors.description && (
           <p className="text-xs text-red-600 mt-1">{errors.description}</p>
+        )}
+      </div>
+      
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Deliverables *
+        </label>
+        <textarea
+          name="deliverables"
+          value={formData.deliverables}
+          onChange={handleChange}
+          rows={3}
+          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 resize-none"
+          placeholder="List project deliverables and outcomes..."
+        />
+        {errors.deliverables && (
+          <p className="text-xs text-red-600 mt-1">{errors.deliverables}</p>
         )}
       </div>
       
