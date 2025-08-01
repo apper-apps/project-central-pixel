@@ -24,19 +24,32 @@ const ProjectCard = ({ project, client, onEdit, onDelete }) => {
 
   return (
 <Card hover className="p-6">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-<div className="flex items-center gap-2 mb-2">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
             <h3 
-              className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors"
+              className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors truncate"
               onClick={() => navigate(`/projects/${project.Id}`)}
             >
               {project.name}
             </h3>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium border flex-shrink-0 ${getStatusColor(project.status)}`}>
               {project.status}
             </span>
           </div>
+          
+          {client && (
+            <div className="flex items-center gap-1 mb-2">
+              <ApperIcon name="User" size={14} className="text-gray-500" />
+              <span className="text-sm text-gray-600 truncate">{client.name}</span>
+            </div>
+          )}
+          
+          {project.description && (
+            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+              {project.description}
+            </p>
+          )}
           <p className="text-sm text-blue-600 mb-2">{client?.name || "Unknown Client"}</p>
           {project.deadline && (
             <div className="flex items-center gap-1 mb-2">

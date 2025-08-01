@@ -129,7 +129,7 @@ const filteredTasks = tasks.filter(task => {
       (filter === "pending" && !task.completed);
     
     const matchesSearch = !searchTerm || 
-      task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getProjectById(task.projectId)?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     

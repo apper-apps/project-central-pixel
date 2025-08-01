@@ -156,20 +156,30 @@ setEditingClient(null);
             onChange={e => setSearchTerm(e.target.value)}
             icon={<ApperIcon name="Search" size={16} className="text-gray-400" />}
             className="max-w-md" />
-        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+<div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-2">
                 <ApperIcon name="Filter" size={16} className="text-gray-500" />
                 <span className="text-sm font-medium text-gray-700">Filter by status:</span>
             </div>
-            <div className="flex items-center gap-2">
-                {["All", "Active", "Inactive", "Prospect"].map(status => <button
+            <div className="flex flex-wrap items-center gap-2">
+                {["All", "Active", "Inactive", "Prospect"].map(status => (
+                  <button
                     key={status}
                     onClick={() => setStatusFilter(status)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-200 ${statusFilter === status ? "bg-blue-100 text-blue-800 border border-blue-200" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 whitespace-nowrap ${
+                      statusFilter === status 
+                        ? "bg-blue-100 text-blue-800 border border-blue-200" 
+                        : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
                     {status}
-                    {status !== "All" && <span className="ml-1 text-xs opacity-75">({clients.filter(c => c.status === status).length})
-                                        </span>}
-                </button>)}
+                    {status !== "All" && (
+                      <span className="ml-1 text-xs opacity-75">
+                        ({clients.filter(c => c.status === status).length})
+                      </span>
+                    )}
+                  </button>
+                ))}
             </div>
         </div>
         {clients.length === 0 ? <Empty
