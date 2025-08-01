@@ -4,7 +4,7 @@ import Button from "@/components/atoms/Button";
 
 const Header = ({ onMenuClick }) => {
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 lg:pl-64">
+    <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center">
           <Button
