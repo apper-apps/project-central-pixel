@@ -7,7 +7,8 @@ const navigation = [
     { name: "Dashboard", href: "/", icon: "LayoutDashboard" },
     { name: "Clients", href: "/clients", icon: "Users" },
     { name: "Projects", href: "/projects", icon: "Briefcase" },
-    { name: "Tasks", href: "/tasks", icon: "CheckSquare" }
+    { name: "Tasks", href: "/tasks", icon: "CheckSquare" },
+    { name: "Time Tracking", href: "/time-tracking", icon: "Clock" }
   ];
 
   return (

@@ -8,6 +8,7 @@ import ClientDetail from "@/components/pages/ClientDetail";
 import Projects from "@/components/pages/Projects";
 import ProjectDetail from "@/components/pages/ProjectDetail";
 import Tasks from "@/components/pages/Tasks";
+import TimeTracking from "@/components/pages/TimeTracking";
 function App() {
   return (
 <BrowserRouter>
@@ -19,6 +20,7 @@ function App() {
 <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/tasks" element={<Tasks />} />
+          <Route path="/time-tracking" element={<TimeTracking />} />
         </Routes>
       </Layout>
       

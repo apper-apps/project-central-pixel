@@ -1,0 +1,50 @@
+[
+  {
+    "Id": 1,
+    "projectId": 1,
+    "description": "Frontend development - Homepage layout and responsive design",
+    "date": "2024-02-15",
+    "duration": 6.5,
+    "createdAt": "2024-02-15T10:00:00.000Z"
+  },
+  {
+    "Id": 2,
+    "projectId": 2,
+    "description": "API integration for user authentication and data sync",
+    "date": "2024-02-15",
+    "duration": 4.0,
+    "createdAt": "2024-02-15T14:30:00.000Z"
+  },
+  {
+    "Id": 3,
+    "projectId": 1,
+    "description": "Bug fixes and optimization for mobile devices",
+    "date": "2024-02-14",
+    "duration": 3.5,
+    "createdAt": "2024-02-14T16:15:00.000Z"
+  },
+  {
+    "Id": 4,
+    "projectId": 3,
+    "description": "Logo design iterations and brand color refinement",
+    "date": "2024-02-14",
+    "duration": 5.0,
+    "createdAt": "2024-02-14T09:00:00.000Z"
+  },
+  {
+    "Id": 5,
+    "projectId": 5,
+    "description": "Data visualization components and chart implementation",
+    "date": "2024-02-13",
+    "duration": 7.0,
+    "createdAt": "2024-02-13T11:30:00.000Z"
+  },
+  {
+    "Id": 6,
+    "projectId": 2,
+    "description": "Testing and deployment preparation",
+    "date": "2024-02-13",
+    "duration": 2.5,
+    "createdAt": "2024-02-13T17:45:00.000Z"
+  }
+]
