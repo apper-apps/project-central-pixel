@@ -1,9 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import ApperIcon from "@/components/ApperIcon";
 import Card from "@/components/atoms/Card";
 import Button from "@/components/atoms/Button";
 
-const ClientCard = ({ client, onEdit, onDelete }) => {
+const ClientCard = ({ client, onEdit, onDelete, onView }) => {
+  const navigate = useNavigate();
   const getStatusBadge = (status) => {
     const statusColors = {
       Active: "bg-green-100 text-green-800 border-green-200",
@@ -18,8 +20,11 @@ const ClientCard = ({ client, onEdit, onDelete }) => {
     );
   };
   return (
-    <Card hover className="p-6">
-<div className="flex items-start justify-between">
+<Card hover className="p-6">
+      <div 
+        className="flex items-start justify-between cursor-pointer"
+        onClick={() => navigate(`/clients/${client.Id}`)}
+      >
         <div className="flex-1">
           <h3 className="font-semibold text-gray-900 mb-1">{client.name}</h3>
           <div className="flex items-center gap-2 mb-2">
@@ -41,7 +46,10 @@ const ClientCard = ({ client, onEdit, onDelete }) => {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => onEdit(client)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(client);
+            }}
             className="p-2"
           >
             <ApperIcon name="Edit2" size={16} />
@@ -49,7 +57,10 @@ const ClientCard = ({ client, onEdit, onDelete }) => {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => onDelete(client.Id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(client.Id);
+            }}
             className="p-2 hover:text-red-600"
           >
             <ApperIcon name="Trash2" size={16} />

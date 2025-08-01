@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
@@ -11,7 +12,8 @@ import Empty from "@/components/ui/Empty";
 import clientService from "@/services/api/clientService";
 
 const Clients = () => {
-const [clients, setClients] = useState([]);
+  const navigate = useNavigate();
+  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -95,7 +97,11 @@ const [clients, setClients] = useState([]);
 
   const closeModal = () => {
     setShowModal(false);
-    setEditingClient(null);
+setEditingClient(null);
+  };
+
+  const handleViewClient = (clientId) => {
+    navigate(`/clients/${clientId}`);
   };
 
   if (loading) {
@@ -177,11 +183,12 @@ const [clients, setClients] = useState([]);
       ) : (
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredClients.map((client) => (
-            <ClientCard
+<ClientCard
               key={client.Id}
               client={client}
               onEdit={openEditModal}
               onDelete={handleDeleteClient}
+              onView={handleViewClient}
             />
           ))}
         </div>

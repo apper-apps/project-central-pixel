@@ -16,7 +16,15 @@ class ClientService {
     if (!client) {
       throw new Error("Client not found");
     }
-    return { ...client };
+return { ...client };
+  }
+
+  async getProjectsByClientId(clientId) {
+    await this.delay(300);
+    // Import projectService to get projects for this client
+    const projectService = (await import("./projectService.js")).default;
+    const allProjects = await projectService.getAll();
+    return allProjects.filter(project => project.clientId === parseInt(clientId));
   }
 
 async create(clientData) {
