@@ -9,6 +9,8 @@ import Projects from "@/components/pages/Projects";
 import ProjectDetail from "@/components/pages/ProjectDetail";
 import Tasks from "@/components/pages/Tasks";
 import TimeTracking from "@/components/pages/TimeTracking";
+import TeamMembers from "@/components/pages/TeamMembers";
+import TeamMemberDetail from "@/components/pages/TeamMemberDetail";
 function App() {
   return (
 <BrowserRouter>
@@ -21,6 +23,8 @@ function App() {
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/time-tracking" element={<TimeTracking />} />
+          <Route path="/team" element={<TeamMembers />} />
+          <Route path="/team/:id" element={<TeamMemberDetail />} />
         </Routes>
       </Layout>
       
