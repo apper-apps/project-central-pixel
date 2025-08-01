@@ -6,27 +6,36 @@ const Input = React.forwardRef(({
   type = "text",
   label,
   error,
+  icon,
   ...props 
 }, ref) => {
   const inputClasses = "w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed";
   
-  return (
+return (
     <div className="space-y-1">
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-1">
           {label}
         </label>
       )}
-      <input
-        type={type}
-        className={cn(
-          inputClasses,
-          error && "border-red-300 focus:ring-red-500",
-          className
+      <div className="relative">
+        {icon && (
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            {icon}
+          </div>
         )}
-        ref={ref}
-        {...props}
-      />
+        <input
+          type={type}
+          className={cn(
+            inputClasses,
+            icon && "pl-10",
+            error && "border-red-300 focus:ring-red-500",
+            className
+          )}
+          ref={ref}
+          {...props}
+        />
+      </div>
       {error && (
         <p className="text-xs text-red-600 mt-1">{error}</p>
       )}

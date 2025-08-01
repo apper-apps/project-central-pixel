@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import clientService from "@/services/api/clientService";
+import projectService from "@/services/api/projectService";
 import ApperIcon from "@/components/ApperIcon";
-import Button from "@/components/atoms/Button";
-import Modal from "@/components/atoms/Modal";
-import ProjectCard from "@/components/molecules/ProjectCard";
 import ProjectForm from "@/components/molecules/ProjectForm";
+import ProjectCard from "@/components/molecules/ProjectCard";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import projectService from "@/services/api/projectService";
-import clientService from "@/services/api/clientService";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import Modal from "@/components/atoms/Modal";
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
@@ -18,6 +19,7 @@ const Projects = () => {
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+const [searchTerm, setSearchTerm] = useState("");
 
   const loadData = async () => {
     try {
@@ -145,6 +147,16 @@ const Projects = () => {
           <ApperIcon name="Plus" size={16} className="mr-2" />
           Add Project
         </Button>
+</div>
+      
+      <div className="space-y-4">
+        <Input
+          placeholder="Search projects by name, description, or client..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          icon={<ApperIcon name="Search" size={16} className="text-gray-400" />}
+          className="max-w-md"
+        />
       </div>
 
       {projects.length === 0 ? (
@@ -158,9 +170,16 @@ const Projects = () => {
           actionLabel={clients.length === 0 ? null : "Add Project"}
           onAction={clients.length === 0 ? null : openCreateModal}
         />
+/>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
+          {projects.filter(project => {
+            if (!searchTerm) return true;
+            const client = getClientById(project.clientId);
+            return project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+          }).map((project) => (
             <ProjectCard
               key={project.Id}
               project={project}
@@ -170,7 +189,6 @@ const Projects = () => {
             />
           ))}
         </div>
-      )}
 
       <Modal
         isOpen={showModal}

@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import clientService from "@/services/api/clientService";
 import ApperIcon from "@/components/ApperIcon";
-import Button from "@/components/atoms/Button";
-import Modal from "@/components/atoms/Modal";
 import ClientCard from "@/components/molecules/ClientCard";
 import ClientForm from "@/components/molecules/ClientForm";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import clientService from "@/services/api/clientService";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import Modal from "@/components/atoms/Modal";
 
 const Clients = () => {
   const navigate = useNavigate();
@@ -18,11 +19,16 @@ const Clients = () => {
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
-  const [statusFilter, setStatusFilter] = useState("All");
-
-  const filteredClients = clients.filter(client => {
-    if (statusFilter === "All") return true;
-    return client.status === statusFilter;
+const [statusFilter, setStatusFilter] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
+const filteredClients = clients.filter(client => {
+    const matchesStatus = statusFilter === "All" || client.status === statusFilter;
+    const matchesSearch = !searchTerm || 
+      client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.phone?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesStatus && matchesSearch;
   });
 
   const loadClients = async () => {
@@ -134,79 +140,62 @@ setEditingClient(null);
 
   return (
     <div className="space-y-6">
-<div className="flex items-center justify-between">
+    <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">Clients</h1>
-          <p className="text-gray-600">Manage your client relationships</p>
+            <h1 className="text-3xl font-bold gradient-text mb-2">Clients</h1>
+            <p className="text-gray-600">Manage your client relationships</p>
         </div>
         <Button onClick={openCreateModal} variant="primary">
-          <ApperIcon name="Plus" size={16} className="mr-2" />
-          Add Client
-        </Button>
-      </div>
-
-      <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-        <div className="flex items-center gap-2">
-          <ApperIcon name="Filter" size={16} className="text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Filter by status:</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {["All", "Active", "Inactive", "Prospect"].map((status) => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-200 ${
-                statusFilter === status
-                  ? "bg-blue-100 text-blue-800 border border-blue-200"
-                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-              }`}
-            >
-              {status}
-              {status !== "All" && (
-                <span className="ml-1 text-xs opacity-75">
-                  ({clients.filter(c => c.status === status).length})
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {clients.length === 0 ? (
-        <Empty
-          icon="Users"
-          title="No clients yet"
-          description="Start building your client base by adding your first client."
-          actionLabel="Add Client"
-          onAction={openCreateModal}
-        />
-      ) : (
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredClients.map((client) => (
-<ClientCard
-              key={client.Id}
-              client={client}
-              onEdit={openEditModal}
-              onDelete={handleDeleteClient}
-              onView={handleViewClient}
-            />
-          ))}
-        </div>
-      )}
-
-      <Modal
-        isOpen={showModal}
-        onClose={closeModal}
-        title={editingClient ? "Edit Client" : "Add New Client"}
-        className="max-w-lg"
-      >
-        <ClientForm
-          client={editingClient}
-          onSubmit={editingClient ? handleEditClient : handleCreateClient}
-          onCancel={closeModal}
-        />
-      </Modal>
+            <ApperIcon name="Plus" size={16} className="mr-2" />Add Client
+                    </Button>
     </div>
+    <div className="space-y-4">
+        <Input
+            placeholder="Search clients by name, email, company, or phone..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            icon={<ApperIcon name="Search" size={16} className="text-gray-400" />}
+            className="max-w-md" />
+        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2">
+                <ApperIcon name="Filter" size={16} className="text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Filter by status:</span>
+            </div>
+            <div className="flex items-center gap-2">
+                {["All", "Active", "Inactive", "Prospect"].map(status => <button
+                    key={status}
+                    onClick={() => setStatusFilter(status)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-200 ${statusFilter === status ? "bg-blue-100 text-blue-800 border border-blue-200" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`}>
+                    {status}
+                    {status !== "All" && <span className="ml-1 text-xs opacity-75">({clients.filter(c => c.status === status).length})
+                                        </span>}
+                </button>)}
+            </div>
+        </div>
+        {clients.length === 0 ? <Empty
+            icon="Users"
+            title="No clients yet"
+            description="Start building your client base by adding your first client."
+            actionLabel="Add Client"
+            onAction={openCreateModal} /> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredClients.map(client => <ClientCard
+                key={client.Id}
+                client={client}
+                onEdit={openEditModal}
+                onDelete={handleDeleteClient}
+                onView={handleViewClient} />)}
+        </div>}
+        <Modal
+            isOpen={showModal}
+            onClose={closeModal}
+            title={editingClient ? "Edit Client" : "Add New Client"}
+            className="max-w-lg">
+            <ClientForm
+                client={editingClient}
+                onSubmit={editingClient ? handleEditClient : handleCreateClient}
+                onCancel={closeModal} />
+        </Modal>
+    </div></div>
   );
 };
 

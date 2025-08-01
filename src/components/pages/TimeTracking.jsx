@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import timeEntryService from "@/services/api/timeEntryService";
+import projectService from "@/services/api/projectService";
 import ApperIcon from "@/components/ApperIcon";
-import Button from "@/components/atoms/Button";
-import Modal from "@/components/atoms/Modal";
 import TimeEntryCard from "@/components/molecules/TimeEntryCard";
 import TimeEntryForm from "@/components/molecules/TimeEntryForm";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import timeEntryService from "@/services/api/timeEntryService";
-import projectService from "@/services/api/projectService";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import Modal from "@/components/atoms/Modal";
 
 const TimeTracking = () => {
   const [timeEntries, setTimeEntries] = useState([]);
@@ -18,8 +19,8 @@ const TimeTracking = () => {
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState(null);
-  const [filter, setFilter] = useState("all"); // all, today, week, month
-
+const [filter, setFilter] = useState("all"); // all, today, week, month
+  const [searchTerm, setSearchTerm] = useState("");
   const loadData = async () => {
     try {
       setLoading(true);
@@ -107,25 +108,21 @@ const TimeTracking = () => {
     setEditingEntry(null);
   };
 
-  const getFilteredEntries = () => {
+const getFilteredEntries = () => {
     const now = new Date();
     const today = now.toISOString().split('T')[0];
     
     return timeEntries.filter(entry => {
-      if (filter === "today") {
-        return entry.date === today;
-      }
-      if (filter === "week") {
-        const entryDate = new Date(entry.date);
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        return entryDate >= weekAgo;
-      }
-      if (filter === "month") {
-        const entryDate = new Date(entry.date);
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        return entryDate >= monthAgo;
-      }
-      return true;
+      const matchesTimeFilter = filter === "all" ||
+        (filter === "today" && entry.date === today) ||
+        (filter === "week" && new Date(entry.date) >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)) ||
+        (filter === "month" && new Date(entry.date) >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000));
+      
+      const matchesSearch = !searchTerm || 
+        entry.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getProjectById(entry.projectId)?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      return matchesTimeFilter && matchesSearch;
     });
   };
 
@@ -178,6 +175,16 @@ const TimeTracking = () => {
           <ApperIcon name="Plus" size={16} className="mr-2" />
           Log Time
         </Button>
+      </div>
+
+<div className="space-y-4">
+        <Input
+          placeholder="Search time entries by description or project..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          icon={<ApperIcon name="Search" size={16} className="text-gray-400" />}
+          className="max-w-md"
+        />
       </div>
 
       {timeEntries.length > 0 && (

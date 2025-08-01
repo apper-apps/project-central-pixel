@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import taskService from "@/services/api/taskService";
+import projectService from "@/services/api/projectService";
 import ApperIcon from "@/components/ApperIcon";
-import Button from "@/components/atoms/Button";
-import Modal from "@/components/atoms/Modal";
-import TaskCard from "@/components/molecules/TaskCard";
 import TaskForm from "@/components/molecules/TaskForm";
+import TaskCard from "@/components/molecules/TaskCard";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import taskService from "@/services/api/taskService";
-import projectService from "@/services/api/projectService";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import Modal from "@/components/atoms/Modal";
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
@@ -18,8 +19,8 @@ const Tasks = () => {
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
-  const [filter, setFilter] = useState("all"); // all, pending, completed
-
+const [filter, setFilter] = useState("all"); // all, pending, completed
+  const [searchTerm, setSearchTerm] = useState("");
   const loadData = async () => {
     try {
       setLoading(true);
@@ -122,10 +123,17 @@ const Tasks = () => {
     setEditingTask(null);
   };
 
-  const filteredTasks = tasks.filter(task => {
-    if (filter === "completed") return task.completed;
-    if (filter === "pending") return !task.completed;
-    return true;
+const filteredTasks = tasks.filter(task => {
+    const matchesStatus = filter === "all" || 
+      (filter === "completed" && task.completed) ||
+      (filter === "pending" && !task.completed);
+    
+    const matchesSearch = !searchTerm || 
+      task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getProjectById(task.projectId)?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesStatus && matchesSearch;
   });
 
   const taskCounts = {
@@ -174,7 +182,15 @@ const Tasks = () => {
           Add Task
         </Button>
       </div>
-
+<div className="space-y-4">
+        <Input
+          placeholder="Search tasks by title, description, or project..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          icon={<ApperIcon name="Search" size={16} className="text-gray-400" />}
+          className="max-w-md"
+        />
+      </div>
       {tasks.length > 0 && (
         <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
           {[
