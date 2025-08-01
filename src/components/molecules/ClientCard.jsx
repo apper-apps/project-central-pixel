@@ -4,12 +4,28 @@ import Card from "@/components/atoms/Card";
 import Button from "@/components/atoms/Button";
 
 const ClientCard = ({ client, onEdit, onDelete }) => {
+  const getStatusBadge = (status) => {
+    const statusColors = {
+      Active: "bg-green-100 text-green-800 border-green-200",
+      Inactive: "bg-gray-100 text-gray-800 border-gray-200", 
+      Prospect: "bg-blue-100 text-blue-800 border-blue-200"
+    };
+    
+    return (
+      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${statusColors[status] || statusColors.Active}`}>
+        {status}
+      </span>
+    );
+  };
   return (
     <Card hover className="p-6">
-      <div className="flex items-start justify-between">
+<div className="flex items-start justify-between">
         <div className="flex-1">
           <h3 className="font-semibold text-gray-900 mb-1">{client.name}</h3>
-          <p className="text-sm text-gray-600 mb-2">{client.company}</p>
+          <div className="flex items-center gap-2 mb-2">
+            <p className="text-sm text-gray-600">{client.company}</p>
+            {getStatusBadge(client.status)}
+          </div>
           <div className="space-y-1">
             <div className="flex items-center text-sm text-gray-500">
               <ApperIcon name="Mail" size={14} className="mr-2" />

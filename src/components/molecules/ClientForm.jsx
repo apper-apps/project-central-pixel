@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from "react";
 import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
+import ApperIcon from "@/components/ApperIcon";
 
 const ClientForm = ({ client, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     name: "",
     company: "",
     email: "",
-    phone: ""
+    phone: "",
+    status: "Active"
   });
 
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    if (client) {
+if (client) {
       setFormData({
         name: client.name || "",
         company: client.company || "",
         email: client.email || "",
-        phone: client.phone || ""
+        phone: client.phone || "",
+        status: client.status || "Active"
       });
     }
   }, [client]);
@@ -71,7 +74,7 @@ const ClientForm = ({ client, onSubmit, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+<form onSubmit={handleSubmit} className="space-y-4">
       <Input
         label="Full Name"
         name="name"
@@ -112,6 +115,29 @@ const ClientForm = ({ client, onSubmit, onCancel }) => {
         placeholder="Enter phone number"
         required
       />
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Status
+        </label>
+        <div className="relative">
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+          >
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Prospect">Prospect</option>
+          </select>
+          <ApperIcon 
+            name="ChevronDown" 
+            size={16} 
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+          />
+        </div>
+      </div>
       
       <div className="flex space-x-3 pt-4">
         <Button type="submit" variant="primary" className="flex-1">

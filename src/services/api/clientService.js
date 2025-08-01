@@ -19,19 +19,20 @@ class ClientService {
     return { ...client };
   }
 
-  async create(clientData) {
+async create(clientData) {
     await this.delay(400);
     const newId = this.clients.length > 0 ? Math.max(...this.clients.map(c => c.Id)) + 1 : 1;
     const newClient = {
       Id: newId,
       ...clientData,
+      status: clientData.status || "Active",
       createdAt: new Date().toISOString()
     };
     this.clients.push(newClient);
     return { ...newClient };
   }
 
-  async update(id, clientData) {
+async update(id, clientData) {
     await this.delay(400);
     const index = this.clients.findIndex(c => c.Id === parseInt(id));
     if (index === -1) {
@@ -40,7 +41,8 @@ class ClientService {
     
     this.clients[index] = {
       ...this.clients[index],
-      ...clientData
+      ...clientData,
+      status: clientData.status || this.clients[index].status || "Active"
     };
     
     return { ...this.clients[index] };

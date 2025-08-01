@@ -11,11 +11,17 @@ import Empty from "@/components/ui/Empty";
 import clientService from "@/services/api/clientService";
 
 const Clients = () => {
-  const [clients, setClients] = useState([]);
+const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const filteredClients = clients.filter(client => {
+    if (statusFilter === "All") return true;
+    return client.status === statusFilter;
+  });
 
   const loadClients = async () => {
     try {
@@ -122,7 +128,7 @@ const Clients = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+<div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold gradient-text mb-2">Clients</h1>
           <p className="text-gray-600">Manage your client relationships</p>
@@ -131,6 +137,33 @@ const Clients = () => {
           <ApperIcon name="Plus" size={16} className="mr-2" />
           Add Client
         </Button>
+      </div>
+
+      <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-center gap-2">
+          <ApperIcon name="Filter" size={16} className="text-gray-500" />
+          <span className="text-sm font-medium text-gray-700">Filter by status:</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {["All", "Active", "Inactive", "Prospect"].map((status) => (
+            <button
+              key={status}
+              onClick={() => setStatusFilter(status)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-200 ${
+                statusFilter === status
+                  ? "bg-blue-100 text-blue-800 border border-blue-200"
+                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+              }`}
+            >
+              {status}
+              {status !== "All" && (
+                <span className="ml-1 text-xs opacity-75">
+                  ({clients.filter(c => c.status === status).length})
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       {clients.length === 0 ? (
@@ -142,8 +175,8 @@ const Clients = () => {
           onAction={openCreateModal}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {clients.map((client) => (
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredClients.map((client) => (
             <ClientCard
               key={client.Id}
               client={client}
