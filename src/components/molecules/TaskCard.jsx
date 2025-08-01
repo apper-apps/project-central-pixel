@@ -10,7 +10,7 @@ const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete }) => {
 
   return (
     <Card className="p-6 hover:card-shadow-hover transition-all duration-200">
-      <div className="flex items-start justify-between mb-4">
+<div className="flex items-start justify-between mb-4">
         <div className="flex items-start space-x-3 flex-1">
           <button
             onClick={handleToggleComplete}
@@ -23,20 +23,48 @@ const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete }) => {
             {task.completed && <ApperIcon name="Check" size={12} />}
           </button>
           <div className="flex-1 min-w-0">
-            <h3 className={`font-semibold text-gray-900 mb-2 ${task.completed ? 'line-through text-gray-500' : ''}`}>
-              {task.name}
-            </h3>
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className={`font-semibold text-gray-900 ${task.completed ? 'line-through text-gray-500' : ''}`}>
+                {task.name}
+              </h3>
+              {task.priority && (
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  task.priority === 'High' 
+                    ? 'bg-red-100 text-red-800' 
+                    : task.priority === 'Medium'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-green-100 text-green-800'
+                }`}>
+                  {task.priority}
+                </span>
+              )}
+            </div>
             {task.description && (
               <p className={`text-sm mb-3 ${task.completed ? 'text-gray-400' : 'text-gray-600'}`}>
                 {task.description}
               </p>
             )}
-            {project && (
-              <div className="flex items-center text-xs text-gray-500">
-                <ApperIcon name="Briefcase" size={12} className="mr-1" />
-                {project.name}
-              </div>
-            )}
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              {project && (
+                <div className="flex items-center">
+                  <ApperIcon name="Briefcase" size={12} className="mr-1" />
+                  {project.name}
+                </div>
+              )}
+              {task.dueDate && (
+                <div className={`flex items-center ${
+                  new Date(task.dueDate) < new Date() && !task.completed 
+                    ? 'text-red-600 font-medium' 
+                    : ''
+                }`}>
+                  <ApperIcon name="Calendar" size={12} className="mr-1" />
+                  Due {new Date(task.dueDate).toLocaleDateString()}
+                  {new Date(task.dueDate) < new Date() && !task.completed && (
+                    <ApperIcon name="AlertCircle" size={12} className="ml-1 text-red-600" />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center space-x-1 ml-4">
@@ -59,7 +87,7 @@ const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete }) => {
         </div>
       </div>
       
-      <div className="flex items-center justify-between text-xs text-gray-500">
+<div className="flex items-center justify-between text-xs text-gray-500">
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
           task.completed 
             ? 'bg-green-100 text-green-800' 

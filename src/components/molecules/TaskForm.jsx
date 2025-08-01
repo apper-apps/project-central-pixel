@@ -4,20 +4,24 @@ import Button from "@/components/atoms/Button";
 import ApperIcon from "@/components/ApperIcon";
 
 const TaskForm = ({ task, projects, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     name: "",
     description: "",
     projectId: "",
+    priority: "Medium",
+    dueDate: "",
     completed: false
   });
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
+useEffect(() => {
     if (task) {
       setFormData({
         name: task.name || "",
         description: task.description || "",
         projectId: task.projectId || "",
+        priority: task.priority || "Medium",
+        dueDate: task.dueDate || "",
         completed: task.completed || false
       });
     } else {
@@ -25,6 +29,8 @@ const TaskForm = ({ task, projects, onSubmit, onCancel }) => {
         name: "",
         description: "",
         projectId: projects.length > 0 ? projects[0].Id : "",
+        priority: "Medium",
+        dueDate: "",
         completed: false
       });
     }
@@ -70,7 +76,7 @@ const TaskForm = ({ task, projects, onSubmit, onCancel }) => {
     }
   };
 
-  return (
+return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Input
         label="Task Name"
@@ -120,6 +126,31 @@ const TaskForm = ({ task, projects, onSubmit, onCancel }) => {
           <p className="mt-1 text-sm text-red-600">{errors.projectId}</p>
         )}
       </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Priority
+        </label>
+        <select
+          name="priority"
+          value={formData.priority}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+        >
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+      </div>
+
+      <Input
+        label="Due Date"
+        name="dueDate"
+        type="date"
+        value={formData.dueDate}
+        onChange={handleChange}
+        placeholder="Select due date"
+      />
 
       {task && (
         <div className="flex items-center">

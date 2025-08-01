@@ -25,14 +25,16 @@ const taskService = {
     });
   },
 
-  create: (taskData) => {
+create: (taskData) => {
     return new Promise((resolve) => {
       setTimeout(() => {
         const newTask = {
           ...taskData,
           Id: nextId++,
           createdAt: new Date().toISOString(),
-          completed: false
+          completed: false,
+          priority: taskData.priority || "Medium",
+          dueDate: taskData.dueDate || null
         };
         tasks.push(newTask);
         resolve({ ...newTask });

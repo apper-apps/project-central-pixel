@@ -5,6 +5,8 @@
     "description": "Create wireframes and mockups for the new homepage design",
     "projectId": 1,
     "completed": false,
+    "priority": "High",
+    "dueDate": "2024-02-15",
     "createdAt": "2024-01-15T10:00:00Z"
   },
   {
@@ -13,6 +15,8 @@
     "description": "Configure PostgreSQL database and create initial tables",
     "projectId": 1,
     "completed": true,
+    "priority": "Medium",
+    "dueDate": "2024-01-20",
     "createdAt": "2024-01-16T14:30:00Z"
   },
   {
@@ -21,6 +25,8 @@
     "description": "Implement login and registration functionality",
     "projectId": 2,
     "completed": false,
+    "priority": "High",
+    "dueDate": "2024-01-10",
     "createdAt": "2024-01-17T09:15:00Z"
   },
   {
@@ -29,6 +35,8 @@
     "description": "Write comprehensive API documentation using Swagger",
     "projectId": 2,
     "completed": false,
+    "priority": "Low",
+    "dueDate": "2024-03-01",
     "createdAt": "2024-01-18T16:45:00Z"
   },
   {
@@ -37,6 +45,8 @@
     "description": "Create comprehensive brand identity guidelines",
     "projectId": 3,
     "completed": true,
+    "priority": "Medium",
+    "dueDate": "2024-01-25",
     "createdAt": "2024-01-19T11:20:00Z"
   }
 ]
