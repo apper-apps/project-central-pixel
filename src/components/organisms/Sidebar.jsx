@@ -81,10 +81,12 @@ const navigation = [
           <nav className="flex-1 px-4 pb-4">
             <div className="space-y-2">
               {navigation.map((item) => (
-                <NavLink
+<NavLink
                   key={item.name}
                   to={item.href}
-                  onClick={onClose}
+                  onClick={() => {
+                    onClose();
+                  }}
                   className={({ isActive }) =>
                     `group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                       isActive
