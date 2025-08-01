@@ -47,6 +47,23 @@
   }
 }
 
+/* Milestone Progress Bars */
+.milestone-progress-bar {
+  background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.milestone-status-overdue {
+  @apply bg-red-100 text-red-800 border-red-200;
+}
+
+.milestone-status-upcoming {
+  @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+}
+
+.milestone-status-completed {
+  @apply bg-green-100 text-green-800 border-green-200;
+}
+
 /* Toast Customization */
 .Toastify__toast-container {
   @apply text-sm;

@@ -8,13 +8,14 @@ import Modal from "@/components/atoms/Modal";
 import ProjectForm from "@/components/molecules/ProjectForm";
 import TaskForm from "@/components/molecules/TaskForm";
 import TaskCard from "@/components/molecules/TaskCard";
+import MilestoneCard from "@/components/molecules/MilestoneCard";
+import MilestoneForm from "@/components/molecules/MilestoneForm";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import projectService from "@/services/api/projectService";
 import clientService from "@/services/api/clientService";
 import taskService from "@/services/api/taskService";
-
 const ProjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -28,20 +29,22 @@ const ProjectDetail = () => {
   const [error, setError] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
-  const [editingTask, setEditingTask] = useState(null);
-
+const [editingTask, setEditingTask] = useState(null);
+  const [milestones, setMilestones] = useState([]);
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
+  const [editingMilestone, setEditingMilestone] = useState(null);
   const loadProjectData = async () => {
     try {
       setLoading(true);
       setError("");
       
-      const [projectData, tasksData, clientsData, projectsData] = await Promise.all([
+const [projectData, tasksData, clientsData, projectsData, milestonesData] = await Promise.all([
         projectService.getById(id),
         taskService.getByProjectId(id),
         clientService.getAll(),
-        projectService.getAll()
+        projectService.getAll(),
+        projectService.getMilestonesByProjectId(id)
       ]);
-      
       setProject(projectData);
       setTasks(tasksData);
       setClients(clientsData);
@@ -62,7 +65,7 @@ const ProjectDetail = () => {
     loadProjectData();
   }, [id]);
 
-  const handleEditProject = async (projectData) => {
+const handleEditProject = async (projectData) => {
     try {
       const updatedProject = await projectService.update(project.Id, projectData);
       setProject(updatedProject);
@@ -124,8 +127,68 @@ const ProjectDetail = () => {
     }
   };
 
+const handleCreateMilestone = async (milestoneData) => {
+    try {
+      const newMilestone = await projectService.createMilestone(project.Id, milestoneData);
+      setMilestones(prev => [...prev, newMilestone]);
+      setShowMilestoneModal(false);
+      toast.success("Milestone created successfully!");
+    } catch (err) {
+      console.error("Failed to create milestone:", err);
+      toast.error("Failed to create milestone. Please try again.");
+    }
+  };
+
+  const handleEditMilestone = async (milestoneData) => {
+    try {
+      const updatedMilestone = await projectService.updateMilestone(editingMilestone.Id, milestoneData);
+      setMilestones(prev => 
+        prev.map(milestone => 
+          milestone.Id === editingMilestone.Id ? updatedMilestone : milestone
+        )
+      );
+      setShowMilestoneModal(false);
+      setEditingMilestone(null);
+      toast.success("Milestone updated successfully!");
+    } catch (err) {
+      console.error("Failed to update milestone:", err);
+      toast.error("Failed to update milestone. Please try again.");
+    }
+  };
+
+  const handleDeleteMilestone = async (milestoneId) => {
+    if (window.confirm("Are you sure you want to delete this milestone?")) {
+      try {
+        await projectService.deleteMilestone(milestoneId);
+        setMilestones(prev => prev.filter(milestone => milestone.Id !== milestoneId));
+        toast.success("Milestone deleted successfully!");
+      } catch (err) {
+        console.error("Failed to delete milestone:", err);
+        toast.error("Failed to delete milestone. Please try again.");
+      }
+    }
+  };
+
+  const handleToggleMilestoneComplete = async (milestoneId, isCompleted) => {
+    try {
+      const milestone = milestones.find(m => m.Id === milestoneId);
+      const updatedMilestone = await projectService.updateMilestone(milestoneId, {
+        ...milestone,
+        isCompleted,
+        completedDate: isCompleted ? new Date().toISOString() : null
+      });
+      setMilestones(prev => 
+        prev.map(m => m.Id === milestoneId ? updatedMilestone : m)
+      );
+      toast.success(`Milestone ${isCompleted ? 'completed' : 'reopened'}!`);
+    } catch (err) {
+      console.error("Failed to update milestone:", err);
+      toast.error("Failed to update milestone. Please try again.");
+    }
+  };
+
   const openEditModal = () => {
-    setShowEditModal(true);
+setShowEditModal(true);
   };
 
   const openCreateTaskModal = () => {
@@ -135,13 +198,25 @@ const ProjectDetail = () => {
 
   const openEditTaskModal = (task) => {
     setEditingTask(task);
-    setShowTaskModal(true);
+setShowTaskModal(true);
+  };
+
+  const openCreateMilestoneModal = () => {
+    setEditingMilestone(null);
+    setShowMilestoneModal(true);
+  };
+
+  const openEditMilestoneModal = (milestone) => {
+    setEditingMilestone(milestone);
+    setShowMilestoneModal(true);
   };
 
   const closeModals = () => {
     setShowEditModal(false);
     setShowTaskModal(false);
+    setShowMilestoneModal(false);
     setEditingTask(null);
+    setEditingMilestone(null);
   };
 
   const getStatusColor = (status) => {
@@ -149,7 +224,7 @@ const ProjectDetail = () => {
       case 'Planning': return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'In Progress': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'Review': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'Completed': return 'bg-green-100 text-green-800 border-green-200';
+case 'Completed': return 'bg-green-100 text-green-800 border-green-200';
       case 'On Hold': return 'bg-gray-100 text-gray-800 border-gray-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -163,6 +238,15 @@ const ProjectDetail = () => {
   const getTaskStats = () => {
     const total = tasks.length;
     const completed = tasks.filter(task => task.completed).length;
+const pending = total - completed;
+    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    return { total, completed, pending, completionRate };
+  };
+
+  const getMilestoneStats = () => {
+    const total = milestones.length;
+    const completed = milestones.filter(milestone => milestone.isCompleted).length;
     const pending = total - completed;
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
     
@@ -170,7 +254,7 @@ const ProjectDetail = () => {
   };
 
   if (loading) {
-    return (
+return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button
@@ -228,8 +312,8 @@ const ProjectDetail = () => {
       </div>
     );
   }
-
-  const taskStats = getTaskStats();
+const taskStats = getTaskStats();
+  const milestoneStats = getMilestoneStats();
 
   return (
     <div className="space-y-6">
@@ -263,9 +347,17 @@ const ProjectDetail = () => {
             variant="primary"
             onClick={openCreateTaskModal}
             className="flex items-center gap-2"
-          >
+>
             <ApperIcon name="Plus" size={16} />
             New Task
+          </Button>
+          <Button 
+            variant="secondary" 
+            onClick={openCreateMilestoneModal}
+            className="flex items-center gap-2"
+          >
+            <ApperIcon name="Flag" size={16} />
+            New Milestone
           </Button>
         </div>
       </div>
@@ -310,8 +402,32 @@ const ProjectDetail = () => {
               </span>
             </div>
           </div>
-        </div>
+</div>
         
+        {/* Milestone Progress */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Milestone Progress</h3>
+              <span className="text-2xl font-bold text-blue-600">{milestoneStats.completionRate}%</span>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Completed: {milestoneStats.completed}</span>
+                <span>Pending: {milestoneStats.pending}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className="milestone-progress-bar h-3 rounded-full transition-all duration-300"
+                  style={{ width: `${milestoneStats.completionRate}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-500">
+                {milestoneStats.total} total milestones
+              </p>
+            </div>
+          </Card>
+        </div>
         {project.deliverables && (
           <div className="mt-6 pt-6 border-t border-gray-200">
             <label className="block text-sm font-medium text-gray-700 mb-2">Deliverables</label>
@@ -364,6 +480,36 @@ const ProjectDetail = () => {
           </div>
         </Card>
       )}
+{/* Milestones Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Milestones ({milestones.length})
+          </h2>
+        </div>
+
+        {milestones.length === 0 ? (
+          <Empty
+            icon="Flag"
+            title="No milestones yet"
+            description="Create milestones to track key project deliverables and deadlines."
+            actionLabel="Add Milestone"
+            onAction={openCreateMilestoneModal}
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {milestones.map((milestone) => (
+              <MilestoneCard
+                key={milestone.Id}
+                milestone={milestone}
+                onEdit={openEditMilestoneModal}
+                onDelete={handleDeleteMilestone}
+                onToggleComplete={handleToggleMilestoneComplete}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Tasks Section */}
       <div className="space-y-4">
@@ -464,7 +610,7 @@ const ProjectDetail = () => {
             ))}
           </div>
         )}
-      </div>
+</div>
 
       {/* Edit Project Modal */}
       <Modal
@@ -492,6 +638,20 @@ const ProjectDetail = () => {
           task={editingTask}
           projects={[project]} // Only show current project
           onSubmit={editingTask ? handleEditTask : handleCreateTask}
+          onCancel={closeModals}
+        />
+      </Modal>
+
+      {/* Create/Edit Milestone Modal */}
+      <Modal
+        isOpen={showMilestoneModal}
+        onClose={closeModals}
+        title={editingMilestone ? "Edit Milestone" : "Create New Milestone"}
+        className="max-w-lg"
+      >
+        <MilestoneForm
+          milestone={editingMilestone}
+          onSubmit={editingMilestone ? handleEditMilestone : handleCreateMilestone}
           onCancel={closeModals}
         />
       </Modal>

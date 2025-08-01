@@ -50,16 +50,39 @@ const ProjectCard = ({ project, client, onEdit, onDelete }) => {
               {project.description}
             </p>
           )}
-          <p className="text-sm text-blue-600 mb-2">{client?.name || "Unknown Client"}</p>
-          {project.deadline && (
+{project.deadline && (
             <div className="flex items-center gap-1 mb-2">
               <ApperIcon name="Calendar" size={14} className="text-gray-400" />
               <span className="text-xs text-gray-600">Due: {formatDate(project.deadline)}</span>
             </div>
           )}
-          <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-2">
+          
+          <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
             {project.description}
           </p>
+
+          {/* Milestone Progress */}
+          {project.milestones && project.milestones.length > 0 && (
+            <div className="mb-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-gray-500">Milestones</span>
+                <span className="text-xs font-medium text-gray-700">
+                  {project.milestones.filter(m => m.isCompleted).length}/{project.milestones.length}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                <div 
+                  className="milestone-progress-bar h-1.5 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: `${project.milestones.length > 0 ? 
+                      Math.round((project.milestones.filter(m => m.isCompleted).length / project.milestones.length) * 100) 
+                      : 0}%` 
+                  }}
+                ></div>
+              </div>
+            </div>
+          )}
+
           {project.deliverables && (
             <p className="text-xs text-gray-500 line-clamp-1">
               <span className="font-medium">Deliverables:</span> {project.deliverables}
