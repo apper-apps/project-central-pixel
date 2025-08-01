@@ -126,9 +126,14 @@ const loadDashboardData = async () => {
     }
   };
 
-  useEffect(() => {
+useEffect(() => {
     loadDashboardData();
   }, []);
+
+  // Trigger refresh of Today's Tasks when dashboard data changes
+  useEffect(() => {
+    setRefreshKey(prev => prev + 1);
+  }, [stats]);
 
   if (loading) {
     return (
@@ -153,10 +158,6 @@ const loadDashboardData = async () => {
       </div>
     );
   }
-// Trigger refresh of Today's Tasks when dashboard data changes
-  useEffect(() => {
-    setRefreshKey(prev => prev + 1);
-  }, [stats]);
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
