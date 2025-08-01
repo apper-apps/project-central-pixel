@@ -6,6 +6,7 @@ import Dashboard from "@/components/pages/Dashboard";
 import Clients from "@/components/pages/Clients";
 import ClientDetail from "@/components/pages/ClientDetail";
 import Projects from "@/components/pages/Projects";
+import ProjectDetail from "@/components/pages/ProjectDetail";
 import Tasks from "@/components/pages/Tasks";
 function App() {
   return (
@@ -15,7 +16,8 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/clients/:id" element={<ClientDetail />} />
-          <Route path="/projects" element={<Projects />} />
+<Route path="/projects" element={<Projects />} />
+          <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/tasks" element={<Tasks />} />
         </Routes>
       </Layout>

@@ -1,9 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import ApperIcon from "@/components/ApperIcon";
 import Card from "@/components/atoms/Card";
 import Button from "@/components/atoms/Button";
 
 const ProjectCard = ({ project, client, onEdit, onDelete }) => {
+  const navigate = useNavigate();
   const getStatusColor = (status) => {
     switch (status) {
       case 'Planning': return 'bg-blue-100 text-blue-800 border-blue-200';
@@ -24,8 +26,13 @@ const ProjectCard = ({ project, client, onEdit, onDelete }) => {
 <Card hover className="p-6">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-semibold text-gray-900">{project.name}</h3>
+<div className="flex items-center gap-2 mb-2">
+            <h3 
+              className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors"
+              onClick={() => navigate(`/projects/${project.Id}`)}
+            >
+              {project.name}
+            </h3>
             <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
               {project.status}
             </span>
@@ -57,8 +64,11 @@ const ProjectCard = ({ project, client, onEdit, onDelete }) => {
           </Button>
           <Button 
             variant="ghost" 
-            size="sm"
-            onClick={() => onDelete(project.Id)}
+size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(project.Id);
+            }}
             className="p-2 hover:text-red-600"
           >
             <ApperIcon name="Trash2" size={16} />

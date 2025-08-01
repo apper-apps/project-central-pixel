@@ -56,7 +56,7 @@ create: (taskData) => {
     });
   },
 
-  delete: (id) => {
+delete: (id) => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         const index = tasks.findIndex(t => t.Id === parseInt(id));
@@ -68,7 +68,15 @@ create: (taskData) => {
         }
       }, 200);
     });
+  },
+
+  getByProjectId: (projectId) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const projectTasks = tasks.filter(task => task.projectId === parseInt(projectId));
+        resolve([...projectTasks]);
+      }, 200);
+    });
   }
 };
-
 export default taskService;
