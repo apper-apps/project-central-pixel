@@ -167,10 +167,9 @@ const [searchTerm, setSearchTerm] = useState("");
             ? "Add some clients first, then create projects for them."
             : "Start organizing your work by creating your first project."
           }
-          actionLabel={clients.length === 0 ? null : "Add Project"}
+actionLabel={clients.length === 0 ? null : "Add Project"}
           onAction={clients.length === 0 ? null : openCreateModal}
         />
-/>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.filter(project => {
@@ -187,8 +186,9 @@ const [searchTerm, setSearchTerm] = useState("");
               onEdit={openEditModal}
               onDelete={handleDeleteProject}
             />
-          ))}
+))}
         </div>
+      )}
 
       <Modal
         isOpen={showModal}
