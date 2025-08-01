@@ -192,9 +192,8 @@ const handleCreateMilestone = async (milestoneData) => {
       toast.success(`Milestone ${isCompleted ? 'completed' : 'reopened'}!`);
     } catch (err) {
       console.error("Failed to update milestone:", err);
-      toast.error("Failed to update milestone. Please try again.");
+toast.error("Failed to update milestone. Please try again.");
     }
-}
   };
 
   const handleTimelineTaskUpdate = async (taskId, updates) => {
@@ -425,10 +424,12 @@ const taskStats = getTaskStats();
                 {taskStats.completed}/{taskStats.total} ({taskStats.completionRate}%)
               </span>
             </div>
-          </div>
 </div>
-        
-        {/* Milestone Progress */}
+        </div>
+      </Card>
+
+      {/* Milestone Progress */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -573,8 +574,9 @@ const taskStats = getTaskStats();
               className="flex items-center gap-2"
             >
               <ApperIcon name="Plus" size={16} />
-              Add Task
-          </Button>
+Add Task
+            </Button>
+          </div>
         </div>
 
         {/* Task Stats */}
