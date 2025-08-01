@@ -22,7 +22,6 @@ import Modal from "@/components/atoms/Modal";
 import Card from "@/components/atoms/Card";
 
 const ProjectDetail = () => {
-const ProjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
