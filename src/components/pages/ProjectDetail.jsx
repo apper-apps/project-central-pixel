@@ -1,26 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { addDays, differenceInDays, endOfDay, format, parseISO, startOfDay } from "date-fns";
+import taskService from "@/services/api/taskService";
+import clientService from "@/services/api/clientService";
+import projectService from "@/services/api/projectService";
+import { create, getAll, getById, update } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
-import Button from "@/components/atoms/Button";
-import Card from "@/components/atoms/Card";
-import Modal from "@/components/atoms/Modal";
-import ProjectForm from "@/components/molecules/ProjectForm";
-import TaskForm from "@/components/molecules/TaskForm";
-import TaskCard from "@/components/molecules/TaskCard";
 import MilestoneCard from "@/components/molecules/MilestoneCard";
+import TaskForm from "@/components/molecules/TaskForm";
+import ProjectForm from "@/components/molecules/ProjectForm";
+import TaskCard from "@/components/molecules/TaskCard";
 import MilestoneForm from "@/components/molecules/MilestoneForm";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import projectService from "@/services/api/projectService";
-import clientService from "@/services/api/clientService";
-import taskService from "@/services/api/taskService";
+import Tasks from "@/components/pages/Tasks";
+import Projects from "@/components/pages/Projects";
+import Button from "@/components/atoms/Button";
+import Modal from "@/components/atoms/Modal";
+import Card from "@/components/atoms/Card";
 const ProjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const [project, setProject] = useState(null);
+const [project, setProject] = useState(null);
   const [client, setClient] = useState(null);
   const [clients, setClients] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -29,10 +33,14 @@ const ProjectDetail = () => {
   const [error, setError] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
-const [editingTask, setEditingTask] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
   const [milestones, setMilestones] = useState([]);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState(null);
+  const [activeTab, setActiveTab] = useState('grid');
+  const [timelineView, setTimelineView] = useState('month');
+  const [timelineStart, setTimelineStart] = useState(new Date());
+  const timelineRef = useRef(null);
   const loadProjectData = async () => {
     try {
       setLoading(true);
@@ -43,9 +51,10 @@ const [projectData, tasksData, clientsData, projectsData, milestonesData] = awai
         taskService.getByProjectId(id),
         clientService.getAll(),
         projectService.getAll(),
-        projectService.getMilestonesByProjectId(id)
+projectService.getMilestonesByProjectId(id)
       ]);
       setProject(projectData);
+      setMilestones(milestonesData || []);
       setTasks(tasksData);
       setClients(clientsData);
       setProjects(projectsData);
@@ -185,8 +194,23 @@ const handleCreateMilestone = async (milestoneData) => {
       console.error("Failed to update milestone:", err);
       toast.error("Failed to update milestone. Please try again.");
     }
+}
   };
 
+  const handleTimelineTaskUpdate = async (taskId, updates) => {
+    try {
+      const updatedTask = await taskService.update(taskId, updates);
+      setTasks(prev => 
+        prev.map(task => 
+          task.Id === taskId ? updatedTask : task
+        )
+      );
+      toast.success("Task updated successfully!");
+    } catch (err) {
+      console.error("Failed to update task:", err);
+      toast.error("Failed to update task. Please try again.");
+    }
+  };
   const openEditModal = () => {
 setShowEditModal(true);
   };
@@ -512,19 +536,44 @@ const taskStats = getTaskStats();
       </div>
 
       {/* Tasks Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
+<div className="space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <h2 className="text-xl font-semibold text-gray-900">
             Tasks ({tasks.length})
           </h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={openCreateTaskModal}
-            className="flex items-center gap-2"
-          >
-            <ApperIcon name="Plus" size={16} />
-            Add Task
+          <div className="flex items-center gap-3">
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab('grid')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'grid'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <ApperIcon name="Grid3X3" size={16} className="mr-1.5" />
+                Grid
+              </button>
+              <button
+                onClick={() => setActiveTab('timeline')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'timeline'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <ApperIcon name="Calendar" size={16} className="mr-1.5" />
+                Timeline
+              </button>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={openCreateTaskModal}
+              className="flex items-center gap-2"
+            >
+              <ApperIcon name="Plus" size={16} />
+              Add Task
           </Button>
         </div>
 
@@ -571,7 +620,7 @@ const taskStats = getTaskStats();
           </Card>
         </div>
 
-        {tasks.length === 0 ? (
+{tasks.length === 0 ? (
           <Empty
             icon="CheckSquare"
             title="No tasks yet"
@@ -579,7 +628,7 @@ const taskStats = getTaskStats();
             actionLabel="Create Task"
             onAction={openCreateTaskModal}
           />
-        ) : (
+        ) : activeTab === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tasks.map((task) => (
               <TaskCard
@@ -609,8 +658,12 @@ const taskStats = getTaskStats();
               />
             ))}
           </div>
+) : (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-yellow-800">Timeline view is coming soon!</p>
+          </div>
         )}
-</div>
+      </div>
 
       {/* Edit Project Modal */}
       <Modal

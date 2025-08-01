@@ -34,7 +34,12 @@ create: (taskData) => {
           createdAt: new Date().toISOString(),
           completed: false,
           priority: taskData.priority || "Medium",
-          dueDate: taskData.dueDate || null
+          dueDate: taskData.dueDate || null,
+          startDate: taskData.startDate || new Date().toISOString(),
+          dependencies: taskData.dependencies || [],
+          progress: taskData.progress || 0,
+          estimatedHours: taskData.estimatedHours || 0,
+          actualHours: taskData.actualHours || 0
         };
         tasks.push(newTask);
         resolve({ ...newTask });
@@ -42,13 +47,42 @@ create: (taskData) => {
     });
   },
 
-  update: (id, taskData) => {
+update: (id, taskData) => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         const index = tasks.findIndex(t => t.Id === parseInt(id));
         if (index !== -1) {
-          tasks[index] = { ...tasks[index], ...taskData };
-          resolve({ ...tasks[index] });
+          const updatedTask = { 
+            ...tasks[index], 
+            ...taskData,
+            updatedAt: new Date().toISOString()
+          };
+          
+          // Validate dependencies to prevent circular references
+          if (taskData.dependencies) {
+            const validateDependencies = (taskId, deps, visited = new Set()) => {
+              if (visited.has(taskId)) return false;
+              visited.add(taskId);
+              
+              for (const depId of deps) {
+                const depTask = tasks.find(t => t.Id === depId);
+                if (depTask && depTask.dependencies) {
+                  if (!validateDependencies(depId, depTask.dependencies, visited)) {
+                    return false;
+                  }
+                }
+              }
+              return true;
+            };
+            
+            if (!validateDependencies(parseInt(id), taskData.dependencies)) {
+              reject(new Error("Circular dependency detected"));
+              return;
+            }
+          }
+          
+          tasks[index] = updatedTask;
+          resolve({ ...updatedTask });
         } else {
           reject(new Error("Task not found"));
         }
