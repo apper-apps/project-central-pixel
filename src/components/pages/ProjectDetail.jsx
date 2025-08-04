@@ -23,7 +23,8 @@ import Projects from "@/components/pages/Projects";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 import Card from "@/components/atoms/Card";
-
+import WikiDocumentForm from "@/components/molecules/WikiDocumentForm";
+import CalendarEventForm from "@/components/molecules/CalendarEventForm";
 const ProjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -46,6 +47,15 @@ const [tasks, setTasks] = useState([]);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState(null);
 const [activeTab, setActiveTab] = useState('structure');
+  const [wikiDocuments, setWikiDocuments] = useState([]);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [showWikiModal, setShowWikiModal] = useState(false);
+  const [editingWikiDoc, setEditingWikiDoc] = useState(null);
+  const [wikiContent, setWikiContent] = useState('');
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [teamMembers, setTeamMembers] = useState([]);
   const [timelineView, setTimelineView] = useState('gantt'); // gantt or calendar
   const [timelineStart, setTimelineStart] = useState(() => {
     // Set default start to beginning of current month
@@ -60,20 +70,26 @@ const loadProjectData = async () => {
       setLoading(true);
       setError("");
       
-const [projectData, tasksData, taskListsData, clientsData, projectsData, milestonesData] = await Promise.all([
+const [projectData, tasksData, taskListsData, clientsData, projectsData, milestonesData, wikiData, eventsData, teamData] = await Promise.all([
         projectService.getById(id),
         taskService.getByProjectId(id),
         taskListService.getByProjectId(id),
         clientService.getAll(),
         projectService.getAll(),
-projectService.getMilestonesByProjectId(id)
+        projectService.getMilestonesByProjectId(id),
+        projectService.getWikiDocuments(id),
+        projectService.getCalendarEvents(id),
+        getAll()
       ]);
-      setProject(projectData);
+setProject(projectData);
       setMilestones(milestonesData || []);
       setTasks(tasksData);
       setTaskLists(taskListsData || []);
       setClients(clientsData);
       setProjects(projectsData);
+      setWikiDocuments(wikiData || []);
+      setCalendarEvents(eventsData || []);
+      setTeamMembers(teamData || []);
       
       // Find the client for this project
       const projectClient = clientsData.find(c => c.Id === projectData.clientId);
@@ -362,10 +378,135 @@ const closeModals = () => {
     setShowTaskModal(false);
     setShowTaskListModal(false);
     setShowMilestoneModal(false);
+    setShowWikiModal(false);
+    setShowEventModal(false);
     setEditingTask(null);
     setEditingTaskList(null);
     setSelectedTaskList(null);
     setEditingMilestone(null);
+    setEditingWikiDoc(null);
+    setEditingEvent(null);
+    setSelectedDocument(null);
+  };
+
+  // Wiki document handlers
+  const handleCreateWikiDocument = async (docData) => {
+    try {
+      const newDoc = await projectService.createWikiDocument(id, {
+        ...docData,
+        content: wikiContent,
+        authorId: 1 // Current user ID
+      });
+      setWikiDocuments(prev => [...prev, newDoc]);
+      toast.success("Wiki document created successfully!");
+      closeModals();
+      setWikiContent('');
+    } catch (err) {
+      console.error("Failed to create wiki document:", err);
+      toast.error("Failed to create wiki document. Please try again.");
+    }
+  };
+
+  const handleEditWikiDocument = async (docData) => {
+    try {
+      const updatedDoc = await projectService.updateWikiDocument(editingWikiDoc.Id, {
+        ...docData,
+        content: wikiContent
+      });
+      setWikiDocuments(prev => 
+        prev.map(doc => doc.Id === editingWikiDoc.Id ? updatedDoc : doc)
+      );
+      if (selectedDocument && selectedDocument.Id === editingWikiDoc.Id) {
+        setSelectedDocument(updatedDoc);
+      }
+      toast.success("Wiki document updated successfully!");
+      closeModals();
+      setWikiContent('');
+    } catch (err) {
+      console.error("Failed to update wiki document:", err);
+      toast.error("Failed to update wiki document. Please try again.");
+    }
+  };
+
+  const handleDeleteWikiDocument = async (docId) => {
+    if (!window.confirm("Are you sure you want to delete this document?")) return;
+    
+    try {
+      await projectService.deleteWikiDocument(docId);
+      setWikiDocuments(prev => prev.filter(doc => doc.Id !== docId));
+      if (selectedDocument && selectedDocument.Id === docId) {
+        setSelectedDocument(null);
+      }
+      toast.success("Wiki document deleted successfully!");
+    } catch (err) {
+      console.error("Failed to delete wiki document:", err);
+      toast.error("Failed to delete wiki document. Please try again.");
+    }
+  };
+
+  // Calendar event handlers
+  const handleCreateCalendarEvent = async (eventData) => {
+    try {
+      const newEvent = await projectService.createCalendarEvent(id, {
+        ...eventData,
+        createdBy: 1 // Current user ID
+      });
+      setCalendarEvents(prev => [...prev, newEvent]);
+      toast.success("Calendar event created successfully!");
+      closeModals();
+    } catch (err) {
+      console.error("Failed to create calendar event:", err);
+      toast.error("Failed to create calendar event. Please try again.");
+    }
+  };
+
+  const handleEditCalendarEvent = async (eventData) => {
+    try {
+      const updatedEvent = await projectService.updateCalendarEvent(editingEvent.Id, eventData);
+      setCalendarEvents(prev => 
+        prev.map(event => event.Id === editingEvent.Id ? updatedEvent : event)
+      );
+      toast.success("Calendar event updated successfully!");
+      closeModals();
+    } catch (err) {
+      console.error("Failed to update calendar event:", err);
+      toast.error("Failed to update calendar event. Please try again.");
+    }
+  };
+
+  const handleDeleteCalendarEvent = async (eventId) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
+    
+    try {
+      await projectService.deleteCalendarEvent(eventId);
+      setCalendarEvents(prev => prev.filter(event => event.Id !== eventId));
+      toast.success("Calendar event deleted successfully!");
+    } catch (err) {
+      console.error("Failed to delete calendar event:", err);
+      toast.error("Failed to delete calendar event. Please try again.");
+    }
+  };
+
+  const openCreateWikiModal = () => {
+    setEditingWikiDoc(null);
+    setWikiContent('');
+    setShowWikiModal(true);
+  };
+
+  const openEditWikiModal = (doc) => {
+    setEditingWikiDoc(doc);
+    setWikiContent(doc.content || '');
+    setShowWikiModal(true);
+  };
+
+  const openCreateEventModal = () => {
+    setEditingEvent(null);
+    setShowEventModal(true);
+  };
+
+  const openEditEventModal = (event) => {
+    setEditingEvent(event);
+    setShowEventModal(true);
   };
 
   const getStatusColor = (status) => {
@@ -828,7 +969,7 @@ const getDateTasks = (date) => {
           </h2>
           <div className="flex items-center gap-3">
             <div className="flex bg-gray-100 rounded-lg p-1">
-              <button
+<button
                 onClick={() => setActiveTab('structure')}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
                   activeTab === 'structure'
@@ -851,15 +992,26 @@ const getDateTasks = (date) => {
                 Timeline
               </button>
               <button
-                onClick={() => setActiveTab('gantt')}
+                onClick={() => setActiveTab('wiki')}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
-                  activeTab === 'gantt'
+                  activeTab === 'wiki'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <ApperIcon name="BarChart" size={16} />
-                Gantt Chart
+                <ApperIcon name="BookOpen" size={16} />
+                Wiki
+              </button>
+              <button
+                onClick={() => setActiveTab('calendar')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'calendar'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <ApperIcon name="CalendarDays" size={16} />
+                Calendar
               </button>
             </div>
             
@@ -1024,6 +1176,206 @@ const getDateTasks = (date) => {
                 )}
               </div>
             )}
+          </Card>
+)}
+
+        {/* Wiki Tab */}
+        {activeTab === 'wiki' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Wiki Documents List */}
+            <div className="lg:col-span-1">
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Wiki Documents</h3>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={openCreateWikiModal}
+                  >
+                    <ApperIcon name="Plus" size={14} />
+                    New Doc
+                  </Button>
+                </div>
+                
+                <div className="space-y-2">
+                  {wikiDocuments.length === 0 ? (
+                    <Empty
+                      icon="BookOpen"
+                      title="No documents yet"
+                      description="Create your first wiki document to get started"
+                      actionLabel="Create Document"
+                      onAction={openCreateWikiModal}
+                    />
+                  ) : (
+                    wikiDocuments.map((doc) => (
+                      <div
+                        key={doc.Id}
+                        className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                          selectedDocument?.Id === doc.Id
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setSelectedDocument(doc)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 text-sm">{doc.title}</h4>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {doc.type} • {format(parseISO(doc.updatedAt), 'MMM d, yyyy')}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 ml-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditWikiModal(doc);
+                              }}
+                            >
+                              <ApperIcon name="Edit" size={14} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteWikiDocument(doc.Id);
+                              }}
+                            >
+                              <ApperIcon name="Trash2" size={14} />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            {/* Wiki Document Content */}
+            <div className="lg:col-span-2">
+              <Card className="p-6">
+                {selectedDocument ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h3 className="text-xl font-semibold text-gray-900">{selectedDocument.title}</h3>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Last updated {format(parseISO(selectedDocument.updatedAt), 'MMM d, yyyy h:mm a')} by{' '}
+                          {teamMembers.find(m => m.Id === selectedDocument.authorId)?.name || 'Unknown'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditWikiModal(selectedDocument)}
+                        >
+                          <ApperIcon name="Edit" size={14} />
+                          Edit
+                        </Button>
+                        {selectedDocument.versions && selectedDocument.versions.length > 1 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                          >
+                            <ApperIcon name="History" size={14} />
+                            History ({selectedDocument.versions.length})
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="prose max-w-none">
+                      <div dangerouslySetInnerHTML={{ __html: selectedDocument.content }} />
+                    </div>
+                  </div>
+                ) : (
+                  <Empty
+                    icon="BookOpen"
+                    title="Select a document"
+                    description="Choose a document from the list to view its content"
+                  />
+                )}
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Calendar Tab */}
+        {activeTab === 'calendar' && (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Project Calendar</h3>
+              <Button
+                variant="primary"
+                onClick={openCreateEventModal}
+              >
+                <ApperIcon name="Plus" size={16} />
+                New Event
+              </Button>
+            </div>
+
+            {/* Enhanced Calendar Widget */}
+            {renderCalendarWidget()}
+
+            {/* Upcoming Events */}
+            <div className="mt-8">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Events</h4>
+              <div className="space-y-3">
+                {calendarEvents
+                  .filter(event => isFuture(parseISO(event.startDate)))
+                  .sort((a, b) => parseISO(a.startDate) - parseISO(b.startDate))
+                  .slice(0, 5)
+                  .map((event) => (
+                    <div key={event.Id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          event.type === 'meeting' ? 'bg-blue-500' :
+                          event.type === 'deadline' ? 'bg-red-500' :
+                          event.type === 'milestone' ? 'bg-purple-500' :
+                          'bg-green-500'
+                        }`} />
+                        <div>
+                          <h5 className="font-medium text-gray-900">{event.title}</h5>
+                          <p className="text-sm text-gray-500">
+                            {format(parseISO(event.startDate), 'MMM d, yyyy h:mm a')}
+                            {event.endDate && ` - ${format(parseISO(event.endDate), 'h:mm a')}`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditEventModal(event)}
+                        >
+                          <ApperIcon name="Edit" size={14} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteCalendarEvent(event.Id)}
+                        >
+                          <ApperIcon name="Trash2" size={14} />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                
+                {calendarEvents.filter(event => isFuture(parseISO(event.startDate))).length === 0 && (
+                  <Empty
+                    icon="CalendarDays"
+                    title="No upcoming events"
+                    description="Create events to keep track of meetings and deadlines"
+                    actionLabel="Create Event"
+                    onAction={openCreateEventModal}
+                  />
+                )}
+              </div>
+            </div>
           </Card>
         )}
 
@@ -1695,6 +2047,37 @@ className="h-3 rounded-full transition-all duration-300"
         <MilestoneForm
           milestone={editingMilestone}
           onSubmit={editingMilestone ? handleEditMilestone : handleCreateMilestone}
+          onCancel={closeModals}
+        />
+</Modal>
+
+      {/* Wiki Document Modal */}
+      <Modal
+        isOpen={showWikiModal}
+        onClose={closeModals}
+        title={editingWikiDoc ? "Edit Wiki Document" : "Create New Wiki Document"}
+        className="max-w-4xl"
+      >
+        <WikiDocumentForm
+          document={editingWikiDoc}
+          content={wikiContent}
+          onContentChange={setWikiContent}
+          onSubmit={editingWikiDoc ? handleEditWikiDocument : handleCreateWikiDocument}
+          onCancel={closeModals}
+        />
+      </Modal>
+
+      {/* Calendar Event Modal */}
+      <Modal
+        isOpen={showEventModal}
+        onClose={closeModals}
+        title={editingEvent ? "Edit Calendar Event" : "Create New Calendar Event"}
+        className="max-w-lg"
+      >
+        <CalendarEventForm
+          event={editingEvent}
+          teamMembers={teamMembers}
+          onSubmit={editingEvent ? handleEditCalendarEvent : handleCreateCalendarEvent}
           onCancel={closeModals}
         />
       </Modal>
