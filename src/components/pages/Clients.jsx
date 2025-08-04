@@ -223,23 +223,28 @@ const closeModal = () => {
             onChange={e => setSearchTerm(e.target.value)}
             icon={<ApperIcon name="Search" size={16} className="text-gray-400" />}
             className="max-w-md" />
-<div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 rounded-lg">
+<div className="flex flex-col gap-4 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-2">
                 <ApperIcon name="Filter" size={16} className="text-gray-500" />
                 <span className="text-sm font-medium text-gray-700">Filter by status:</span>
             </div>
-            <div className="flex items-center justify-between flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex flex-wrap items-center gap-2">
 {["All", "Active", "Inactive", "Prospect"].map(status => (
                     <button
                       key={status}
                       onClick={() => setStatusFilter(status)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 whitespace-nowrap ${
+                      aria-label={`Filter clients by ${status} status`}
+                      aria-pressed={statusFilter === status}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                         statusFilter === status 
-                          ? "text-white border" 
-                          : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                          ? "text-white border focus:ring-blue-500" 
+                          : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 focus:ring-gray-300"
                       }`}
-                      style={statusFilter === status ? {backgroundColor: '#4A90E2', borderColor: '#4A90E2'} : {}}
+                      style={statusFilter === status ? {
+                        backgroundColor: 'var(--color-primary)', 
+                        borderColor: 'var(--color-primary)'
+                      } : {}}
                     >
                       {status}
                       {status !== "All" && (
@@ -250,26 +255,36 @@ const closeModal = () => {
                     </button>
                   ))}
               </div>
-              <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+              <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1 self-start sm:self-auto">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded-md transition-colors ${
+                  aria-label="Grid view"
+                  aria-pressed={viewMode === "grid"}
+                  className={`p-2 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                     viewMode === "grid" 
-                      ? "text-white shadow-sm"
-                      : "hover:text-gray-900"
+                      ? "text-white shadow-sm focus:ring-blue-500"
+                      : "text-gray-500 hover:text-gray-900 hover:bg-gray-200 focus:ring-gray-300"
                   }`}
-                  style={viewMode === "grid" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+                  style={viewMode === "grid" ? {
+                    backgroundColor: 'var(--color-primary)', 
+                    color: 'white'
+                  } : {}}
                 >
                   <ApperIcon name="Grid3X3" size={16} />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2 rounded-md transition-colors ${
+                  aria-label="List view"
+                  aria-pressed={viewMode === "list"}
+                  className={`p-2 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                     viewMode === "list" 
-                      ? "text-white shadow-sm"
-                      : "hover:text-gray-900"
+                      ? "text-white shadow-sm focus:ring-blue-500"
+                      : "text-gray-500 hover:text-gray-900 hover:bg-gray-200 focus:ring-gray-300"
                   }`}
-                  style={viewMode === "list" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+                  style={viewMode === "list" ? {
+                    backgroundColor: 'var(--color-primary)', 
+                    color: 'white'
+                  } : {}}
                 >
                   <ApperIcon name="List" size={16} />
                 </button>
