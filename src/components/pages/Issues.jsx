@@ -12,7 +12,7 @@ import IssueForm from '@/components/molecules/IssueForm';
 import KanbanBoard from '@/components/molecules/KanbanBoard';
 import Pagination from '@/components/atoms/Pagination';
 import issueService, { issueTypes, priorityLevels, statusWorkflow, environments } from '@/services/api/issueService';
-import { projectService } from '@/services/api/projectService';
+import projectService from '@/services/api/projectService';
 import { toast } from 'react-toastify';
 
 const Issues = () => {
