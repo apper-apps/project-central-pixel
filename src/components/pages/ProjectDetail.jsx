@@ -4,14 +4,14 @@ import { toast } from "react-toastify";
 import { addDays, addMonths, differenceInDays, endOfDay, endOfMonth, endOfWeek, format, getDay, isFuture, isPast, isSameDay, isSameMonth, isToday, parseISO, startOfDay, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import taskService from "@/services/api/taskService";
 import clientService from "@/services/api/clientService";
-import projectService from "@/services/api/projectService";
 import taskListService from "@/services/api/taskListService";
+import projectService from "@/services/api/projectService";
 import { create, getAll, getById, update } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
-import MilestoneCard from "@/components/molecules/MilestoneCard";
-import TaskForm from "@/components/molecules/TaskForm";
-import TaskListForm from "@/components/molecules/TaskListForm";
 import TaskListCard from "@/components/molecules/TaskListCard";
+import MilestoneCard from "@/components/molecules/MilestoneCard";
+import TaskListForm from "@/components/molecules/TaskListForm";
+import TaskForm from "@/components/molecules/TaskForm";
 import ProjectForm from "@/components/molecules/ProjectForm";
 import TaskCard from "@/components/molecules/TaskCard";
 import MilestoneForm from "@/components/molecules/MilestoneForm";
@@ -45,8 +45,8 @@ const [tasks, setTasks] = useState([]);
   const [milestones, setMilestones] = useState([]);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState(null);
-  const [activeTab, setActiveTab] = useState('grid');
-  const [timelineView, setTimelineView] = useState('month');
+const [activeTab, setActiveTab] = useState('structure');
+  const [timelineView, setTimelineView] = useState('gantt'); // gantt or calendar
   const [timelineStart, setTimelineStart] = useState(new Date());
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(null);
@@ -1097,43 +1097,406 @@ const getDateTasks = (date) => {
       </div>
 
       {/* Tasks Section */}
-{/* Timeline View */}
-      <div className="space-y-4">
+{/* Project Views */}
+      <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <h2 className="text-xl font-semibold text-gray-900">
-            Timeline View
+            Project Views
           </h2>
           <div className="flex items-center gap-3">
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setActiveTab('structure')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
                   activeTab === 'structure'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <ApperIcon name="Layers" size={16} className="mr-1.5" />
+                <ApperIcon name="Layers" size={16} />
                 Structure
               </button>
               <button
                 onClick={() => setActiveTab('timeline')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
                   activeTab === 'timeline'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <ApperIcon name="Calendar" size={16} className="mr-1.5" />
+                <ApperIcon name="Calendar" size={16} />
                 Timeline
               </button>
+              <button
+                onClick={() => setActiveTab('gantt')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'gantt'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <ApperIcon name="BarChart" size={16} />
+                Gantt Chart
+              </button>
             </div>
+            
+            {activeTab === 'timeline' && (
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setTimelineView('calendar')}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+                    timelineView === 'calendar'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <ApperIcon name="Calendar" size={14} />
+                  Calendar
+                </button>
+                <button
+                  onClick={() => setTimelineView('gantt')}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+                    timelineView === 'gantt'
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <ApperIcon name="BarChart" size={14} />
+                  Timeline
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {activeTab === 'timeline' ? (
-          renderCalendarWidget()
-        ) : null}
+        {activeTab === 'timeline' && (
+          <Card className="p-6">
+            {timelineView === 'calendar' ? (
+              renderCalendarWidget()
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Timeline View
+                  </h3>
+                  <div className="text-sm text-gray-600">
+                    {tasks.length} tasks • {milestones.length} milestones
+                  </div>
+                </div>
+                
+                {tasks.length === 0 ? (
+                  <Empty
+                    icon="BarChart"
+                    title="No tasks to display"
+                    description="Create tasks to see them in the timeline view"
+                    actionLabel="Add First Task"
+                    onAction={() => openCreateTaskModal()}
+                  />
+                ) : (
+                  <div className="timeline-container overflow-x-auto">
+                    <div className="min-w-[800px]">
+                      {/* Timeline Header */}
+                      <div className="flex items-center mb-4 pb-2 border-b border-gray-200">
+                        <div className="w-64 text-sm font-medium text-gray-700">Task</div>
+                        <div className="flex-1 text-sm font-medium text-gray-700 text-center">Timeline</div>
+                        <div className="w-20 text-sm font-medium text-gray-700 text-center">Duration</div>
+                      </div>
+                      
+                      {/* Timeline Tasks */}
+                      <div className="space-y-2">
+                        {tasks.map((task) => {
+                          const startDate = new Date(task.startDate || task.createdAt);
+                          const endDate = new Date(task.dueDate);
+                          const duration = Math.max(1, differenceInDays(endDate, startDate) + 1);
+                          
+                          return (
+                            <div key={task.Id} className="flex items-center group">
+                              <div className="w-64 pr-4">
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-3 h-3 rounded-full ${
+                                    task.completed 
+                                      ? 'bg-green-500' 
+                                      : task.priority === 'High' 
+                                        ? 'bg-red-500' 
+                                        : task.priority === 'Medium' 
+                                          ? 'bg-yellow-500' 
+                                          : 'bg-blue-500'
+                                  }`} />
+                                  <span className="text-sm font-medium text-gray-900 truncate">
+                                    {task.name}
+                                  </span>
+                                </div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  {task.priority} Priority
+                                </div>
+                              </div>
+                              
+                              <div className="flex-1 relative h-8 bg-gray-50 rounded">
+                                <div 
+                                  className={`absolute top-1 bottom-1 rounded transition-all duration-200 group-hover:shadow-md ${
+                                    task.completed 
+                                      ? 'bg-green-500' 
+                                      : task.priority === 'High' 
+                                        ? 'bg-red-500' 
+                                        : task.priority === 'Medium' 
+                                          ? 'bg-yellow-500' 
+                                          : 'bg-blue-500'
+                                  }`}
+                                  style={{
+                                    left: '2%',
+                                    width: `${Math.min(96, (duration / 30) * 100)}%`
+                                  }}
+                                >
+                                  <div className="px-2 py-1 text-xs text-white font-medium truncate">
+                                    {task.name}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="w-20 text-center text-sm text-gray-600">
+                                {duration}d
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      {/* Milestones */}
+                      {milestones.length > 0 && (
+                        <div className="mt-6 pt-4 border-t border-gray-200">
+                          <h4 className="text-md font-semibold text-gray-900 mb-3">Milestones</h4>
+                          <div className="space-y-2">
+                            {milestones.map((milestone) => (
+                              <div key={milestone.Id} className="flex items-center">
+                                <div className="w-64 pr-4">
+                                  <div className="flex items-center gap-2">
+                                    <ApperIcon name="Flag" size={14} className="text-purple-600" />
+                                    <span className="text-sm font-medium text-gray-900">
+                                      {milestone.title}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="flex-1 relative h-6 flex items-center">
+                                  <div className="w-3 h-3 bg-purple-600 rotate-45 border-2 border-white shadow-md" />
+                                  <div className="ml-2 text-xs text-gray-600">
+                                    {new Date(milestone.dueDate).toLocaleDateString()}
+                                  </div>
+                                </div>
+                                <div className="w-20 text-center">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    milestone.isCompleted 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-purple-100 text-purple-800'
+                                  }`}>
+                                    {milestone.isCompleted ? 'Done' : 'Pending'}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {activeTab === 'gantt' && (
+          <Card className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Gantt Chart
+                </h3>
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded" />
+                    <span>High Priority</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-yellow-500 rounded" />
+                    <span>Medium Priority</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded" />
+                    <span>Low Priority</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded" />
+                    <span>Completed</span>
+                  </div>
+                </div>
+              </div>
+              
+              {tasks.length === 0 ? (
+                <Empty
+                  icon="BarChart"
+                  title="No tasks to display"
+                  description="Create tasks to see them in the Gantt chart"
+                  actionLabel="Add First Task"
+                  onAction={() => openCreateTaskModal()}
+                />
+              ) : (
+                <div className="timeline-container overflow-x-auto">
+                  <div className="min-w-[1200px]">
+                    {/* Gantt Header with Dates */}
+                    <div className="flex mb-4 pb-2 border-b border-gray-200">
+                      <div className="w-80 text-sm font-medium text-gray-700">Task Details</div>
+                      <div className="flex-1">
+                        <div className="grid grid-cols-30 gap-px text-xs text-gray-600 text-center">
+                          {Array.from({ length: 30 }, (_, i) => {
+                            const date = addDays(new Date(), i);
+                            return (
+                              <div key={i} className="py-1">
+                                <div className="font-medium">{format(date, 'dd')}</div>
+                                <div className="text-gray-500">{format(date, 'MMM')}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Gantt Tasks */}
+                    <div className="space-y-1">
+                      {tasks.map((task) => {
+                        const startDate = new Date(task.startDate || task.createdAt);
+                        const endDate = new Date(task.dueDate);
+                        const today = new Date();
+                        const duration = Math.max(1, differenceInDays(endDate, startDate) + 1);
+                        const startOffset = Math.max(0, differenceInDays(startDate, today));
+                        const isOverdue = !task.completed && isPast(endDate);
+                        
+                        return (
+                          <div key={task.Id} className="flex items-center group hover:bg-gray-50 rounded p-2">
+                            <div className="w-80 pr-4">
+                              <div className="flex items-center gap-3">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleTimelineTaskUpdate(task.Id, { completed: !task.completed })}
+                                  className="p-1"
+                                >
+                                  <ApperIcon 
+                                    name={task.completed ? "CheckSquare" : "Square"} 
+                                    size={16} 
+                                    className={task.completed ? "text-green-600" : "text-gray-400"}
+                                  />
+                                </Button>
+                                <div className="flex-1">
+                                  <div className="font-medium text-sm text-gray-900">{task.name}</div>
+                                  <div className="text-xs text-gray-500 flex items-center gap-2">
+                                    <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                                      task.priority === 'High' 
+                                        ? 'bg-red-100 text-red-700'
+                                        : task.priority === 'Medium' 
+                                          ? 'bg-yellow-100 text-yellow-700'
+                                          : 'bg-blue-100 text-blue-700'
+                                    }`}>
+                                      {task.priority}
+                                    </span>
+                                    <span>{format(startDate, 'MMM dd')} - {format(endDate, 'MMM dd')}</span>
+                                    {isOverdue && (
+                                      <span className="text-red-600 font-medium">Overdue</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex-1 relative h-10">
+                              <div className="grid grid-cols-30 gap-px h-full">
+                                {Array.from({ length: 30 }, (_, i) => (
+                                  <div key={i} className="border-r border-gray-100 last:border-r-0" />
+                                ))}
+                              </div>
+                              
+                              <div 
+                                className={`absolute top-1 bottom-1 rounded-md shadow-sm transition-all duration-200 group-hover:shadow-md timeline-task-bar ${
+                                  task.completed 
+                                    ? 'bg-gradient-to-r from-green-500 to-green-600' 
+                                    : isOverdue
+                                      ? 'bg-gradient-to-r from-red-500 to-red-600'
+                                      : task.priority === 'High' 
+                                        ? 'bg-gradient-to-r from-red-400 to-red-500' 
+                                        : task.priority === 'Medium' 
+                                          ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' 
+                                          : 'bg-gradient-to-r from-blue-400 to-blue-500'
+                                }`}
+                                style={{
+                                  left: `${(startOffset / 30) * 100}%`,
+                                  width: `${Math.min(100 - (startOffset / 30) * 100, (duration / 30) * 100)}%`
+                                }}
+                              >
+                                <div className="px-2 py-1 text-xs text-white font-medium truncate h-full flex items-center">
+                                  {task.name}
+                                </div>
+                                {task.completed && (
+                                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                    <ApperIcon name="Check" size={12} className="text-white" />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Milestones in Gantt */}
+                    {milestones.length > 0 && (
+                      <div className="mt-6 pt-4 border-t border-gray-200">
+                        <div className="space-y-1">
+                          {milestones.map((milestone) => {
+                            const milestoneDate = new Date(milestone.dueDate);
+                            const today = new Date();
+                            const offset = differenceInDays(milestoneDate, today);
+                            
+                            return (
+                              <div key={milestone.Id} className="flex items-center group hover:bg-gray-50 rounded p-2">
+                                <div className="w-80 pr-4">
+                                  <div className="flex items-center gap-3">
+                                    <ApperIcon name="Flag" size={16} className="text-purple-600" />
+                                    <div>
+                                      <div className="font-medium text-sm text-gray-900">{milestone.title}</div>
+                                      <div className="text-xs text-gray-500">
+                                        Due: {format(milestoneDate, 'MMM dd, yyyy')}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex-1 relative h-10">
+                                  <div className="grid grid-cols-30 gap-px h-full">
+                                    {Array.from({ length: 30 }, (_, i) => (
+                                      <div key={i} className="border-r border-gray-100 last:border-r-0" />
+                                    ))}
+                                  </div>
+                                  
+                                  {offset >= 0 && offset <= 30 && (
+                                    <div 
+                                      className="absolute top-0 bottom-0 w-1 bg-purple-600 timeline-milestone"
+                                      style={{ left: `${(offset / 30) * 100}%` }}
+                                    >
+                                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-purple-600 rotate-45" />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* Edit Project Modal */}
