@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { addDays, addMonths, differenceInDays, endOfDay, endOfMonth, endOfWeek, format, formatDistanceToNow, getDay, isFuture, isPast, isSameDay, isSameMonth, isToday, parseISO, startOfDay, startOfMonth, startOfWeek, subMonths } from "date-fns";
-import activityService from "@/services/api/activityService";
 import taskService from "@/services/api/taskService";
 import clientService from "@/services/api/clientService";
 import taskListService from "@/services/api/taskListService";
 import projectService from "@/services/api/projectService";
 import { create, getAll, getById, update } from "@/services/api/teamMemberService";
+import activityService from "@/services/api/activityService";
 import ApperIcon from "@/components/ApperIcon";
 import TaskListCard from "@/components/molecules/TaskListCard";
 import MilestoneCard from "@/components/molecules/MilestoneCard";
@@ -1082,15 +1082,15 @@ const getDateTasks = (date) => {
                 <ApperIcon name="CalendarDays" size={16} />
                 Calendar
 </button>
-              <button
+<button
                 onClick={() => setActiveTab('activity')}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
                   activeTab === 'activity'
-                    ? 'bg-blue-100 text-blue-700'
+                    ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <ApperIcon name="Activity" size={16} className="mr-2" />
+                <ApperIcon name="Activity" size={16} />
                 Activity
               </button>
             </div>
@@ -1124,10 +1124,53 @@ const getDateTasks = (date) => {
           </div>
         </div>
 
-        {activeTab === 'timeline' && (
+{activeTab === 'timeline' && (
           <Card className="p-6">
             {timelineView === 'calendar' ? (
-              renderCalendarWidget()
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">Project Timeline Calendar</h3>
+                  <div className="text-sm text-gray-600">
+                    {tasks.length} tasks • {milestones.length} milestones
+                  </div>
+                </div>
+                
+                {/* Simplified Calendar View for Timeline */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Mini Calendar */}
+                  <div className="lg:col-span-2">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-600 mb-2">Quick Timeline View</div>
+                      <div className="space-y-2">
+                        {tasks.slice(0, 5).map(task => (
+                          <div key={task.Id} className="flex items-center justify-between p-2 bg-white rounded border">
+                            <span className="text-sm font-medium">{task.name}</span>
+                            <span className="text-xs text-gray-500">
+                              {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Timeline Stats */}
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <div className="text-sm font-medium text-blue-900">Upcoming Tasks</div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {tasks.filter(t => !t.completed && t.dueDate && new Date(t.dueDate) > new Date()).length}
+                      </div>
+                    </div>
+                    <div className="bg-green-50 rounded-lg p-4">
+                      <div className="text-sm font-medium text-green-900">Completed</div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {tasks.filter(t => t.completed).length}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -1393,81 +1436,170 @@ const getDateTasks = (date) => {
           />
         )}
 
-        {/* Calendar Tab */}
+{/* Calendar Tab */}
         {activeTab === 'calendar' && (
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Project Calendar</h3>
-              <Button
-                variant="primary"
-                onClick={openCreateEventModal}
-              >
-                <ApperIcon name="Plus" size={16} />
-                New Event
-              </Button>
-            </div>
-
-            {/* Enhanced Calendar Widget */}
-            {renderCalendarWidget()}
-
-            {/* Upcoming Events */}
-            <div className="mt-8">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Events</h4>
-              <div className="space-y-3">
-                {calendarEvents
-                  .filter(event => isFuture(parseISO(event.startDate)))
-                  .sort((a, b) => parseISO(a.startDate) - parseISO(b.startDate))
-                  .slice(0, 5)
-                  .map((event) => (
-                    <div key={event.Id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${
-                          event.type === 'meeting' ? 'bg-blue-500' :
-                          event.type === 'deadline' ? 'bg-red-500' :
-                          event.type === 'milestone' ? 'bg-purple-500' :
-                          'bg-green-500'
-                        }`} />
-                        <div>
-                          <h5 className="font-medium text-gray-900">{event.title}</h5>
-                          <p className="text-sm text-gray-500">
-                            {format(parseISO(event.startDate), 'MMM d, yyyy h:mm a')}
-                            {event.endDate && ` - ${format(parseISO(event.endDate), 'h:mm a')}`}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditEventModal(event)}
-                        >
-                          <ApperIcon name="Edit" size={14} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteCalendarEvent(event.Id)}
-                        >
-                          <ApperIcon name="Trash2" size={14} />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                
-                {calendarEvents.filter(event => isFuture(parseISO(event.startDate))).length === 0 && (
-                  <Empty
-                    icon="CalendarDays"
-                    title="No upcoming events"
-                    description="Create events to keep track of meetings and deadlines"
-                    actionLabel="Create Event"
-                    onAction={openCreateEventModal}
-                  />
-                )}
+          <div className="space-y-6">
+            {/* Calendar Header */}
+            <Card className="p-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Project Calendar</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Manage events, deadlines, and milestones for {project?.name}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCalendarDate(new Date())}
+                  >
+                    <ApperIcon name="Calendar" size={16} />
+                    Today
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={openCreateEventModal}
+                  >
+                    <ApperIcon name="Plus" size={16} />
+                    New Event
+                  </Button>
+                </div>
               </div>
-            </div>
-</Card>
-        )}
+            </Card>
 
+            {/* Main Calendar */}
+            <Card className="p-6">
+              {renderCalendarWidget()}
+            </Card>
+{/* Calendar Overview Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Upcoming Events */}
+              <div className="lg:col-span-2">
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-semibold text-gray-900">Upcoming Events</h4>
+                    <span className="text-sm text-gray-500">
+                      {calendarEvents.filter(event => isFuture(parseISO(event.startDate))).length} events
+                    </span>
+                  </div>
+<div className="space-y-3 max-h-80 overflow-y-auto">
+                    {calendarEvents
+                      .filter(event => isFuture(parseISO(event.startDate)))
+                      .sort((a, b) => parseISO(a.startDate) - parseISO(b.startDate))
+                      .slice(0, 8)
+                      .map((event) => (
+                        <div key={event.Id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                              event.type === 'meeting' ? 'bg-blue-500' :
+                              event.type === 'deadline' ? 'bg-red-500' :
+                              event.type === 'milestone' ? 'bg-purple-500' :
+                              'bg-green-500'
+                            }`} />
+                            <div className="min-w-0 flex-1">
+                              <h5 className="font-medium text-gray-900 text-sm truncate">{event.title}</h5>
+                              <p className="text-xs text-gray-500">
+                                {format(parseISO(event.startDate), 'MMM d, h:mm a')}
+                                {event.location && ` • ${event.location}`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 ml-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openEditEventModal(event)}
+                              className="p-1.5"
+                            >
+                              <ApperIcon name="Edit" size={12} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteCalendarEvent(event.Id)}
+                              className="p-1.5 text-red-600 hover:text-red-700"
+                            >
+                              <ApperIcon name="Trash2" size={12} />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    
+                    {calendarEvents.filter(event => isFuture(parseISO(event.startDate))).length === 0 && (
+                      <div className="text-center py-8">
+                        <ApperIcon name="CalendarDays" size={32} className="text-gray-400 mx-auto mb-3" />
+                        <p className="text-sm text-gray-600 mb-3">No upcoming events</p>
+                        <Button variant="outline" size="sm" onClick={openCreateEventModal}>
+                          <ApperIcon name="Plus" size={14} />
+                          Create First Event
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </div>
+
+              {/* Calendar Stats Sidebar */}
+              <div className="space-y-4">
+                <Card className="p-4">
+                  <h5 className="font-medium text-gray-900 mb-3">This Month</h5>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Total Events</span>
+                      <span className="font-medium">{calendarEvents.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Meetings</span>
+                      <span className="font-medium">{calendarEvents.filter(e => e.type === 'meeting').length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Deadlines</span>
+                      <span className="font-medium">{calendarEvents.filter(e => e.type === 'deadline').length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Milestones</span>
+                      <span className="font-medium">{milestones.length}</span>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-4">
+                  <h5 className="font-medium text-gray-900 mb-3">Quick Actions</h5>
+                  <div className="space-y-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={openCreateEventModal}
+                      className="w-full justify-start"
+                    >
+                      <ApperIcon name="Plus" size={14} />
+                      New Event
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={openCreateMilestoneModal}
+                      className="w-full justify-start"
+                    >
+                      <ApperIcon name="Flag" size={14} />
+                      Add Milestone
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setCalendarDate(new Date())}
+                      className="w-full justify-start"
+                    >
+                      <ApperIcon name="Calendar" size={14} />
+                      Go to Today
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+</div>
+          </div>
+        )}
         {/* Activity Tab */}
         {activeTab === 'activity' && renderActivitySection()}
 
