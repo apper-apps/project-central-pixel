@@ -272,7 +272,65 @@ throw error;
       throw error;
     }
   }
-}
+// Custom report management
+  async createReport(reportData) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const newReport = {
+          Id: Date.now(), // Simple ID generation for demo
+          ...reportData,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        // Store in localStorage for persistence
+        const existingReports = this.getCustomReports();
+        const updatedReports = [...existingReports, newReport];
+        localStorage.setItem('customReports', JSON.stringify(updatedReports));
+        
+        resolve(newReport);
+      }, 500);
+    });
+  }
 
+  getCustomReports() {
+    try {
+      const stored = localStorage.getItem('customReports');
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error('Error loading custom reports:', error);
+      return [];
+    }
+  }
+
+  async updateReport(id, reportData) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const reports = this.getCustomReports();
+        const index = reports.findIndex(r => r.Id === id);
+        if (index !== -1) {
+          reports[index] = {
+            ...reports[index],
+            ...reportData,
+            updatedAt: new Date().toISOString()
+          };
+          localStorage.setItem('customReports', JSON.stringify(reports));
+          resolve(reports[index]);
+        }
+      }, 500);
+    });
+  }
+
+  async deleteReport(id) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const reports = this.getCustomReports();
+        const filteredReports = reports.filter(r => r.Id !== id);
+        localStorage.setItem('customReports', JSON.stringify(filteredReports));
+        resolve(true);
+      }, 500);
+    });
+  }
+}
 const reportService = new ReportService();
 export default reportService;

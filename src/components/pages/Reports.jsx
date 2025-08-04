@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import Card from '@/components/atoms/Card';
-import Button from '@/components/atoms/Button';
-import Input from '@/components/atoms/Input';
-import ApperIcon from '@/components/ApperIcon';
-import Loading from '@/components/ui/Loading';
-import Error from '@/components/ui/Error';
-import reportService from '@/services/api/reportService';
-import Chart from 'react-apexcharts';
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import Chart from "react-apexcharts";
+import reportService from "@/services/api/reportService";
+import ApperIcon from "@/components/ApperIcon";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Tasks from "@/components/pages/Tasks";
+import Projects from "@/components/pages/Projects";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
 
 export default function Reports() {
   const [loading, setLoading] = useState(true);
@@ -20,11 +22,31 @@ export default function Reports() {
     endDate: ''
   });
   
-  // Report data states
+// Report data states
   const [projectStatusData, setProjectStatusData] = useState(null);
   const [teamPerformanceData, setTeamPerformanceData] = useState(null);
   const [timeTrackingData, setTimeTrackingData] = useState(null);
 const [resourceAllocationData, setResourceAllocationData] = useState(null);
+  
+  // Custom reports state
+  const [customReports, setCustomReports] = useState([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createFormData, setCreateFormData] = useState({
+    name: '',
+    description: '',
+    type: 'projectStatus',
+    dateRange: 'lastMonth',
+    customDateStart: '',
+    customDateEnd: '',
+    filters: {
+      projectIds: [],
+      teamMemberIds: [],
+      clientIds: []
+    },
+    visualization: 'chart'
+  });
+  const [isCreating, setIsCreating] = useState(false);
+  
   // Load initial data
   useEffect(() => {
     loadInitialData();
@@ -84,8 +106,85 @@ const [projectStatus, teamPerformance, timeTracking, resourceAllocation] = await
       startDate: '',
       endDate: ''
     });
-  };
-  
+};
+
+  // Load custom reports
+  async function loadCustomReports() {
+    try {
+      const reports = await reportService.getCustomReports();
+      setCustomReports(reports);
+    } catch (error) {
+      console.error('Error loading custom reports:', error);
+      toast.error('Failed to load custom reports');
+    }
+  }
+
+  // Handle create report form
+  function handleCreateFormChange(field, value) {
+    setCreateFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+}
+
+  function handleCreateFormFilterChange(filterType, value) {
+    setCreateFormData(prev => ({
+      ...prev,
+      filters: {
+        ...prev.filters,
+        [filterType]: value
+      }
+    }));
+  }
+
+  async function handleCreateReport() {
+    try {
+      setIsCreating(true);
+      
+      // Validate form
+      if (!createFormData.name.trim()) {
+        toast.error('Report name is required');
+        return;
+      }
+
+      if (createFormData.dateRange === 'custom') {
+        if (!createFormData.customDateStart || !createFormData.customDateEnd) {
+          toast.error('Custom date range requires both start and end dates');
+          return;
+        }
+      }
+
+      // Create report
+      const newReport = await reportService.createReport(createFormData);
+      
+      // Update local state
+      setCustomReports(prev => [...prev, newReport]);
+      
+      // Reset form and close modal
+      setCreateFormData({
+        name: '',
+        description: '',
+        type: 'projectStatus',
+        dateRange: 'lastMonth',
+        customDateStart: '',
+        customDateEnd: '',
+        filters: {
+          projectIds: [],
+          teamMemberIds: [],
+          clientIds: []
+        },
+        visualization: 'chart'
+      });
+      setShowCreateModal(false);
+      
+      toast.success('Report created successfully');
+    } catch (error) {
+      console.error('Error creating report:', error);
+      toast.error('Failed to create report');
+    } finally {
+      setIsCreating(false);
+    }
+  }
   // Chart configurations
   const getProjectStatusPieConfig = () => {
     if (!projectStatusData?.statusDistribution) return null;
@@ -285,10 +384,19 @@ const [projectStatus, teamPerformance, timeTracking, resourceAllocation] = await
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
           <p className="text-gray-600 mt-1">Comprehensive insights into your projects and team performance</p>
+        </div>
+        <div className="mt-4 sm:mt-0">
+          <Button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2"
+          >
+            <ApperIcon name="Plus" size={16} />
+            Create New Report
+          </Button>
         </div>
       </div>
       
@@ -627,8 +735,191 @@ const [projectStatus, teamPerformance, timeTracking, resourceAllocation] = await
               />
             )}
           </div>
-        )}
+)}
       </Card>
+
+      {/* Custom Reports Section */}
+      {customReports.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Custom Reports</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {customReports.map((report) => (
+              <Card key={report.Id} className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{report.name}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{report.description}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {/* TODO: Implement view report */}}
+                    >
+                      <ApperIcon name="Eye" size={16} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {/* TODO: Implement edit report */}}
+                    >
+                      <ApperIcon name="Edit2" size={16} />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span className="capitalize">{report.type.replace(/([A-Z])/g, ' $1').trim()}</span>
+                  <span>{new Date(report.createdAt).toLocaleDateString()}</span>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Create Report Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900">Create New Report</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  <ApperIcon name="X" size={20} />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Basic Info */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Report Name *
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Enter report name"
+                    value={createFormData.name}
+                    onChange={(e) => handleCreateFormChange('name', e.target.value)}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={3}
+                    placeholder="Enter report description"
+                    value={createFormData.description}
+                    onChange={(e) => handleCreateFormChange('description', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Report Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Report Type *
+                </label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={createFormData.type}
+                  onChange={(e) => handleCreateFormChange('type', e.target.value)}
+                >
+                  <option value="projectStatus">Project Status</option>
+                  <option value="teamPerformance">Team Performance</option>
+                  <option value="timeTracking">Time Tracking</option>
+                  <option value="resourceAllocation">Resource Allocation</option>
+                </select>
+              </div>
+
+              {/* Date Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date Range *
+                </label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
+                  value={createFormData.dateRange}
+                  onChange={(e) => handleCreateFormChange('dateRange', e.target.value)}
+                >
+                  <option value="lastWeek">Last Week</option>
+                  <option value="lastMonth">Last Month</option>
+                  <option value="lastQuarter">Last Quarter</option>
+                  <option value="lastYear">Last Year</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+                
+                {createFormData.dateRange === 'custom' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Start Date
+                      </label>
+                      <Input
+                        type="date"
+                        value={createFormData.customDateStart}
+                        onChange={(e) => handleCreateFormChange('customDateStart', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        End Date
+                      </label>
+                      <Input
+                        type="date"
+                        value={createFormData.customDateEnd}
+                        onChange={(e) => handleCreateFormChange('customDateEnd', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Visualization Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Visualization
+                </label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={createFormData.visualization}
+                  onChange={(e) => handleCreateFormChange('visualization', e.target.value)}
+                >
+                  <option value="chart">Chart</option>
+                  <option value="table">Table</option>
+                  <option value="both">Chart & Table</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => setShowCreateModal(false)}
+                disabled={isCreating}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateReport}
+                disabled={isCreating}
+                className="flex items-center gap-2"
+              >
+                {isCreating && <ApperIcon name="Loader2" size={16} className="animate-spin" />}
+                Create Report
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
