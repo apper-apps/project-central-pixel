@@ -179,18 +179,19 @@ const formatDate = (dateString) => {
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <div>
-<h1 className="text-3xl font-bold gradient-text mb-2">
-          Business Overview
+return (
+    <div className="space-y-8">
+      {/* Header Section */}
+      <div className="text-center">
+        <h1 className="text-4xl font-bold gradient-text mb-3">
+          Welcome to Your Dashboard
         </h1>
-        <p className="text-gray-600 text-lg">
-          Track your business metrics and recent activity
+        <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          Track your progress, manage your work, and stay on top of your business metrics
         </p>
       </div>
 
-      {/* Overview Cards */}
+      {/* Business Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Active Clients"
@@ -207,7 +208,7 @@ const formatDate = (dateString) => {
         <StatCard
           title="Due Today"
           value={stats.tasksDueToday}
-value={stats.tasksDueToday}
+          icon="Clock"
           color="orange"
         />
         <StatCard
@@ -216,45 +217,248 @@ value={stats.tasksDueToday}
           icon="AlertTriangle"
           color="red"
         />
-</div>
-
-      {/* Today's Tasks */}
-      <div className="mb-8">
-        <TodaysTasks key={refreshKey} />
       </div>
+
+      {/* Personal Workspace Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        {/* My Milestones */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-100">
+                <ApperIcon name="Target" size={20} className="text-purple-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">My Milestones</h2>
+                <p className="text-sm text-gray-500">Track your key achievements</p>
+              </div>
+            </div>
+          </div>
+          
+          {loading ? (
+            <div className="space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4 max-h-80 overflow-y-auto">
+              {recentActivity
+                .filter(activity => activity.type === 'milestone')
+                .slice(0, 4)
+                .map((milestone) => (
+                  <div key={milestone.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900 text-sm mb-1">{milestone.title}</h4>
+                        <p className="text-xs text-gray-600 mb-2">{milestone.subtitle}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">
+                            In Progress
+                          </span>
+                          <span className="text-xs text-gray-500">{formatDate(milestone.date)}</span>
+                        </div>
+                      </div>
+                      <ApperIcon name="ChevronRight" size={16} className="text-gray-400 mt-1" />
+                    </div>
+                  </div>
+                ))}
+              {recentActivity.filter(activity => activity.type === 'milestone').length === 0 && (
+                <div className="text-center py-6 text-gray-500">
+                  <ApperIcon name="Target" size={32} className="mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">No milestones to show</p>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+
+        {/* My Projects */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-green-100">
+                <ApperIcon name="Briefcase" size={20} className="text-green-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">My Projects</h2>
+                <p className="text-sm text-gray-500">Active project overview</p>
+              </div>
+            </div>
+          </div>
+          
+          {loading ? (
+            <div className="space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-2 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4 max-h-80 overflow-y-auto">
+              {recentActivity
+                .filter(activity => activity.type === 'project')
+                .slice(0, 4)
+                .map((project) => (
+                  <div key={project.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900 text-sm mb-1">{project.title}</h4>
+                        <p className="text-xs text-gray-600 mb-2">{project.subtitle}</p>
+                      </div>
+                      <ApperIcon name="ChevronRight" size={16} className="text-gray-400 mt-1" />
+                    </div>
+                    <div className="mb-2">
+                      <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                        <span>Progress</span>
+                        <span>75%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '75%' }}></div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+                        Active
+                      </span>
+                      <span className="text-xs text-gray-500">{formatDate(project.date)}</span>
+                    </div>
+                  </div>
+                ))}
+              {recentActivity.filter(activity => activity.type === 'project').length === 0 && (
+                <div className="text-center py-6 text-gray-500">
+                  <ApperIcon name="Briefcase" size={32} className="mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">No projects to show</p>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+
+        {/* My Tasks */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-100">
+                <ApperIcon name="CheckSquare" size={20} className="text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">My Tasks</h2>
+                <p className="text-sm text-gray-500">Your upcoming work</p>
+              </div>
+            </div>
+          </div>
+          
+          {loading ? (
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {recentActivity
+                .filter(activity => activity.type === 'task')
+                .slice(0, 5)
+                .map((task) => (
+                  <div key={task.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <div className="w-4 h-4 rounded border-2 border-gray-300 flex-shrink-0 mt-0.5"></div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-gray-900 text-sm mb-1 truncate">{task.title}</h4>
+                        <p className="text-xs text-gray-600 mb-2 truncate">{task.subtitle}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">
+                            High Priority
+                          </span>
+                          <span className="text-xs text-gray-500">{formatDate(task.date)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              {recentActivity.filter(activity => activity.type === 'task').length === 0 && (
+                <div className="text-center py-6 text-gray-500">
+                  <ApperIcon name="CheckSquare" size={32} className="mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">No tasks to show</p>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* Today's Tasks Section */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-orange-100">
+              <ApperIcon name="Calendar" size={20} className="text-orange-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Today's Focus</h2>
+              <p className="text-sm text-gray-500">Tasks scheduled for today</p>
+            </div>
+          </div>
+        </div>
+        <TodaysTasks key={refreshKey} />
+      </Card>
 
       {/* Recent Activity */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
-          <ApperIcon name="Activity" size={20} className="text-gray-500" />
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gray-100">
+              <ApperIcon name="Activity" size={20} className="text-gray-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
+              <p className="text-sm text-gray-500">Latest updates across your projects</p>
+            </div>
+          </div>
         </div>
         
         {recentActivity.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <ApperIcon name="Inbox" size={48} className="mx-auto mb-3 text-gray-300" />
-            <p>No recent activity to show</p>
+          <div className="text-center py-12 text-gray-500">
+            <ApperIcon name="Inbox" size={48} className="mx-auto mb-4 text-gray-300" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No recent activity</h3>
+            <p className="text-sm">Start working on projects and tasks to see activity here</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <div className={`p-2 rounded-full ${getActivityColor(activity.type)}`}>
+              <div key={activity.id} className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200">
+                <div className={`p-2.5 rounded-full flex-shrink-0 ${getActivityColor(activity.type)}`}>
                   <ApperIcon name={activity.icon} size={16} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-gray-900 mb-1">
                     {activity.title}
                   </p>
                   {activity.subtitle && (
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-gray-600 mb-2">
                       {activity.subtitle}
                     </p>
                   )}
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getActivityColor(activity.type)}`}>
+                      {activity.type}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {formatDate(activity.date)}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-xs text-gray-400 whitespace-nowrap">
-                  {formatDate(activity.date)}
-                </div>
+                <ApperIcon name="ChevronRight" size={16} className="text-gray-400 mt-1" />
               </div>
             ))}
           </div>
