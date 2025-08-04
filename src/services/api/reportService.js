@@ -1,8 +1,9 @@
-import projectService from '@/services/api/projectService';
-import taskService from '@/services/api/taskService';
-import timeEntryService from '@/services/api/timeEntryService';
-import teamMemberService from '@/services/api/teamMemberService';
-import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, subDays } from 'date-fns';
+import { eachDayOfInterval, endOfMonth, format, parseISO, startOfMonth, subDays } from "date-fns";
+import React from "react";
+import taskService from "@/services/api/taskService";
+import timeEntryService from "@/services/api/timeEntryService";
+import projectService from "@/services/api/projectService";
+import teamMemberService, { getAll } from "@/services/api/teamMemberService";
 
 class ReportService {
   // Project Status Report Data
@@ -197,8 +198,81 @@ class ReportService {
       console.error('Error fetching filter options:', error);
       throw error;
     }
+}
+  }
+
+  // Resource Allocation Report Data
+  async getResourceAllocationData(filters = {}) {
+    try {
+      const teamMembers = await teamMemberService.getAll();
+      const projects = await projectService.getAll();
+      
+      let filteredMembers = teamMembers.filter(m => m.status === 'Active');
+      let filteredProjects = [...projects];
+      
+      // Apply filters
+      if (filters.teamMemberId) {
+        filteredMembers = filteredMembers.filter(m => m.Id === parseInt(filters.teamMemberId));
+      }
+      
+      if (filters.projectId) {
+        filteredProjects = filteredProjects.filter(p => p.Id === parseInt(filters.projectId));
+      }
+      
+      // Create allocation matrix for heatmap
+      const allocationMatrix = [];
+      filteredMembers.forEach(member => {
+        if (member.currentProjects) {
+          member.currentProjects.forEach(project => {
+            const projectExists = filteredProjects.find(p => p.Id === project.projectId);
+            if (projectExists) {
+              allocationMatrix.push({
+                memberId: member.Id,
+                projectId: project.projectId,
+                hoursAllocated: project.hoursAllocated,
+                role: project.role
+              });
+            }
+          });
+        }
+      });
+      
+      // Calculate summary statistics
+      const summary = {
+        available: 0,
+        atCapacity: 0,
+        overAllocated: 0,
+        avgUtilization: 0
+      };
+      
+      let totalUtilization = 0;
+      filteredMembers.forEach(member => {
+        const utilization = (member.currentWorkload / member.maxCapacity) * 100;
+        totalUtilization += utilization;
+        
+        if (utilization <= 80) {
+          summary.available++;
+        } else if (utilization <= 100) {
+          summary.atCapacity++;
+        } else {
+          summary.overAllocated++;
+        }
+      });
+      
+      summary.avgUtilization = filteredMembers.length > 0 ? 
+        Math.round(totalUtilization / filteredMembers.length) : 0;
+      
+      return {
+        allocationMatrix,
+        teamMembers: filteredMembers,
+        projects: filteredProjects,
+        summary
+      };
+    } catch (error) {
+      console.error('Error fetching resource allocation data:', error);
+      throw error;
+    }
   }
 }
 
 const reportService = new ReportService();
-export default reportService;
