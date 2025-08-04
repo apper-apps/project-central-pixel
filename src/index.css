@@ -353,7 +353,6 @@
 @media (max-width: 640px) {
   .activity-panel {
     width: 100vw;
-    max-width: 380px;
+max-width: 380px;
   }
-}
 }
