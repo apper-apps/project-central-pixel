@@ -15,7 +15,7 @@ import Input from "@/components/atoms/Input";
 import Pagination from "@/components/atoms/Pagination";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
-const Tasks = () => {
+const Tasks = ({ project }) => {
 const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,16 +28,28 @@ const [filter, setFilter] = useState("all"); // all, pending, completed
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   
-  const loadData = async () => {
+const loadData = async () => {
     try {
       setLoading(true);
       setError("");
-      const [tasksData, projectsData] = await Promise.all([
-        taskService.getAll(),
-        projectService.getAll()
-      ]);
-      setTasks(tasksData);
-      setProjects(projectsData);
+      if (project) {
+        // If project is provided, filter tasks for that project
+        const [tasksData, projectsData] = await Promise.all([
+          taskService.getAll(),
+          projectService.getAll()
+        ]);
+        const projectTasks = tasksData.filter(task => task.projectId === project.Id);
+        setTasks(projectTasks);
+        setProjects(projectsData);
+      } else {
+        // Load all tasks if no project specified
+        const [tasksData, projectsData] = await Promise.all([
+          taskService.getAll(),
+          projectService.getAll()
+        ]);
+        setTasks(tasksData);
+        setProjects(projectsData);
+      }
     } catch (err) {
       console.error("Failed to load data:", err);
       setError("Failed to load data. Please try again.");
@@ -48,7 +60,7 @@ const [filter, setFilter] = useState("all"); // all, pending, completed
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [project]);
 
   const getProjectById = (projectId) => {
     return projects.find(project => project.Id === parseInt(projectId));
@@ -200,10 +212,14 @@ const filteredTasks = tasks.filter(task => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+<div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">Tasks</h1>
-          <p className="text-gray-600">Manage your project tasks</p>
+          <h1 className="text-3xl font-bold gradient-text mb-2">
+            {project ? `${project.name} Tasks` : 'Tasks'}
+          </h1>
+          <p className="text-gray-600">
+            {project ? `Manage tasks for ${project.name}` : 'Manage your project tasks'}
+          </p>
         </div>
         <Button onClick={openCreateModal} variant="primary">
           <ApperIcon name="Plus" size={16} className="mr-2" />
@@ -415,10 +431,11 @@ const filteredTasks = tasks.filter(task => {
         onClose={closeModal}
         title={editingTask ? "Edit Task" : "Add New Task"}
         className="max-w-lg"
-      >
+>
         <TaskForm
           task={editingTask}
           projects={projects}
+          defaultProject={project}
           onSubmit={editingTask ? handleEditTask : handleCreateTask}
           onCancel={closeModal}
         />
