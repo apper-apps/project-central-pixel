@@ -360,26 +360,32 @@ const closeModal = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {client.lastContact ? new Date(client.lastContact).toLocaleDateString() : 'Never'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end space-x-2">
-                            <button
+<td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end space-x-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleViewClient(client.Id)}
-                              className="text-blue-600 hover:text-blue-900"
+                              className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50"
                             >
                               <ApperIcon name="Eye" size={16} />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => openEditModal(client)}
-                              className="text-blue-600 hover:text-blue-900"
+                              className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50"
                             >
                               <ApperIcon name="Edit2" size={16} />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleDeleteClient(client.Id)}
-                              className="text-red-600 hover:text-red-900"
+                              className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50"
                             >
                               <ApperIcon name="Trash2" size={16} />
-                            </button>
+                            </Button>
                           </div>
                         </td>
                       </tr>
