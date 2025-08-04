@@ -10,9 +10,8 @@ import Loading from "@/components/ui/Loading";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
-
+import Modal from "@/components/atoms/Modal";
 const TimeTracking = () => {
   const [timeEntries, setTimeEntries] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -189,10 +188,9 @@ const getFilteredEntries = () => {
 
       {timeEntries.length > 0 && (
 <div className="bg-white rounded-lg border border-gray-200 p-6">
+<div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
-<div className="flex items-center gap-4">
-              <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
                 {filterOptions.map((filterOption) => (
                   <button
                     key={filterOption.key}

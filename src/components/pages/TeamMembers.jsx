@@ -9,6 +9,7 @@ import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
+import Modal from "@/components/atoms/Modal";
 import Card from "@/components/atoms/Card";
 
 function TeamMembers() {
