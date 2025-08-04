@@ -393,7 +393,7 @@ const handleFormSubmit = async (memberData) => {
                             <ApperIcon name="Trash2" size={16} />
                           </button>
                         </div>
-                      </td>
+</td>
                     </tr>
                   ))}
                 </tbody>
@@ -410,8 +410,8 @@ const handleFormSubmit = async (memberData) => {
         onSubmit={handleFormSubmit}
         member={editingMember}
         isLoading={isSubmitting}
-      />
-</div>
+/>
+    </div>
   );
 }
 

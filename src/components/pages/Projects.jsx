@@ -291,7 +291,7 @@ actionLabel={clients.length === 0 ? null : "Add Project"}
                               <ApperIcon name="Trash2" size={16} />
                             </button>
                           </div>
-                        </td>
+</td>
                       </tr>
                     );
                   })}
@@ -314,8 +314,8 @@ actionLabel={clients.length === 0 ? null : "Add Project"}
           onSubmit={editingProject ? handleEditProject : handleCreateProject}
           onCancel={closeModal}
         />
-      </Modal>
-</div>
+</Modal>
+    </div>
   );
 };
 
