@@ -1094,11 +1094,213 @@ const getDateTasks = (date) => {
 </div>
 
         {/* Tab Content */}
-        <div className="space-y-6">
+<div className="space-y-6">
           {activeTab === 'dashboard' && (
             <div className="space-y-6">
+              {/* Project Overview Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <ApperIcon name="CheckSquare" size={20} className="text-blue-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">Tasks</h3>
+                    </div>
+                    <span className="text-2xl font-bold text-blue-600">{taskStats.completionRate}%</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Completed</span>
+                      <span className="font-medium">{taskStats.completed}/{taskStats.total}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${taskStats.completionRate}%` }}
+                      />
+                    </div>
+                  </div>
+                </Card>
 
-{activeTab === 'timeline' && (
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <ApperIcon name="Flag" size={20} className="text-green-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">Milestones</h3>
+                    </div>
+                    <span className="text-2xl font-bold text-green-600">{milestoneStats.completionRate}%</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Completed</span>
+                      <span className="font-medium">{milestoneStats.completed}/{milestoneStats.total}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${milestoneStats.completionRate}%` }}
+                      />
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <ApperIcon name="Calendar" size={20} className="text-purple-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">Timeline</h3>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
+                      {project.status}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Due Date</span>
+                      <span className="font-medium">{formatDate(project.deadline)}</span>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Project Information */}
+              <Card className="p-6">
+                <div className="flex items-start justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900">Project Information</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={openEditModal}
+                    className="flex items-center gap-2"
+                  >
+                    <ApperIcon name="Edit2" size={16} />
+                    Edit Project
+                  </Button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Client</label>
+                    <div className="flex items-center">
+                      <ApperIcon name="User" size={16} className="mr-2 text-gray-500" />
+                      <span 
+                        className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                        onClick={() => client && navigate(`/clients/${client.Id}`)}
+                      >
+                        {client?.name || "Unknown Client"}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                    <div className="flex items-center">
+                      <ApperIcon name="Calendar" size={16} className="mr-2 text-gray-500" />
+                      <span className="text-gray-900">
+                        {project.startDate ? format(parseISO(project.startDate), 'MMM dd, yyyy') : 'Not set'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Deadline</label>
+                    <div className="flex items-center">
+                      <ApperIcon name="Calendar" size={16} className="mr-2 text-gray-500" />
+                      <span className="text-gray-900">{formatDate(project.deadline)}</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Budget</label>
+                    <div className="flex items-center">
+                      <ApperIcon name="DollarSign" size={16} className="mr-2 text-gray-500" />
+                      <span className="text-gray-900">${project.budget?.toLocaleString() || 'Not set'}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                    <div className="flex items-center">
+                      <ApperIcon name="AlertCircle" size={16} className="mr-2 text-gray-500" />
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${
+                        project.priority === 'high' ? 'bg-red-100 text-red-800' :
+                        project.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        {project.priority || 'medium'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {project.description && (
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <p className="text-gray-900 whitespace-pre-wrap">{project.description}</p>
+                  </div>
+                )}
+
+                {project.deliverables && (
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Deliverables</label>
+                    <p className="text-gray-900 whitespace-pre-wrap">{project.deliverables}</p>
+                  </div>
+                )}
+              </Card>
+
+              {/* Client Information */}
+              {client && (
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-semibold text-gray-900">Client Details</h2>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(`/clients/${client.Id}`)}
+                      className="flex items-center gap-2"
+                    >
+                      View Full Details
+                      <ApperIcon name="ArrowRight" size={16} />
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                      <p className="text-gray-900">{client.company}</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                      <div className="flex items-center">
+                        <ApperIcon name="Mail" size={16} className="mr-2 text-gray-500" />
+                        <a href={`mailto:${client.email}`} className="text-blue-600 hover:text-blue-800">
+                          {client.email}
+                        </a>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                      <div className="flex items-center">
+                        <ApperIcon name="Phone" size={16} className="mr-2 text-gray-500" />
+                        <a href={`tel:${client.phone}`} className="text-blue-600 hover:text-blue-800">
+                          {client.phone}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'timeline' && (
           <Card className="p-6">
             {timelineView === 'calendar' ? (
               <div className="space-y-6">
@@ -1906,211 +2108,8 @@ const getDateTasks = (date) => {
               )}
             </div>
           </Card>
-        )}
+)}
       </div>
-{/* Project Overview Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <Card className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <ApperIcon name="CheckSquare" size={20} className="text-blue-600" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900">Tasks</h3>
-                    </div>
-                    <span className="text-2xl font-bold text-blue-600">{taskStats.completionRate}%</span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Completed</span>
-                      <span className="font-medium">{taskStats.completed}/{taskStats.total}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${taskStats.completionRate}%` }}
-                      />
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <ApperIcon name="Flag" size={20} className="text-green-600" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900">Milestones</h3>
-                    </div>
-                    <span className="text-2xl font-bold text-green-600">{milestoneStats.completionRate}%</span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Completed</span>
-                      <span className="font-medium">{milestoneStats.completed}/{milestoneStats.total}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${milestoneStats.completionRate}%` }}
-                      />
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <ApperIcon name="Calendar" size={20} className="text-purple-600" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900">Timeline</h3>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
-                      {project.status}
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Due Date</span>
-                      <span className="font-medium">{formatDate(project.deadline)}</span>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Project Information */}
-              <Card className="p-6">
-                <div className="flex items-start justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Project Information</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={openEditModal}
-                    className="flex items-center gap-2"
-                  >
-                    <ApperIcon name="Edit2" size={16} />
-                    Edit Project
-                  </Button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Client</label>
-                    <div className="flex items-center">
-                      <ApperIcon name="User" size={16} className="mr-2 text-gray-500" />
-                      <span 
-                        className="text-blue-600 hover:text-blue-800 cursor-pointer"
-                        onClick={() => client && navigate(`/clients/${client.Id}`)}
-                      >
-                        {client?.name || "Unknown Client"}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                    <div className="flex items-center">
-                      <ApperIcon name="Calendar" size={16} className="mr-2 text-gray-500" />
-                      <span className="text-gray-900">
-                        {project.startDate ? format(parseISO(project.startDate), 'MMM dd, yyyy') : 'Not set'}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Deadline</label>
-                    <div className="flex items-center">
-                      <ApperIcon name="Calendar" size={16} className="mr-2 text-gray-500" />
-                      <span className="text-gray-900">{formatDate(project.deadline)}</span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Budget</label>
-                    <div className="flex items-center">
-                      <ApperIcon name="DollarSign" size={16} className="mr-2 text-gray-500" />
-                      <span className="text-gray-900">${project.budget?.toLocaleString() || 'Not set'}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                    <div className="flex items-center">
-                      <ApperIcon name="AlertCircle" size={16} className="mr-2 text-gray-500" />
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${
-                        project.priority === 'high' ? 'bg-red-100 text-red-800' :
-                        project.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
-                        {project.priority || 'medium'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {project.description && (
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                    <p className="text-gray-900 whitespace-pre-wrap">{project.description}</p>
-                  </div>
-                )}
-
-                {project.deliverables && (
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Deliverables</label>
-                    <p className="text-gray-900 whitespace-pre-wrap">{project.deliverables}</p>
-                  </div>
-                )}
-              </Card>
-
-              {/* Client Information */}
-              {client && (
-                <Card className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold text-gray-900">Client Details</h2>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate(`/clients/${client.Id}`)}
-                      className="flex items-center gap-2"
-                    >
-                      View Full Details
-                      <ApperIcon name="ArrowRight" size={16} />
-                    </Button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
-                      <p className="text-gray-900">{client.company}</p>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                      <div className="flex items-center">
-                        <ApperIcon name="Mail" size={16} className="mr-2 text-gray-500" />
-                        <a href={`mailto:${client.email}`} className="text-blue-600 hover:text-blue-800">
-                          {client.email}
-                        </a>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                      <div className="flex items-center">
-                        <ApperIcon name="Phone" size={16} className="mr-2 text-gray-500" />
-                        <a href={`tel:${client.phone}`} className="text-blue-600 hover:text-blue-800">
-                          {client.phone}
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
-            </div>
-          )}
-
           {activeTab === 'milestones' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
