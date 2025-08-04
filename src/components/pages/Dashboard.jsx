@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import StatCard from "@/components/molecules/StatCard";
-import Loading from "@/components/ui/Loading";
-import Error from "@/components/ui/Error";
+import { toast } from "react-toastify";
+import taskService from "@/services/api/taskService";
 import clientService from "@/services/api/clientService";
 import projectService from "@/services/api/projectService";
-import taskService from "@/services/api/taskService";
-import Card from "@/components/atoms/Card";
+import { getAll } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
+import StatCard from "@/components/molecules/StatCard";
 import TodaysTasks from "@/components/molecules/TodaysTasks";
-import { toast } from "react-toastify";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Tasks from "@/components/pages/Tasks";
+import Projects from "@/components/pages/Projects";
+import Card from "@/components/atoms/Card";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -19,11 +22,11 @@ const Dashboard = () => {
     tasksDueToday: 0,
     overdueTasks: 0
   });
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
-const loadDashboardData = async () => {
+
+  const loadDashboardData = async () => {
     try {
       setLoading(true);
       setError("");
@@ -57,67 +60,6 @@ const loadDashboardData = async () => {
         overdueTasks
       });
       
-      // Prepare recent activity
-      const activities = [];
-      
-      // Recent clients (last 5)
-      const recentClients = [...clients]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5);
-      
-      recentClients.forEach(client => {
-        activities.push({
-          id: `client-${client.Id}`,
-          type: 'client',
-          title: `New client added: ${client.name}`,
-          subtitle: client.company,
-          date: client.createdAt,
-          icon: 'User'
-        });
-      });
-      
-      // Recent projects (last 5)
-      const recentProjects = [...projects]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5);
-      
-      recentProjects.forEach(project => {
-        const client = clients.find(c => c.Id === project.clientId);
-        activities.push({
-          id: `project-${project.Id}`,
-          type: 'project',
-          title: `New project created: ${project.name}`,
-          subtitle: client ? `for ${client.name}` : '',
-          date: project.createdAt,
-          icon: 'Briefcase'
-        });
-      });
-      
-      // Recently completed tasks (last 5)
-      const completedTasks = tasks
-        .filter(task => task.completed)
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5);
-      
-      completedTasks.forEach(task => {
-        const project = projects.find(p => p.Id === task.projectId);
-        activities.push({
-          id: `task-${task.Id}`,
-          type: 'task',
-          title: `Task completed: ${task.name}`,
-          subtitle: project ? `in ${project.name}` : '',
-          date: task.createdAt,
-          icon: 'CheckCircle'
-        });
-      });
-      
-      // Sort all activities by date and take top 8
-      const sortedActivities = activities
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 8);
-      
-      setRecentActivity(sortedActivities);
-      
     } catch (err) {
       console.error("Failed to load dashboard data:", err);
       setError("Failed to load dashboard data. Please try again.");
@@ -135,7 +77,6 @@ useEffect(() => {
   useEffect(() => {
     setRefreshKey(prev => prev + 1);
   }, [stats]);
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -171,16 +112,7 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString();
   };
 
-  const getActivityColor = (type) => {
-    switch (type) {
-      case 'client': return 'text-blue-600 bg-blue-100';
-      case 'project': return 'text-green-600 bg-green-100';
-      case 'task': return 'text-purple-600 bg-purple-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
-
-return (
+  return (
     <div className="space-y-8">
       {/* Header Section */}
       <div className="text-center">
@@ -246,8 +178,8 @@ return (
               ))}
             </div>
           ) : (
-            <div className="space-y-4 max-h-80 overflow-y-auto">
-              {recentActivity
+<div className="space-y-4 max-h-80 overflow-y-auto">
+              {[]
                 .filter(activity => activity.type === 'milestone')
                 .slice(0, 4)
                 .map((milestone) => (
@@ -271,7 +203,7 @@ return (
                     </div>
                   </div>
                 ))}
-              {recentActivity.filter(activity => activity.type === 'milestone').length === 0 && (
+{[].filter(activity => activity.type === 'milestone').length === 0 && (
                 <div className="text-center py-6 text-gray-500">
                   <ApperIcon name="Target" size={32} className="mx-auto mb-2 text-gray-300" />
                   <p className="text-sm">No milestones to show</p>
@@ -306,8 +238,8 @@ return (
               ))}
             </div>
           ) : (
-            <div className="space-y-4 max-h-80 overflow-y-auto">
-              {recentActivity
+<div className="space-y-4 max-h-80 overflow-y-auto">
+              {[]
                 .filter(activity => activity.type === 'project')
                 .slice(0, 4)
                 .map((project) => (
@@ -340,7 +272,7 @@ return (
                     </div>
                   </div>
                 ))}
-              {recentActivity.filter(activity => activity.type === 'project').length === 0 && (
+{[].filter(activity => activity.type === 'project').length === 0 && (
                 <div className="text-center py-6 text-gray-500">
                   <ApperIcon name="Briefcase" size={32} className="mx-auto mb-2 text-gray-300" />
                   <p className="text-sm">No projects to show</p>
@@ -374,8 +306,8 @@ return (
               ))}
             </div>
           ) : (
-            <div className="space-y-3 max-h-80 overflow-y-auto">
-              {recentActivity
+<div className="space-y-3 max-h-80 overflow-y-auto">
+              {[]
                 .filter(activity => activity.type === 'task')
                 .slice(0, 5)
                 .map((task) => (
@@ -399,7 +331,7 @@ return (
                     </div>
                   </div>
                 ))}
-              {recentActivity.filter(activity => activity.type === 'task').length === 0 && (
+{[].filter(activity => activity.type === 'task').length === 0 && (
                 <div className="text-center py-6 text-gray-500">
                   <ApperIcon name="CheckSquare" size={32} className="mx-auto mb-2 text-gray-300" />
                   <p className="text-sm">No tasks to show</p>
@@ -425,78 +357,7 @@ return (
         </div>
         <TodaysTasks key={refreshKey} />
       </Card>
-
-      {/* Recent Activity */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gray-100">
-              <ApperIcon name="Activity" size={20} className="text-gray-600" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
-              <p className="text-sm text-gray-500">Latest updates across your projects</p>
-            </div>
-          </div>
-        </div>
-        
-        {recentActivity.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <ApperIcon name="Inbox" size={48} className="mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No recent activity</h3>
-            <p className="text-sm">Start working on projects and tasks to see activity here</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-{recentActivity.map((activity) => (
-              <div 
-                key={activity.id} 
-                className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200 cursor-pointer"
-                onClick={() => {
-                  // Navigate based on activity type
-                  if (activity.type === 'project') {
-                    navigate(`/projects/${activity.projectId || activity.id}`);
-                  } else if (activity.type === 'task') {
-                    navigate('/tasks');
-                  } else if (activity.type === 'client') {
-                    navigate(`/clients/${activity.clientId || activity.id}`);
-                  } else if (activity.type === 'team') {
-                    navigate(`/team/${activity.memberId || activity.id}`);
-                  } else if (activity.type === 'chat') {
-                    navigate('/chat');
-                  } else {
-                    navigate('/activity-feed');
-                  }
-                }}
-              >
-                <div className={`p-2.5 rounded-full flex-shrink-0 ${getActivityColor(activity.type)}`}>
-                  <ApperIcon name={activity.icon} size={16} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 mb-1">
-                    {activity.title}
-                  </p>
-                  {activity.subtitle && (
-                    <p className="text-xs text-gray-600 mb-2">
-                      {activity.subtitle}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getActivityColor(activity.type)}`}>
-                      {activity.type}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {formatDate(activity.date)}
-                    </span>
-                  </div>
-                </div>
-                <ApperIcon name="ChevronRight" size={16} className="text-gray-400 mt-1" />
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-    </div>
+</div>
   );
 };
 
