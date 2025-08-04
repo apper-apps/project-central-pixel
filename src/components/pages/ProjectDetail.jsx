@@ -445,12 +445,31 @@ setShowTaskModal(true);
     setShowTaskListModal(true);
   };
 
-  const openEditTaskListModal = (taskList) => {
+const openEditTaskListModal = (taskList) => {
     setEditingTaskList(taskList);
     setShowTaskListModal(true);
   };
 
-  const openCreateMilestoneModal = () => {
+  const handleToggleTaskComplete = async (taskId) => {
+    try {
+      const taskToUpdate = tasks.find(t => t.Id === taskId);
+      const updatedTask = await taskService.update(taskId, {
+        ...taskToUpdate,
+        completed: !taskToUpdate.completed
+      });
+      setTasks(prev => 
+        prev.map(task => 
+          task.Id === taskId ? updatedTask : task
+        )
+      );
+      toast.success(updatedTask.completed ? "Task marked as completed!" : "Task marked as pending!");
+    } catch (err) {
+      console.error("Failed to toggle task:", err);
+      toast.error("Failed to update task. Please try again.");
+    }
+  };
+
+const openCreateMilestoneModal = () => {
     setEditingMilestone(null);
     setShowMilestoneModal(true);
   };
@@ -2424,24 +2443,7 @@ const getDateTasks = (date) => {
                                 onAddTask={openCreateTaskModal}
                                 onEditTask={openEditTaskModal}
                                 onDeleteTask={handleDeleteTask}
-                                onToggleTaskComplete={async (taskId) => {
-                                  try {
-                                    const taskToUpdate = tasks.find(t => t.Id === taskId);
-                                    const updatedTask = await taskService.update(taskId, {
-                                      ...taskToUpdate,
-                                      completed: !taskToUpdate.completed
-                                    });
-                                    setTasks(prev => 
-                                      prev.map(task => 
-                                        task.Id === taskId ? updatedTask : task
-                                      )
-                                    );
-                                    toast.success(updatedTask.completed ? "Task marked as completed!" : "Task marked as pending!");
-                                  } catch (err) {
-                                    console.error("Failed to toggle task:", err);
-                                    toast.error("Failed to update task. Please try again.");
-                                  }
-                                }}
+onToggleTaskComplete={handleToggleTaskComplete}
                               />
                             ))
                           )}
