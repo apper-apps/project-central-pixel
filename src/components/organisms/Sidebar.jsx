@@ -35,7 +35,7 @@ const navigation = [
               <div className="bg-white bg-opacity-20 p-2 rounded-lg">
                 <ApperIcon name="Zap" size={24} className="text-white" />
               </div>
-              <span className="ml-3 text-xl font-bold text-white">ClientFlow</span>
+              <span className="ml-3 text-xl font-bold text-white">Project Central</span>
 </div>
             <button
               onClick={onToggleCollapse}
@@ -89,7 +89,7 @@ className={`flex-shrink-0 ${isCollapsed ? 'lg:mr-0' : 'mr-3'}`}
               <div className="bg-white bg-opacity-20 p-2 rounded-lg">
                 <ApperIcon name="Zap" size={24} className="text-white" />
               </div>
-              <span className="ml-3 text-xl font-bold text-white">ClientFlow</span>
+              <span className="ml-3 text-xl font-bold text-white">Project Central</span>
             </div>
             <button
 onClick={onClose}
