@@ -129,12 +129,13 @@ const filteredTasks = tasks.filter(task => {
     const matchesStatus = filter === "all" || 
       (filter === "completed" && task.completed) ||
       (filter === "pending" && !task.completed);
-(filter === "pending" && !task.completed);
     
     const matchesSearch = !searchTerm || 
       task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getProjectById(task.projectId)?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesStatus && matchesSearch;
   });
 
   const taskCounts = {
