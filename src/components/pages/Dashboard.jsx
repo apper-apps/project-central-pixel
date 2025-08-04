@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import StatCard from "@/components/molecules/StatCard";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
@@ -11,17 +12,17 @@ import TodaysTasks from "@/components/molecules/TodaysTasks";
 import { toast } from "react-toastify";
 
 const Dashboard = () => {
-const [stats, setStats] = useState({
+  const navigate = useNavigate();
+  const [stats, setStats] = useState({
     totalActiveClients: 0,
     activeProjects: 0,
     tasksDueToday: 0,
     overdueTasks: 0
-});
+  });
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
-
 const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -250,7 +251,11 @@ return (
                 .filter(activity => activity.type === 'milestone')
                 .slice(0, 4)
                 .map((milestone) => (
-                  <div key={milestone.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+<div 
+                    key={milestone.id} 
+                    className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/projects/${milestone.projectId || milestone.id}`)}
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900 text-sm mb-1">{milestone.title}</h4>
@@ -306,7 +311,11 @@ return (
                 .filter(activity => activity.type === 'project')
                 .slice(0, 4)
                 .map((project) => (
-                  <div key={project.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+<div 
+                    key={project.id} 
+                    className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/projects/${project.id}`)}
+                  >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900 text-sm mb-1">{project.title}</h4>
@@ -370,7 +379,11 @@ return (
                 .filter(activity => activity.type === 'task')
                 .slice(0, 5)
                 .map((task) => (
-                  <div key={task.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+<div 
+                    key={task.id} 
+                    className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                    onClick={() => navigate('/tasks')}
+                  >
                     <div className="flex items-start gap-3">
                       <div className="w-4 h-4 rounded border-2 border-gray-300 flex-shrink-0 mt-0.5"></div>
                       <div className="flex-1 min-w-0">
@@ -435,8 +448,27 @@ return (
           </div>
         ) : (
           <div className="space-y-3">
-            {recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200">
+{recentActivity.map((activity) => (
+              <div 
+                key={activity.id} 
+                className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200 cursor-pointer"
+                onClick={() => {
+                  // Navigate based on activity type
+                  if (activity.type === 'project') {
+                    navigate(`/projects/${activity.projectId || activity.id}`);
+                  } else if (activity.type === 'task') {
+                    navigate('/tasks');
+                  } else if (activity.type === 'client') {
+                    navigate(`/clients/${activity.clientId || activity.id}`);
+                  } else if (activity.type === 'team') {
+                    navigate(`/team/${activity.memberId || activity.id}`);
+                  } else if (activity.type === 'chat') {
+                    navigate('/chat');
+                  } else {
+                    navigate('/activity-feed');
+                  }
+                }}
+              >
                 <div className={`p-2.5 rounded-full flex-shrink-0 ${getActivityColor(activity.type)}`}>
                   <ApperIcon name={activity.icon} size={16} />
                 </div>
