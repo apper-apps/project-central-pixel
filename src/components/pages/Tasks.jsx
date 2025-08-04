@@ -264,10 +264,10 @@ const filteredTasks = tasks.filter(task => {
           actionLabel={tasks.length === 0 && projects.length > 0 ? "Add Task" : null}
           onAction={tasks.length === 0 && projects.length > 0 ? openCreateModal : null}
 />
-      ) : (
+) : (
         viewMode === "grid" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-{filteredTasks.map((task) => (
+            {filteredTasks.map((task) => (
               <TaskCard
                 key={task.Id}
                 task={task}
@@ -358,14 +358,14 @@ const filteredTasks = tasks.filter(task => {
                             </button>
                           </div>
                         </td>
-</tr>
+                      </tr>
                     );
                   })}
                 </tbody>
-</table>
+              </table>
             </div>
           </div>
-        )}
+        )
       )}
 
       <Modal

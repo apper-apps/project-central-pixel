@@ -204,7 +204,7 @@ actionLabel={clients.length === 0 ? null : "Add Project"}
               return project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-}).map((project) => (
+            }).map((project) => (
               <ProjectCard
                 key={project.Id}
                 project={project}
@@ -291,15 +291,15 @@ actionLabel={clients.length === 0 ? null : "Add Project"}
                               <ApperIcon name="Trash2" size={16} />
                             </button>
                           </div>
-</td>
+                        </td>
                       </tr>
                     );
                   })}
                 </tbody>
-</table>
+              </table>
             </div>
           </div>
-        )}
+        )
       )}
 
       <Modal
