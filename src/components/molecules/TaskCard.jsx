@@ -3,14 +3,14 @@ import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import Card from "@/components/atoms/Card";
 
-const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete }) => {
+const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact = false }) => {
   const handleToggleComplete = () => {
     onToggleComplete(task.Id, !task.completed);
   };
 
   return (
     <Card className="p-6 hover:card-shadow-hover transition-all duration-200">
-<div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-4">
         <div className="flex items-start space-x-3 flex-1">
           <button
             onClick={handleToggleComplete}
@@ -85,9 +85,9 @@ const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete }) => {
             <ApperIcon name="Trash2" size={14} />
           </Button>
         </div>
-      </div>
+</div>
       
-<div className="flex items-center justify-between text-xs text-gray-500">
+      <div className="flex items-center justify-between text-xs text-gray-500">
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
           task.completed 
             ? 'bg-green-100 text-green-800' 

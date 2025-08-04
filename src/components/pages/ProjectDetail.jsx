@@ -5,10 +5,13 @@ import { addDays, addMonths, differenceInDays, endOfDay, endOfMonth, endOfWeek, 
 import taskService from "@/services/api/taskService";
 import clientService from "@/services/api/clientService";
 import projectService from "@/services/api/projectService";
+import taskListService from "@/services/api/taskListService";
 import { create, getAll, getById, update } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
 import MilestoneCard from "@/components/molecules/MilestoneCard";
 import TaskForm from "@/components/molecules/TaskForm";
+import TaskListForm from "@/components/molecules/TaskListForm";
+import TaskListCard from "@/components/molecules/TaskListCard";
 import ProjectForm from "@/components/molecules/ProjectForm";
 import TaskCard from "@/components/molecules/TaskCard";
 import MilestoneForm from "@/components/molecules/MilestoneForm";
@@ -28,13 +31,17 @@ const ProjectDetail = () => {
 const [project, setProject] = useState(null);
   const [client, setClient] = useState(null);
   const [clients, setClients] = useState([]);
-  const [tasks, setTasks] = useState([]);
+const [tasks, setTasks] = useState([]);
+  const [taskLists, setTaskLists] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showTaskListModal, setShowTaskListModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [editingTaskList, setEditingTaskList] = useState(null);
+  const [selectedTaskList, setSelectedTaskList] = useState(null);
   const [milestones, setMilestones] = useState([]);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState(null);
@@ -44,14 +51,15 @@ const [project, setProject] = useState(null);
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(null);
   const timelineRef = useRef(null);
-  const loadProjectData = async () => {
+const loadProjectData = async () => {
     try {
       setLoading(true);
       setError("");
       
-const [projectData, tasksData, clientsData, projectsData, milestonesData] = await Promise.all([
+const [projectData, tasksData, taskListsData, clientsData, projectsData, milestonesData] = await Promise.all([
         projectService.getById(id),
         taskService.getByProjectId(id),
+        taskListService.getByProjectId(id),
         clientService.getAll(),
         projectService.getAll(),
 projectService.getMilestonesByProjectId(id)
@@ -59,6 +67,7 @@ projectService.getMilestonesByProjectId(id)
       setProject(projectData);
       setMilestones(milestonesData || []);
       setTasks(tasksData);
+      setTaskLists(taskListsData || []);
       setClients(clientsData);
       setProjects(projectsData);
       
@@ -94,14 +103,28 @@ const handleEditProject = async (projectData) => {
     }
   };
 
-  const handleCreateTask = async (taskData) => {
+const handleCreateTask = async (taskData) => {
     try {
       const newTask = await taskService.create({
         ...taskData,
         projectId: project.Id
       });
+      
+      // Add task to the selected task list
+      if (selectedTaskList) {
+        await taskListService.addTaskToList(selectedTaskList.Id, newTask.Id);
+        setTaskLists(prev => 
+          prev.map(tl => 
+            tl.Id === selectedTaskList.Id 
+              ? { ...tl, tasks: [...tl.tasks, newTask.Id] }
+              : tl
+          )
+        );
+      }
+      
       setTasks(prev => [...prev, newTask]);
       setShowTaskModal(false);
+      setSelectedTaskList(null);
       toast.success("Task created successfully!");
     } catch (err) {
       console.error("Failed to create task:", err);
@@ -130,11 +153,75 @@ const handleEditProject = async (projectData) => {
     if (window.confirm("Are you sure you want to delete this task?")) {
       try {
         await taskService.delete(taskId);
+        
+        // Remove task from task lists
+        setTaskLists(prev => 
+          prev.map(tl => ({
+            ...tl,
+            tasks: tl.tasks.filter(id => id !== taskId)
+          }))
+        );
+        
         setTasks(prev => prev.filter(task => task.Id !== taskId));
         toast.success("Task deleted successfully!");
       } catch (err) {
         console.error("Failed to delete task:", err);
         toast.error("Failed to delete task. Please try again.");
+      }
+    }
+  };
+
+// Task List handlers
+  const handleCreateTaskList = async (taskListData) => {
+    try {
+      const newTaskList = await taskListService.create({
+        ...taskListData,
+        projectId: project.Id
+      });
+      setTaskLists(prev => [...prev, newTaskList]);
+      setShowTaskListModal(false);
+      toast.success("Task list created successfully!");
+    } catch (err) {
+      console.error("Failed to create task list:", err);
+      toast.error("Failed to create task list. Please try again.");
+    }
+  };
+
+  const handleEditTaskList = async (taskListData) => {
+    try {
+      const updatedTaskList = await taskListService.update(editingTaskList.Id, taskListData);
+      setTaskLists(prev => 
+        prev.map(tl => 
+          tl.Id === editingTaskList.Id ? updatedTaskList : tl
+        )
+      );
+      setShowTaskListModal(false);
+      setEditingTaskList(null);
+      toast.success("Task list updated successfully!");
+    } catch (err) {
+      console.error("Failed to update task list:", err);
+      toast.error("Failed to update task list. Please try again.");
+    }
+  };
+
+  const handleDeleteTaskList = async (taskListId) => {
+    if (window.confirm("Are you sure you want to delete this task list? All tasks in this list will also be deleted.")) {
+      try {
+        const taskList = taskLists.find(tl => tl.Id === taskListId);
+        
+        // Delete all tasks in the list
+        if (taskList && taskList.tasks.length > 0) {
+          await Promise.all(taskList.tasks.map(taskId => taskService.delete(taskId)));
+          setTasks(prev => prev.filter(task => !taskList.tasks.includes(task.Id)));
+        }
+        
+        // Delete the task list
+        await taskListService.delete(taskListId);
+        setTaskLists(prev => prev.filter(tl => tl.Id !== taskListId));
+        toast.success("Task list deleted successfully!");
+      } catch (err) {
+        console.error("Failed to delete task list:", err);
+        toast.error("Failed to delete task list. Please try again.");
       }
     }
   };
@@ -169,10 +256,28 @@ const handleCreateMilestone = async (milestoneData) => {
   };
 
   const handleDeleteMilestone = async (milestoneId) => {
-    if (window.confirm("Are you sure you want to delete this milestone?")) {
+    if (window.confirm("Are you sure you want to delete this milestone? All task lists and tasks in this milestone will also be deleted.")) {
       try {
+        // Delete all task lists and tasks in this milestone
+        const milestoneTaskLists = taskLists.filter(tl => tl.milestoneId === milestoneId);
+        for (const taskList of milestoneTaskLists) {
+          // Delete all tasks in each task list
+          if (taskList.tasks.length > 0) {
+            await Promise.all(taskList.tasks.map(taskId => taskService.delete(taskId)));
+          }
+          // Delete the task list
+          await taskListService.delete(taskList.Id);
+        }
+        
+        // Delete the milestone
         await projectService.deleteMilestone(milestoneId);
+        
+        // Update state
+        const taskIdsToRemove = milestoneTaskLists.flatMap(tl => tl.tasks);
+        setTasks(prev => prev.filter(task => !taskIdsToRemove.includes(task.Id)));
+        setTaskLists(prev => prev.filter(tl => tl.milestoneId !== milestoneId));
         setMilestones(prev => prev.filter(milestone => milestone.Id !== milestoneId));
+        
         toast.success("Milestone deleted successfully!");
       } catch (err) {
         console.error("Failed to delete milestone:", err);
@@ -213,18 +318,29 @@ toast.error("Failed to update milestone. Please try again.");
       toast.error("Failed to update task. Please try again.");
     }
   };
-  const openEditModal = () => {
+const openEditModal = () => {
 setShowEditModal(true);
   };
 
-  const openCreateTaskModal = () => {
+  const openCreateTaskModal = (taskList = null) => {
     setEditingTask(null);
+    setSelectedTaskList(taskList);
     setShowTaskModal(true);
   };
 
   const openEditTaskModal = (task) => {
     setEditingTask(task);
 setShowTaskModal(true);
+  };
+
+  const openCreateTaskListModal = () => {
+    setEditingTaskList(null);
+    setShowTaskListModal(true);
+  };
+
+  const openEditTaskListModal = (taskList) => {
+    setEditingTaskList(taskList);
+    setShowTaskListModal(true);
   };
 
   const openCreateMilestoneModal = () => {
@@ -237,11 +353,14 @@ setShowTaskModal(true);
     setShowMilestoneModal(true);
   };
 
-  const closeModals = () => {
+const closeModals = () => {
     setShowEditModal(false);
     setShowTaskModal(false);
+    setShowTaskListModal(false);
     setShowMilestoneModal(false);
     setEditingTask(null);
+    setEditingTaskList(null);
+    setSelectedTaskList(null);
     setEditingMilestone(null);
   };
 
@@ -261,13 +380,21 @@ case 'Completed': return 'bg-green-100 text-green-800 border-green-200';
     return new Date(dateString).toLocaleDateString();
   };
 
-  const getTaskStats = () => {
+const getTaskStats = () => {
     const total = tasks.length;
     const completed = tasks.filter(task => task.completed).length;
 const pending = total - completed;
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
     
     return { total, completed, pending, completionRate };
+  };
+
+  const getTaskListStats = () => {
+    const total = taskLists.length;
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(task => task.completed).length;
+    
+    return { total, totalTasks, completedTasks };
   };
 
   const getMilestoneStats = () => {
@@ -356,11 +483,15 @@ const taskStats = getTaskStats();
     return dates;
   };
 
-  const getDateTasks = (date) => {
+const getDateTasks = (date) => {
     return tasks.filter(task => {
       if (!task.dueDate) return false;
       return isSameDay(parseISO(task.dueDate), date);
     });
+  };
+
+  const getMilestoneTaskLists = (milestoneId) => {
+    return taskLists.filter(tl => tl.milestoneId === milestoneId);
   };
 
   const getDateMilestones = (date) => {
@@ -666,21 +797,21 @@ const taskStats = getTaskStats();
             <ApperIcon name="Edit2" size={16} />
             Edit Project
           </Button>
-          <Button
+<Button
             variant="primary"
-            onClick={openCreateTaskModal}
+            onClick={openCreateMilestoneModal}
             className="flex items-center gap-2"
 >
-            <ApperIcon name="Plus" size={16} />
-            New Task
+            <ApperIcon name="Flag" size={16} />
+            New Milestone
           </Button>
           <Button 
             variant="secondary" 
-            onClick={openCreateMilestoneModal}
+            onClick={openCreateTaskListModal}
             className="flex items-center gap-2"
           >
-            <ApperIcon name="Flag" size={16} />
-            New Milestone
+            <ApperIcon name="List" size={16} />
+            New Task List
           </Button>
         </div>
       </div>
@@ -803,54 +934,187 @@ const taskStats = getTaskStats();
         </Card>
       )}
 {/* Milestones Section */}
-      <div className="space-y-4">
+<div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-gray-900">
-            Milestones ({milestones.length})
+            Project Structure
           </h2>
+          <div className="text-sm text-gray-600">
+            {milestones.length} milestones • {taskLists.length} task lists • {tasks.length} tasks
+          </div>
         </div>
 
         {milestones.length === 0 ? (
           <Empty
             icon="Flag"
             title="No milestones yet"
-            description="Create milestones to track key project deliverables and deadlines."
-            actionLabel="Add Milestone"
+            description="Create milestones to organize your project into manageable phases. Each milestone can contain multiple task lists."
+            actionLabel="Add First Milestone"
             onAction={openCreateMilestoneModal}
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {milestones.map((milestone) => (
-              <MilestoneCard
-                key={milestone.Id}
-                milestone={milestone}
-                onEdit={openEditMilestoneModal}
-                onDelete={handleDeleteMilestone}
-                onToggleComplete={handleToggleMilestoneComplete}
-              />
-            ))}
+          <div className="space-y-6">
+            {milestones.map((milestone) => {
+              const milestoneTaskLists = getMilestoneTaskLists(milestone.Id);
+              const milestoneTasks = tasks.filter(task => 
+                milestoneTaskLists.some(tl => tl.tasks.includes(task.Id))
+              );
+              const completedTasks = milestoneTasks.filter(task => task.completed).length;
+              const totalTasks = milestoneTasks.length;
+              const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+              return (
+                <Card key={milestone.Id} className="p-6">
+                  <div className="mb-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {milestone.title}
+                          </h3>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                            milestone.isCompleted 
+                              ? 'bg-green-100 text-green-800 border-green-200'
+                              : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                          }`}>
+                            {milestone.isCompleted ? 'Completed' : 'In Progress'}
+                          </span>
+                        </div>
+                        
+                        {milestone.description && (
+                          <p className="text-gray-600 text-sm mb-3">
+                            {milestone.description}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                          <div className="flex items-center gap-1">
+                            <ApperIcon name="Calendar" size={14} />
+                            <span>Due: {new Date(milestone.dueDate).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <ApperIcon name="List" size={14} />
+                            <span>{milestoneTaskLists.length} task lists</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <ApperIcon name="CheckSquare" size={14} />
+                            <span>{totalTasks} tasks ({completedTasks} completed)</span>
+                          </div>
+                        </div>
+
+                        {totalTasks > 0 && (
+                          <div className="mb-4">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs text-gray-600">Progress</span>
+                              <span className="text-xs font-medium text-gray-900">{completionRate}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${completionRate}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 ml-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditMilestoneModal(milestone)}
+                          className="p-2"
+                        >
+                          <ApperIcon name="Edit2" size={16} className="text-gray-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteMilestone(milestone.Id)}
+                          className="p-2 text-red-600 hover:text-red-700"
+                        >
+                          <ApperIcon name="Trash2" size={16} />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Task Lists for this Milestone */}
+                  <div className="space-y-3">
+                    {milestoneTaskLists.length === 0 ? (
+                      <div className="text-center py-6 border-2 border-dashed border-gray-200 rounded-lg">
+                        <ApperIcon name="List" size={24} className="text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-3">No task lists in this milestone yet</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={openCreateTaskListModal}
+                          className="flex items-center gap-2"
+                        >
+                          <ApperIcon name="Plus" size={14} />
+                          Add Task List
+                        </Button>
+                      </div>
+                    ) : (
+                      milestoneTaskLists.map((taskList) => (
+                        <TaskListCard
+                          key={taskList.Id}
+                          taskList={taskList}
+                          tasks={tasks}
+                          project={project}
+                          onEdit={openEditTaskListModal}
+                          onDelete={handleDeleteTaskList}
+                          onAddTask={openCreateTaskModal}
+                          onEditTask={openEditTaskModal}
+                          onDeleteTask={handleDeleteTask}
+                          onToggleTaskComplete={async (taskId) => {
+                            try {
+                              const taskToUpdate = tasks.find(t => t.Id === taskId);
+                              const updatedTask = await taskService.update(taskId, {
+                                ...taskToUpdate,
+                                completed: !taskToUpdate.completed
+                              });
+                              setTasks(prev => 
+                                prev.map(task => 
+                                  task.Id === taskId ? updatedTask : task
+                                )
+                              );
+                              toast.success(updatedTask.completed ? "Task marked as completed!" : "Task marked as pending!");
+                            } catch (err) {
+                              console.error("Failed to toggle task:", err);
+                              toast.error("Failed to update task. Please try again.");
+                            }
+                          }}
+                        />
+                      ))
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
 
       {/* Tasks Section */}
-<div className="space-y-4">
+{/* Timeline View */}
+      <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <h2 className="text-xl font-semibold text-gray-900">
-            Tasks ({tasks.length})
+            Timeline View
           </h2>
           <div className="flex items-center gap-3">
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
-                onClick={() => setActiveTab('grid')}
+                onClick={() => setActiveTab('structure')}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === 'grid'
+                  activeTab === 'structure'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <ApperIcon name="Grid3X3" size={16} className="mr-1.5" />
-                Grid
+                <ApperIcon name="Layers" size={16} className="mr-1.5" />
+                Structure
               </button>
               <button
                 onClick={() => setActiveTab('timeline')}
@@ -864,102 +1128,12 @@ const taskStats = getTaskStats();
                 Timeline
               </button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={openCreateTaskModal}
-              className="flex items-center gap-2"
-            >
-              <ApperIcon name="Plus" size={16} />
-Add Task
-            </Button>
           </div>
         </div>
 
-        {/* Task Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-4">
-            <div className="flex items-center">
-              <ApperIcon name="List" size={20} className="text-blue-500 mr-3" />
-              <div>
-                <p className="text-sm text-gray-600">Total Tasks</p>
-                <p className="text-xl font-semibold text-gray-900">{taskStats.total}</p>
-              </div>
-            </div>
-          </Card>
-          
-          <Card className="p-4">
-            <div className="flex items-center">
-              <ApperIcon name="CheckCircle" size={20} className="text-green-500 mr-3" />
-              <div>
-                <p className="text-sm text-gray-600">Completed</p>
-                <p className="text-xl font-semibold text-gray-900">{taskStats.completed}</p>
-              </div>
-            </div>
-          </Card>
-          
-          <Card className="p-4">
-            <div className="flex items-center">
-              <ApperIcon name="Clock" size={20} className="text-yellow-500 mr-3" />
-              <div>
-                <p className="text-sm text-gray-600">Pending</p>
-                <p className="text-xl font-semibold text-gray-900">{taskStats.pending}</p>
-              </div>
-            </div>
-          </Card>
-          
-          <Card className="p-4">
-            <div className="flex items-center">
-              <ApperIcon name="TrendingUp" size={20} className="text-purple-500 mr-3" />
-              <div>
-                <p className="text-sm text-gray-600">Progress</p>
-                <p className="text-xl font-semibold text-gray-900">{taskStats.completionRate}%</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-{tasks.length === 0 ? (
-          <Empty
-            icon="CheckSquare"
-            title="No tasks yet"
-            description="Start by creating the first task for this project."
-            actionLabel="Create Task"
-            onAction={openCreateTaskModal}
-          />
-        ) : activeTab === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tasks.map((task) => (
-              <TaskCard
-                key={task.Id}
-                task={task}
-                project={project}
-                onEdit={openEditTaskModal}
-                onDelete={handleDeleteTask}
-                onToggleComplete={async (taskId) => {
-                  try {
-                    const taskToUpdate = tasks.find(t => t.Id === taskId);
-                    const updatedTask = await taskService.update(taskId, {
-                      ...taskToUpdate,
-                      completed: !taskToUpdate.completed
-                    });
-                    setTasks(prev => 
-                      prev.map(task => 
-                        task.Id === taskId ? updatedTask : task
-                      )
-                    );
-                    toast.success(updatedTask.completed ? "Task marked as completed!" : "Task marked as pending!");
-                  } catch (err) {
-                    console.error("Failed to toggle task:", err);
-                    toast.error("Failed to update task. Please try again.");
-                  }
-                }}
-              />
-            ))}
-          </div>
-) : (
+        {activeTab === 'timeline' ? (
           renderCalendarWidget()
-        )}
+        ) : null}
       </div>
 
       {/* Edit Project Modal */}
@@ -984,15 +1158,33 @@ Add Task
         title={editingTask ? "Edit Task" : "Create New Task"}
         className="max-w-lg"
       >
-        <TaskForm
+<TaskForm
           task={editingTask}
           projects={[project]} // Only show current project
+          milestones={milestones}
+          taskLists={taskLists}
+          selectedTaskList={selectedTaskList}
           onSubmit={editingTask ? handleEditTask : handleCreateTask}
           onCancel={closeModals}
         />
       </Modal>
 
-      {/* Create/Edit Milestone Modal */}
+      {/* Create/Edit Task List Modal */}
+      <Modal
+        isOpen={showTaskListModal}
+        onClose={closeModals}
+        title={editingTaskList ? "Edit Task List" : "Create New Task List"}
+        className="max-w-lg"
+      >
+        <TaskListForm
+          taskList={editingTaskList}
+          milestones={milestones}
+          onSubmit={editingTaskList ? handleEditTaskList : handleCreateTaskList}
+          onCancel={closeModals}
+        />
+      </Modal>
+
+{/* Create/Edit Milestone Modal */}
       <Modal
         isOpen={showMilestoneModal}
         onClose={closeModals}

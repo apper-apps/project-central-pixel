@@ -3,7 +3,7 @@ import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
 import ApperIcon from "@/components/ApperIcon";
 
-const TaskForm = ({ task, projects, onSubmit, onCancel }) => {
+const TaskForm = ({ task, projects, milestones, taskLists, selectedTaskList, onSubmit, onCancel }) => {
 const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -102,7 +102,7 @@ return (
         />
       </div>
 
-      <div>
+<div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Project *
         </label>
@@ -126,6 +126,22 @@ return (
           <p className="mt-1 text-sm text-red-600">{errors.projectId}</p>
         )}
       </div>
+
+      {selectedTaskList && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="flex items-center gap-2">
+            <ApperIcon name="List" size={16} className="text-blue-600" />
+            <div>
+              <p className="text-sm font-medium text-blue-900">
+                Adding to: {selectedTaskList.name}
+              </p>
+              <p className="text-xs text-blue-700">
+                Milestone: {milestones?.find(m => m.Id === selectedTaskList.milestoneId)?.title}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
