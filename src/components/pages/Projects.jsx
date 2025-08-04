@@ -199,159 +199,147 @@ const [itemsPerPage, setItemsPerPage] = useState(25);
             style={viewMode === "list" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
           >
             <ApperIcon name="List" size={16} />
-          </button>
+</button>
         </div>
       </div>
 
-// Filter and paginate projects
-      const filteredProjects = projects.filter(project => {
-        if (!searchTerm) return true;
-        const client = getClientById(project.clientId);
-        return project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-      });
+      {/* Filter and paginate projects */}
+      {(() => {
+        const filteredProjects = projects.filter(project => {
+          if (!searchTerm) return true;
+          const client = getClientById(project.clientId);
+          return project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+        });
 
-      // Pagination calculations
-      const totalItems = filteredProjects.length;
-      const totalPages = Math.ceil(totalItems / itemsPerPage);
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-      const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
+        // Pagination calculations
+        const totalItems = filteredProjects.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+        const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
 
-      const handlePageChange = (page) => {
-        setCurrentPage(page);
-      };
-
-      const handleItemsPerPageChange = (newItemsPerPage) => {
-        setItemsPerPage(newItemsPerPage);
-        setCurrentPage(1);
-      };
-
-      // Reset pagination when search changes
-      useEffect(() => {
-        setCurrentPage(1);
-      }, [searchTerm]);
-
-      {projects.length === 0 ? (
-        <Empty
-          icon="Briefcase"
-          title="No projects yet"
-          description={clients.length === 0 
-            ? "Add some clients first, then create projects for them."
-            : "Start organizing your work by creating your first project."
-          }
-          actionLabel={clients.length === 0 ? null : "Add Project"}
-          onAction={clients.length === 0 ? null : openCreateModal}
-        />
-      ) : (
-        <>
-          {viewMode === "grid" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {paginatedProjects.map((project) => (
-                <ProjectCard
-                  key={project.Id}
-                  project={project}
-                  client={getClientById(project.clientId)}
-                  onEdit={openEditModal}
-                  onDelete={handleDeleteProject}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {paginatedProjects.map((project) => {
-                      const client = getClientById(project.clientId);
-                      return (
-                        <tr key={project.Id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">{project.name}</div>
-                              {project.description && (
-                                <div className="text-sm text-gray-500 max-w-xs truncate">
-                                  {project.description}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {client?.name || 'No Client'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              project.status === 'Active' ? 'bg-green-100 text-green-800' :
-                              project.status === 'On Hold' ? 'bg-yellow-100 text-yellow-800' :
-                              project.status === 'Completed' ? 'bg-blue-100 text-blue-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {project.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                                <div 
-                                  className="bg-blue-600 h-2 rounded-full" 
-                                  style={{ width: `${project.progress || 0}%` }}
-                                />
-                              </div>
-                              <span className="text-sm text-gray-600">{project.progress || 0}%</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'No due date'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-2">
-                              <button
-                                onClick={() => openEditModal(project)}
-                                className="text-blue-600 hover:text-blue-900"
-                              >
-                                <ApperIcon name="Edit2" size={16} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteProject(project.Id)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                <ApperIcon name="Trash2" size={16} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* Pagination */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={handleItemsPerPageChange}
-            startItem={startIndex + 1}
-            endItem={endIndex}
+        return projects.length === 0 ? (
+<Empty
+            icon="Briefcase"
+            title="No projects yet"
+            description={clients.length === 0 
+              ? "Add some clients first, then create projects for them."
+              : "Start organizing your work by creating your first project."
+            }
+            actionLabel={clients.length === 0 ? null : "Add Project"}
+            onAction={clients.length === 0 ? null : openCreateModal}
           />
-        </>
-      )}
+        ) : (
+          <>
+            {viewMode === "grid" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {paginatedProjects.map((project) => (
+                  <ProjectCard
+                    key={project.Id}
+                    project={project}
+                    client={getClientById(project.clientId)}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteProject}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {paginatedProjects.map((project) => {
+                        const client = getClientById(project.clientId);
+                        return (
+                          <tr key={project.Id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">{project.name}</div>
+                                {project.description && (
+                                  <div className="text-sm text-gray-500 max-w-xs truncate">
+                                    {project.description}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {client?.name || 'No Client'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                project.status === 'Active' ? 'bg-green-100 text-green-800' :
+                                project.status === 'On Hold' ? 'bg-yellow-100 text-yellow-800' :
+                                project.status === 'Completed' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {project.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                  <div 
+                                    className="bg-blue-600 h-2 rounded-full" 
+                                    style={{ width: `${project.progress || 0}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm text-gray-600">{project.progress || 0}%</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'No due date'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex items-center justify-end space-x-2">
+                                <button
+                                  onClick={() => openEditModal(project)}
+                                  className="text-blue-600 hover:text-blue-900"
+                                >
+                                  <ApperIcon name="Edit2" size={16} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteProject(project.Id)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  <ApperIcon name="Trash2" size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              startItem={startIndex + 1}
+              endItem={endIndex}
+            />
+          </>
+        );
+      })()}
 
       <Modal
         isOpen={showModal}
@@ -371,18 +359,3 @@ const [itemsPerPage, setItemsPerPage] = useState(25);
 };
 
 export default Projects;
-// Filter and paginate projects
-      const filteredProjects = projects.filter(project => {
-        if (!searchTerm) return true;
-        const client = getClientById(project.clientId);
-        return project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-      });
-
-      // Pagination calculations
-      const totalItems = filteredProjects.length;
-      const totalPages = Math.ceil(totalItems / itemsPerPage);
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-      const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
