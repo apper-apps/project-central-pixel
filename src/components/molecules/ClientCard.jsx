@@ -31,7 +31,7 @@ const statusColors = {
             <p className="text-sm text-gray-600">{client.company}</p>
             {getStatusBadge(client.status)}
           </div>
-          <div className="space-y-1">
+<div className="space-y-1">
             <div className="flex items-center text-sm text-gray-500">
               <ApperIcon name="Mail" size={14} className="mr-2" />
               {client.email}
@@ -40,6 +40,26 @@ const statusColors = {
               <ApperIcon name="Phone" size={14} className="mr-2" />
               {client.phone}
             </div>
+            {client.website && (
+              <div className="flex items-center text-sm text-gray-500">
+                <ApperIcon name="Globe" size={14} className="mr-2" />
+                <a href={client.website} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 truncate">
+                  {client.website}
+                </a>
+              </div>
+            )}
+            {client.address && (
+              <div className="flex items-center text-sm text-gray-500">
+                <ApperIcon name="MapPin" size={14} className="mr-2" />
+                <span className="truncate">{client.address}</span>
+              </div>
+            )}
+            {client.industry && (
+              <div className="flex items-center text-sm text-gray-500">
+                <ApperIcon name="Building2" size={14} className="mr-2" />
+                {client.industry}
+              </div>
+            )}
           </div>
         </div>
         <div className="flex space-x-2 ml-4">
