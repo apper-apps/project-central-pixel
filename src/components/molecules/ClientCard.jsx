@@ -7,10 +7,10 @@ import Button from "@/components/atoms/Button";
 const ClientCard = ({ client, onEdit, onDelete, onView }) => {
   const navigate = useNavigate();
   const getStatusBadge = (status) => {
-    const statusColors = {
-      Active: "bg-green-100 text-green-800 border-green-200",
-      Inactive: "bg-gray-100 text-gray-800 border-gray-200", 
-      Prospect: "bg-blue-100 text-blue-800 border-blue-200"
+const statusColors = {
+      Active: "status-completed",
+      Inactive: "status-on-hold", 
+      Prospect: "status-in-progress"
     };
     
     return (

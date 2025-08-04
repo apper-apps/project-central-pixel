@@ -16,10 +16,10 @@ const Header = ({ onMenuClick }) => {
             <ApperIcon name="Menu" size={20} />
           </Button>
           <div className="lg:hidden flex items-center">
-            <div className="bg-blue-100 p-1.5 rounded-lg mr-2">
-              <ApperIcon name="Zap" size={16} className="text-blue-600" />
+<div className="p-1.5 rounded-lg mr-2" style={{backgroundColor: 'rgba(74, 144, 226, 0.1)'}}>
+              <ApperIcon name="Zap" size={16} style={{color: '#4A90E2'}} />
             </div>
-            <span className="text-lg font-bold gradient-text">ClientFlow</span>
+<span className="text-lg font-bold gradient-text">ClientFlow</span>
           </div>
         </div>
         <div className="flex items-center space-x-4">

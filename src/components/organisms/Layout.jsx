@@ -9,7 +9,7 @@ const Layout = ({ children }) => {
 
 return (
     <TimerProvider>
-      <div className="h-screen flex bg-gray-50">
+<div className="h-screen flex" style={{backgroundColor: '#FAFAFA'}}>
         <Sidebar 
           isOpen={sidebarOpen} 
           onClose={() => setSidebarOpen(false)} 

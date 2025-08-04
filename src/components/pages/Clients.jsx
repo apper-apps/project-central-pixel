@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import clientService from "@/services/api/clientService";
+import { create, getAll, update } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
 import ClientCard from "@/components/molecules/ClientCard";
 import ClientForm from "@/components/molecules/ClientForm";
@@ -162,15 +163,16 @@ setEditingClient(null);
                 <span className="text-sm font-medium text-gray-700">Filter by status:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-                {["All", "Active", "Inactive", "Prospect"].map(status => (
+{["All", "Active", "Inactive", "Prospect"].map(status => (
                   <button
                     key={status}
                     onClick={() => setStatusFilter(status)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 whitespace-nowrap ${
                       statusFilter === status 
-                        ? "bg-blue-100 text-blue-800 border border-blue-200" 
+                        ? "text-white border" 
                         : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
                     }`}
+                    style={statusFilter === status ? {backgroundColor: '#4A90E2', borderColor: '#4A90E2'} : {}}
                   >
                     {status}
                     {status !== "All" && (

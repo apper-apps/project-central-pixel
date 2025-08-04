@@ -10,10 +10,10 @@ const Empty = ({
   onAction
 }) => {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+<div className="bg-white rounded-lg border p-12 text-center" style={{borderColor: '#E8E8E8'}}>
       <div className="flex justify-center mb-6">
-        <div className="bg-gray-100 p-4 rounded-full">
-          <ApperIcon name={icon} size={32} className="text-gray-400" />
+<div className="p-4 rounded-full" style={{backgroundColor: 'rgba(158, 158, 158, 0.1)'}}>
+          <ApperIcon name={icon} size={32} style={{color: '#9E9E9E'}} />
         </div>
       </div>
       <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>

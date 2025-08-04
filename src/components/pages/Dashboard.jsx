@@ -182,7 +182,7 @@ const formatDate = (dateString) => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold gradient-text mb-2">
+<h1 className="text-3xl font-bold gradient-text mb-2">
           Business Overview
         </h1>
         <p className="text-gray-600 text-lg">
@@ -207,7 +207,7 @@ const formatDate = (dateString) => {
         <StatCard
           title="Due Today"
           value={stats.tasksDueToday}
-          icon="Clock"
+value={stats.tasksDueToday}
           color="orange"
         />
         <StatCard

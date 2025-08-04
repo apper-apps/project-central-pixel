@@ -4,6 +4,16 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-background: #FAFAFA;
+    --color-text: #333333;
+    --color-primary: #4A90E2;
+    --color-urgent: #C0392B;
+    --color-in-progress: #F1C40F;
+    --color-completed: #4CAF50;
+    --color-on-hold: #9E9E9E;
+  }
+
   * {
     @apply box-border;
   }
@@ -13,7 +23,9 @@
   }
   
   body {
-    @apply h-full bg-white text-gray-900 font-sans antialiased;
+    @apply h-full font-sans antialiased;
+    background-color: var(--color-background);
+    color: var(--color-text);
   }
   
   #root {
@@ -23,27 +35,52 @@
 
 @layer components {
   .gradient-bg {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #3A7BD5 50%, #2C5282 100%);
   }
   
   .gradient-text {
-    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #5BA3F5 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
   .card-shadow {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
   }
   
   .card-shadow-hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
   }
   
   .glass-effect {
     backdrop-filter: blur(16px);
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(250, 250, 250, 0.95);
+  }
+
+  /* Status Color Utilities */
+  .status-urgent {
+    color: var(--color-urgent);
+    background-color: rgba(192, 57, 43, 0.1);
+    border-color: rgba(192, 57, 43, 0.2);
+  }
+
+  .status-in-progress {
+    color: #B7950B;
+    background-color: rgba(241, 196, 15, 0.1);
+    border-color: rgba(241, 196, 15, 0.2);
+  }
+
+  .status-completed {
+    color: #2E7D32;
+    background-color: rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.2);
+  }
+
+  .status-on-hold {
+    color: var(--color-on-hold);
+    background-color: rgba(158, 158, 158, 0.1);
+    border-color: rgba(158, 158, 158, 0.2);
   }
 }
 
@@ -51,7 +88,7 @@
 .timeline-container {
   overflow-x: auto;
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e0 #f7fafc;
+  scrollbar-color: #cbd5e0 var(--color-background);
 }
 
 .timeline-container::-webkit-scrollbar {
@@ -59,15 +96,17 @@
 }
 
 .timeline-container::-webkit-scrollbar-track {
-  @apply bg-gray-100 rounded-full;
+  background-color: #E8E8E8;
+  border-radius: 9999px;
 }
 
 .timeline-container::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full;
+  background-color: #D1D5DB;
+  border-radius: 9999px;
 }
 
 .timeline-container::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400;
+  background-color: #9CA3AF;
 }
 
 .timeline-task-bar {
@@ -105,16 +144,16 @@
 }
 
 .critical-path-task {
-  box-shadow: 0 0 0 2px #ef4444, 0 4px 12px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 0 2px var(--color-urgent), 0 4px 12px rgba(192, 57, 43, 0.3);
   animation: pulse-critical 2s infinite;
 }
 
 @keyframes pulse-critical {
   0%, 100% {
-    box-shadow: 0 0 0 2px #ef4444, 0 4px 12px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 0 2px var(--color-urgent), 0 4px 12px rgba(192, 57, 43, 0.3);
   }
   50% {
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4), 0 4px 12px rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 0 4px rgba(192, 57, 43, 0.4), 0 4px 12px rgba(192, 57, 43, 0.5);
   }
 }
 
@@ -131,49 +170,62 @@
   height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-bottom: 8px solid #8b5cf6;
+  border-bottom: 8px solid var(--color-primary);
   transform: translateX(-50%);
 }
 
 /* Milestone Progress Bars */
 .milestone-progress-bar {
-  background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+  background: linear-gradient(90deg, var(--color-primary) 0%, #3A7BD5 100%);
 }
 
 .milestone-status-overdue {
-  @apply bg-red-100 text-red-800 border-red-200;
+  background-color: rgba(192, 57, 43, 0.1);
+  color: var(--color-urgent);
+  border-color: rgba(192, 57, 43, 0.2);
 }
 
 .milestone-status-upcoming {
-  @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+  background-color: rgba(241, 196, 15, 0.1);
+  color: #B7950B;
+  border-color: rgba(241, 196, 15, 0.2);
 }
 
 .milestone-status-completed {
-  @apply bg-green-100 text-green-800 border-green-200;
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #2E7D32;
+  border-color: rgba(76, 175, 80, 0.2);
 }
 
 /* Toast Customization */
 .Toastify__toast-container {
-  @apply text-sm;
+  font-size: 0.875rem;
 }
 
 .Toastify__toast {
-  @apply rounded-lg shadow-lg;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   font-family: 'Inter', sans-serif;
 }
 
 .Toastify__toast--success {
-  @apply bg-green-50 text-green-800 border border-green-200;
+  background-color: rgba(76, 175, 80, 0.05);
+  color: #2E7D32;
+  border: 1px solid rgba(76, 175, 80, 0.2);
 }
 
 .Toastify__toast--error {
-  @apply bg-red-50 text-red-800 border border-red-200;
+  background-color: rgba(192, 57, 43, 0.05);
+  color: var(--color-urgent);
+  border: 1px solid rgba(192, 57, 43, 0.2);
 }
 
 .Toastify__toast--info {
-  @apply bg-blue-50 text-blue-800 border border-blue-200;
+  background-color: rgba(74, 144, 226, 0.05);
+  color: var(--color-primary);
+  border: 1px solid rgba(74, 144, 226, 0.2);
 }
 
 .Toastify__progress-bar {
-  @apply bg-gradient-to-r from-blue-500 to-blue-600;
+  background: linear-gradient(90deg, var(--color-primary) 0%, #5BA3F5 100%);
 }

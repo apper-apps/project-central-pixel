@@ -28,12 +28,12 @@ const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact =
                 {task.name}
               </h3>
               {task.priority && (
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+<span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   task.priority === 'High' 
-                    ? 'bg-red-100 text-red-800' 
+                    ? 'status-urgent' 
                     : task.priority === 'Medium'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-green-100 text-green-800'
+                    ? 'status-in-progress'
+                    : 'status-completed'
                 }`}>
                   {task.priority}
                 </span>
@@ -88,10 +88,10 @@ const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact =
 </div>
       
       <div className="flex items-center justify-between text-xs text-gray-500">
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+<span className={`px-2 py-1 rounded-full text-xs font-medium ${
           task.completed 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-yellow-100 text-yellow-800'
+            ? 'status-completed' 
+            : 'status-in-progress'
         }`}>
           {task.completed ? 'Completed' : 'In Progress'}
         </span>

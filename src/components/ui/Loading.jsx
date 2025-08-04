@@ -5,7 +5,7 @@ const Loading = ({ type = "card" }) => {
     return (
       <div className="space-y-4 animate-pulse">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-6">
+<div key={i} className="bg-white rounded-lg border p-6" style={{borderColor: '#E8E8E8'}}>
             <div className="flex items-start justify-between">
               <div className="space-y-3 flex-1">
                 <div className="h-5 bg-gray-200 rounded w-1/3"></div>
@@ -24,7 +24,7 @@ const Loading = ({ type = "card" }) => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-6">
+<div key={i} className="bg-white rounded-lg border p-6" style={{borderColor: '#E8E8E8'}}>
             <div className="flex items-center justify-between">
               <div className="space-y-2">
                 <div className="h-4 bg-gray-200 rounded w-20"></div>
@@ -39,7 +39,7 @@ const Loading = ({ type = "card" }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
+<div className="bg-white rounded-lg border p-6 animate-pulse" style={{borderColor: '#E8E8E8'}}>
       <div className="space-y-4">
         <div className="h-6 bg-gray-200 rounded w-1/4"></div>
         <div className="space-y-2">

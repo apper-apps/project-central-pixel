@@ -9,7 +9,7 @@ const Input = React.forwardRef(({
   icon,
   ...props 
 }, ref) => {
-  const inputClasses = "w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed";
+const inputClasses = "w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:border-transparent hover:border-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed";
   
 return (
     <div className="space-y-1">
@@ -26,12 +26,15 @@ return (
         )}
         <input
           type={type}
-          className={cn(
+className={cn(
             inputClasses,
             icon && "pl-10",
-            error && "border-red-300 focus:ring-red-500",
+            error && "border-red-300",
             className
           )}
+          style={{
+            '--tw-ring-color': error ? '#C0392B' : '#4A90E2'
+          }}
           ref={ref}
           {...props}
         />

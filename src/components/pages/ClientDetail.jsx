@@ -128,10 +128,10 @@ const ClientDetail = () => {
   };
 
   const getStatusBadge = (status) => {
-    const statusColors = {
-      Active: "bg-green-100 text-green-800 border-green-200",
-      Inactive: "bg-gray-100 text-gray-800 border-gray-200", 
-      Prospect: "bg-blue-100 text-blue-800 border-blue-200"
+const statusColors = {
+      Active: "status-completed",
+      Inactive: "status-on-hold", 
+      Prospect: "status-in-progress"
     };
     
     return (
@@ -216,7 +216,7 @@ const ClientDetail = () => {
             Back to Clients
           </Button>
           <div>
-            <h1 className="text-3xl font-bold gradient-text mb-2">{client.name}</h1>
+<h1 className="text-3xl font-bold gradient-text mb-2">{client.name}</h1>
             <p className="text-gray-600">Client Details & Projects</p>
           </div>
         </div>
@@ -246,7 +246,7 @@ const ClientDetail = () => {
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Client Information</h2>
           </div>
-          {getStatusBadge(client.status)}
+{getStatusBadge(client.status)}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

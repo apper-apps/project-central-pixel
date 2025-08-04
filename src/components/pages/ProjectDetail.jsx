@@ -369,13 +369,13 @@ const closeModals = () => {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'Planning': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'In Progress': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'Review': return 'bg-purple-100 text-purple-800 border-purple-200';
-case 'Completed': return 'bg-green-100 text-green-800 border-green-200';
-      case 'On Hold': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+switch (status) {
+      case 'Planning': return 'status-in-progress';
+      case 'In Progress': return 'status-in-progress';
+      case 'Review': return 'status-in-progress';
+      case 'Completed': return 'status-completed';
+      case 'On Hold': return 'status-on-hold';
+      default: return 'status-on-hold';
     }
   };
 
@@ -788,7 +788,7 @@ const getDateTasks = (date) => {
             Back to Projects
           </Button>
           <div>
-            <h1 className="text-3xl font-bold gradient-text mb-2">{project.name}</h1>
+<h1 className="text-3xl font-bold gradient-text mb-2">{project.name}</h1>
             <p className="text-gray-600">Project Details & Tasks</p>
           </div>
         </div>
@@ -1358,7 +1358,7 @@ const getDateTasks = (date) => {
       <Card className="p-6">
         <div className="flex items-start justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900">Project Information</h2>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(project.status)}`}>
+<span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(project.status)}`}>
             {project.status}
           </span>
         </div>
@@ -1401,7 +1401,7 @@ const getDateTasks = (date) => {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Milestone Progress</h3>
-          <span className="text-2xl font-bold text-blue-600">{milestoneStats.completionRate}%</span>
+<span className="text-2xl font-bold" style={{color: '#4A90E2'}}>{milestoneStats.completionRate}%</span>
         </div>
         <div className="space-y-3">
           <div className="flex justify-between text-sm text-gray-600">
@@ -1410,7 +1410,8 @@ const getDateTasks = (date) => {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3">
             <div 
-              className="milestone-progress-bar h-3 rounded-full transition-all duration-300"
+className="h-3 rounded-full transition-all duration-300"
+              style={{backgroundColor: '#4A90E2'}}
               style={{ width: `${milestoneStats.completionRate}%` }}
             ></div>
           </div>

@@ -155,8 +155,8 @@ function TeamMembers() {
         <Card className="p-4">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <ApperIcon name="Users" size={16} className="text-blue-600" />
+<div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{backgroundColor: 'rgba(74, 144, 226, 0.1)'}}>
+                <ApperIcon name="Users" size={16} style={{color: '#4A90E2'}} />
               </div>
             </div>
             <div className="ml-3">
@@ -169,8 +169,8 @@ function TeamMembers() {
         <Card className="p-4">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <ApperIcon name="UserCheck" size={16} className="text-green-600" />
+<div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{backgroundColor: 'rgba(76, 175, 80, 0.1)'}}>
+                <ApperIcon name="UserCheck" size={16} style={{color: '#4CAF50'}} />
               </div>
             </div>
             <div className="ml-3">
@@ -183,8 +183,8 @@ function TeamMembers() {
         <Card className="p-4">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <ApperIcon name="Clock" size={16} className="text-yellow-600" />
+<div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{backgroundColor: 'rgba(241, 196, 15, 0.1)'}}>
+                <ApperIcon name="Clock" size={16} style={{color: '#F1C40F'}} />
               </div>
             </div>
             <div className="ml-3">
@@ -197,8 +197,8 @@ function TeamMembers() {
         <Card className="p-4">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <ApperIcon name="TrendingUp" size={16} className="text-purple-600" />
+<div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{backgroundColor: 'rgba(156, 39, 176, 0.1)'}}>
+                <ApperIcon name="TrendingUp" size={16} style={{color: '#9C27B0'}} />
               </div>
             </div>
             <div className="ml-3">
@@ -211,8 +211,8 @@ function TeamMembers() {
         <Card className="p-4">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                <ApperIcon name="AlertTriangle" size={16} className="text-red-600" />
+<div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{backgroundColor: 'rgba(192, 57, 43, 0.1)'}}>
+                <ApperIcon name="AlertTriangle" size={16} style={{color: '#C0392B'}} />
               </div>
             </div>
             <div className="ml-3">

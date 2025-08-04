@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import taskService from "@/services/api/taskService";
 import projectService from "@/services/api/projectService";
+import { create, getAll, update } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
 import TaskForm from "@/components/molecules/TaskForm";
 import TaskCard from "@/components/molecules/TaskCard";
@@ -198,14 +199,15 @@ const filteredTasks = tasks.filter(task => {
             { key: "pending", label: "Pending", count: taskCounts.pending },
             { key: "completed", label: "Completed", count: taskCounts.completed }
           ].map((filterOption) => (
-            <button
+<button
               key={filterOption.key}
               onClick={() => setFilter(filterOption.key)}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filter === filterOption.key
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                filter === filterOption.key 
+                  ? "text-white shadow-sm"
+                  : "hover:text-gray-900"
               }`}
+              style={filter === filterOption.key ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
             >
               {filterOption.label} ({filterOption.count})
             </button>

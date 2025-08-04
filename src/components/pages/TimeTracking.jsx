@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import timeEntryService from "@/services/api/timeEntryService";
 import projectService from "@/services/api/projectService";
+import { create, getAll, update } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
 import TimeEntryCard from "@/components/molecules/TimeEntryCard";
 import TimeEntryForm from "@/components/molecules/TimeEntryForm";
@@ -190,16 +191,17 @@ const getFilteredEntries = () => {
       {timeEntries.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+<div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
               {filterOptions.map((filterOption) => (
                 <button
                   key={filterOption.key}
                   onClick={() => setFilter(filterOption.key)}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    filter === filterOption.key
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
+                    filter === filterOption.key 
+                      ? "text-white shadow-sm"
+                      : "hover:text-gray-900"
                   }`}
+                  style={filter === filterOption.key ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
                 >
                   {filterOption.label} ({filterOption.count})
                 </button>
@@ -207,7 +209,7 @@ const getFilteredEntries = () => {
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-600">Total Hours</p>
-              <p className="text-2xl font-bold text-blue-600">{totalHours.toFixed(1)}h</p>
+<p className="text-2xl font-bold" style={{color: '#4A90E2'}}>{totalHours.toFixed(1)}h</p>
             </div>
           </div>
         </div>

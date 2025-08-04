@@ -140,7 +140,7 @@ const [searchTerm, setSearchTerm] = useState("");
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">Projects</h1>
+<h1 className="text-3xl font-bold gradient-text mb-2">Projects</h1>
           <p className="text-gray-600">Track and manage your projects</p>
         </div>
         <Button onClick={openCreateModal} variant="primary">

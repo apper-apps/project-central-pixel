@@ -39,7 +39,7 @@ const MilestoneCard = ({ milestone, onEdit, onDelete, onToggleComplete }) => {
     } else {
       return {
         status: 'Upcoming',
-        className: 'bg-blue-100 text-blue-800 border-blue-200',
+className: 'status-in-progress',
         icon: 'Flag'
       };
     }

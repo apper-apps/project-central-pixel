@@ -110,7 +110,7 @@ return (
           name="projectId"
           value={formData.projectId}
           onChange={handleChange}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
             errors.projectId ? "border-red-500" : "border-gray-300"
           }`}
           required
@@ -151,7 +151,8 @@ return (
           name="priority"
           value={formData.priority}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-colors"
+          style={{'--tw-ring-color': '#4A90E2'}}
         >
           <option value="Low">Low</option>
           <option value="Medium">Medium</option>

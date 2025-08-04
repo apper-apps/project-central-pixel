@@ -8,10 +8,10 @@ const Error = ({
   title = "Error"
 }) => {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+<div className="bg-white rounded-lg border p-8 text-center" style={{borderColor: '#E8E8E8'}}>
       <div className="flex justify-center mb-4">
-        <div className="bg-red-100 p-3 rounded-full">
-          <ApperIcon name="AlertCircle" size={24} className="text-red-600" />
+<div className="p-3 rounded-full" style={{backgroundColor: 'rgba(192, 57, 43, 0.1)'}}>
+          <ApperIcon name="AlertCircle" size={24} style={{color: '#C0392B'}} />
         </div>
       </div>
       <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>

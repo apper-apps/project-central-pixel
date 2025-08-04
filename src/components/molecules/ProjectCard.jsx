@@ -7,12 +7,12 @@ import Button from "@/components/atoms/Button";
 const ProjectCard = ({ project, client, onEdit, onDelete }) => {
   const navigate = useNavigate();
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'Planning': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'In Progress': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'Completed': return 'bg-green-100 text-green-800 border-green-200';
-      case 'On Hold': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+switch (status) {
+      case 'Planning': return 'status-in-progress';
+      case 'In Progress': return 'status-in-progress';
+      case 'Completed': return 'status-completed';
+      case 'On Hold': return 'status-on-hold';
+      default: return 'status-on-hold';
     }
   };
 
@@ -33,7 +33,7 @@ const ProjectCard = ({ project, client, onEdit, onDelete }) => {
             >
               {project.name}
             </h3>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium border flex-shrink-0 ${getStatusColor(project.status)}`}>
+<span className={`px-2 py-1 rounded-full text-xs font-medium border flex-shrink-0 ${getStatusColor(project.status)}`}>
               {project.status}
             </span>
           </div>
@@ -72,7 +72,8 @@ const ProjectCard = ({ project, client, onEdit, onDelete }) => {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-1.5">
                 <div 
-                  className="milestone-progress-bar h-1.5 rounded-full transition-all duration-300"
+className="h-1.5 rounded-full transition-all duration-300"
+                  style={{backgroundColor: '#4A90E2'}}
                   style={{ 
                     width: `${project.milestones.length > 0 ? 
                       Math.round((project.milestones.filter(m => m.isCompleted).length / project.milestones.length) * 100) 

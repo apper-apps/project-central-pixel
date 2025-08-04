@@ -11,10 +11,10 @@ const Button = React.forwardRef(({
   const baseClasses = "inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
   
   const variants = {
-    primary: "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] focus:ring-blue-500",
-    secondary: "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] focus:ring-gray-500",
-    ghost: "hover:bg-gray-100 text-gray-700 hover:text-gray-900 transform hover:scale-[1.02] active:scale-[0.98] focus:ring-gray-500",
-    danger: "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] focus:ring-red-500"
+primary: "text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]",
+    secondary: "bg-white hover:bg-gray-50 border border-gray-300 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] focus:ring-gray-500",
+    ghost: "hover:bg-gray-100 hover:text-gray-900 transform hover:scale-[1.02] active:scale-[0.98] focus:ring-gray-500",
+    danger: "text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
   };
   
   const sizes = {
@@ -24,8 +24,14 @@ const Button = React.forwardRef(({
   };
   
   return (
-    <button
+<button
       className={cn(baseClasses, variants[variant], sizes[size], className)}
+      style={{
+        background: variant === 'primary' ? 'linear-gradient(135deg, #4A90E2 0%, #357ABD 100%)' :
+                   variant === 'danger' ? 'linear-gradient(135deg, #C0392B 0%, #A93226 100%)' : undefined,
+        color: variant === 'secondary' ? '#333333' : variant === 'ghost' ? '#6B7280' : undefined,
+        '--tw-ring-color': variant === 'primary' ? '#4A90E2' : variant === 'danger' ? '#C0392B' : '#6B7280'
+      }}
       ref={ref}
       {...props}
     >

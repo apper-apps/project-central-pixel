@@ -8,10 +8,10 @@ function TeamMemberCard({ member, onEdit, onDelete, className = '' }) {
   const navigate = useNavigate();
 
   const getStatusBadge = (status) => {
-    const statusColors = {
-      Active: 'bg-green-100 text-green-800 border-green-200',
-      Away: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      Inactive: 'bg-gray-100 text-gray-800 border-gray-200'
+const statusColors = {
+      Active: 'status-completed',
+      Away: 'status-in-progress', 
+      Inactive: 'status-on-hold'
     };
     
     return statusColors[status] || statusColors.Inactive;
@@ -52,10 +52,13 @@ function TeamMemberCard({ member, onEdit, onDelete, className = '' }) {
                   e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=2563eb&color=fff`;
                 }}
               />
-              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+<div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
                 member.status === 'Active' ? 'bg-green-500' : 
                 member.status === 'Away' ? 'bg-yellow-500' : 'bg-gray-400'
-              }`} />
+              }`} style={{
+                backgroundColor: member.status === 'Active' ? '#4CAF50' : 
+                                member.status === 'Away' ? '#F1C40F' : '#9E9E9E'
+              }} />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">{member.name}</h3>
@@ -143,7 +146,7 @@ function TeamMemberCard({ member, onEdit, onDelete, className = '' }) {
             variant="ghost"
             size="sm"
             onClick={handleViewDetails}
-            className="text-blue-600 hover:text-blue-700"
+style={{color: '#4A90E2'}} className="hover:opacity-80"
           >
             <ApperIcon name="Eye" size={16} className="mr-1" />
             View Details

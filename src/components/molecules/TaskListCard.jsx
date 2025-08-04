@@ -45,7 +45,7 @@ const TaskListCard = ({
             <h4 className="font-medium text-gray-900 truncate">
               {taskList.name}
             </h4>
-            <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 flex-shrink-0">
+<span className="px-2 py-1 rounded-full text-xs font-medium flex-shrink-0" style={{backgroundColor: 'rgba(74, 144, 226, 0.1)', color: '#4A90E2', borderColor: 'rgba(74, 144, 226, 0.2)', border: '1px solid'}}>
               {totalTasks} tasks
             </span>
           </div>
@@ -62,10 +62,10 @@ const TaskListCard = ({
                 <span className="text-xs text-gray-600">Progress:</span>
                 <span className="text-xs font-medium text-gray-900">{completionRate}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+<div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${completionRate}%` }}
+                  className="h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${completionRate}%`, backgroundColor: '#4A90E2' }}
                 />
               </div>
             </div>
