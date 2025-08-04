@@ -5,13 +5,13 @@
 
 @layer base {
   :root {
-    --color-background: #FAFAFA;
-    --color-text: #333333;
+    --color-background: #121212;
+    --color-text: #F5F5F5;
     --color-primary: #4A90E2;
-    --color-urgent: #C0392B;
-    --color-in-progress: #F1C40F;
-    --color-completed: #4CAF50;
-    --color-on-hold: #9E9E9E;
+    --color-urgent: #FF6B6B;
+    --color-in-progress: #FFB347;
+    --color-completed: #51D88A;
+    --color-on-hold: #B0B0B0;
   }
 
   * {
@@ -22,7 +22,7 @@
     @apply h-full;
   }
   
-  body {
+body {
     @apply h-full font-sans antialiased;
     background-color: var(--color-background);
     color: var(--color-text);
@@ -46,41 +46,41 @@
   }
   
   .card-shadow {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   }
   
   .card-shadow-hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
   }
   
   .glass-effect {
     backdrop-filter: blur(16px);
-    background: rgba(250, 250, 250, 0.95);
+    background: rgba(18, 18, 18, 0.95);
   }
 
   /* Status Color Utilities */
   .status-urgent {
     color: var(--color-urgent);
-    background-color: rgba(192, 57, 43, 0.1);
-    border-color: rgba(192, 57, 43, 0.2);
+    background-color: rgba(255, 107, 107, 0.15);
+    border-color: rgba(255, 107, 107, 0.3);
   }
 
   .status-in-progress {
-    color: #B7950B;
-    background-color: rgba(241, 196, 15, 0.1);
-    border-color: rgba(241, 196, 15, 0.2);
+    color: var(--color-in-progress);
+    background-color: rgba(255, 179, 71, 0.15);
+    border-color: rgba(255, 179, 71, 0.3);
   }
 
   .status-completed {
-    color: #2E7D32;
-    background-color: rgba(76, 175, 80, 0.1);
-    border-color: rgba(76, 175, 80, 0.2);
+    color: var(--color-completed);
+    background-color: rgba(81, 216, 138, 0.15);
+    border-color: rgba(81, 216, 138, 0.3);
   }
 
   .status-on-hold {
     color: var(--color-on-hold);
-    background-color: rgba(158, 158, 158, 0.1);
-    border-color: rgba(158, 158, 158, 0.2);
+    background-color: rgba(176, 176, 176, 0.15);
+    border-color: rgba(176, 176, 176, 0.3);
   }
 }
 

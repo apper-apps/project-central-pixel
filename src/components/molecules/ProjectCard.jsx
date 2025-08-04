@@ -6,7 +6,7 @@ import Button from "@/components/atoms/Button";
 
 const ProjectCard = ({ project, client, onEdit, onDelete }) => {
   const navigate = useNavigate();
-  const getStatusColor = (status) => {
+const getStatusColor = (status) => {
 switch (status) {
       case 'Planning': return 'status-in-progress';
       case 'In Progress': return 'status-in-progress';
@@ -28,7 +28,7 @@ switch (status) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <h3 
-              className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors truncate"
+className="font-semibold text-gray-100 hover:text-blue-400 cursor-pointer transition-colors truncate"
               onClick={() => navigate(`/projects/${project.Id}`)}
             >
               {project.name}
@@ -40,24 +40,24 @@ switch (status) {
           
           {client && (
             <div className="flex items-center gap-1 mb-2">
-              <ApperIcon name="User" size={14} className="text-gray-500" />
-              <span className="text-sm text-gray-600 truncate">{client.name}</span>
+<ApperIcon name="User" size={14} className="text-gray-400" />
+              <span className="text-sm text-gray-300 truncate">{client.name}</span>
             </div>
           )}
           
           {project.description && (
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+<p className="text-sm text-gray-300 mb-3 line-clamp-2">
               {project.description}
             </p>
           )}
 {project.deadline && (
             <div className="flex items-center gap-1 mb-2">
-              <ApperIcon name="Calendar" size={14} className="text-gray-400" />
-              <span className="text-xs text-gray-600">Due: {formatDate(project.deadline)}</span>
+<ApperIcon name="Calendar" size={14} className="text-gray-500" />
+              <span className="text-xs text-gray-400">Due: {formatDate(project.deadline)}</span>
             </div>
           )}
           
-          <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
+<p className="text-sm text-gray-300 leading-relaxed line-clamp-2 mb-3">
             {project.description}
           </p>
 
@@ -65,12 +65,12 @@ switch (status) {
           {project.milestones && project.milestones.length > 0 && (
             <div className="mb-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-500">Milestones</span>
-                <span className="text-xs font-medium text-gray-700">
+<span className="text-xs text-gray-400">Milestones</span>
+                <span className="text-xs font-medium text-gray-200">
                   {project.milestones.filter(m => m.isCompleted).length}/{project.milestones.length}
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-1.5">
+<div className="w-full bg-gray-700 rounded-full h-1.5">
                 <div 
 className="h-1.5 rounded-full transition-all duration-300"
                   style={{backgroundColor: '#4A90E2'}}
@@ -85,7 +85,7 @@ className="h-1.5 rounded-full transition-all duration-300"
           )}
 
           {project.deliverables && (
-            <p className="text-xs text-gray-500 line-clamp-1">
+<p className="text-xs text-gray-400 line-clamp-1">
               <span className="font-medium">Deliverables:</span> {project.deliverables}
             </p>
           )}
@@ -106,7 +106,7 @@ size="sm"
               e.stopPropagation();
               onDelete(project.Id);
             }}
-            className="p-2 hover:text-red-600"
+className="p-2 hover:text-red-400"
           >
             <ApperIcon name="Trash2" size={16} />
           </Button>

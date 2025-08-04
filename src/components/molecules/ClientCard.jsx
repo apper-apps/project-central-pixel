@@ -6,7 +6,7 @@ import Button from "@/components/atoms/Button";
 
 const ClientCard = ({ client, onEdit, onDelete, onView }) => {
   const navigate = useNavigate();
-  const getStatusBadge = (status) => {
+const getStatusBadge = (status) => {
 const statusColors = {
       Active: "status-completed",
       Inactive: "status-on-hold", 
@@ -26,17 +26,17 @@ const statusColors = {
         onClick={() => navigate(`/clients/${client.Id}`)}
       >
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-900 mb-1">{client.name}</h3>
+<h3 className="font-semibold text-gray-100 mb-1">{client.name}</h3>
           <div className="flex items-center gap-2 mb-2">
-            <p className="text-sm text-gray-600">{client.company}</p>
+<p className="text-sm text-gray-300">{client.company}</p>
             {getStatusBadge(client.status)}
           </div>
           <div className="space-y-1">
-            <div className="flex items-center text-sm text-gray-500">
+<div className="flex items-center text-sm text-gray-400">
               <ApperIcon name="Mail" size={14} className="mr-2" />
               {client.email}
             </div>
-            <div className="flex items-center text-sm text-gray-500">
+            <div className="flex items-center text-sm text-gray-400">
               <ApperIcon name="Phone" size={14} className="mr-2" />
               {client.phone}
             </div>
@@ -51,7 +51,7 @@ const statusColors = {
               onEdit(client);
             }}
             className="p-2"
-          >
+>
             <ApperIcon name="Edit2" size={16} />
           </Button>
           <Button 
