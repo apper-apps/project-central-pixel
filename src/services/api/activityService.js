@@ -1,207 +1,398 @@
-let activities = [];
+// Mock activity service with comprehensive tracking
+const activities = [];
 let nextId = 1;
 
-const activityService = {
-  // Get all activities with optional filtering
-  getAll: (filters = {}) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        let filteredActivities = [...activities];
-        
-        // Filter by project
-        if (filters.projectId) {
-          filteredActivities = filteredActivities.filter(activity => 
-            activity.projectId === parseInt(filters.projectId)
-          );
-        }
-        
-        // Filter by team member
-        if (filters.teamMemberId) {
-          filteredActivities = filteredActivities.filter(activity => 
-            activity.userId === parseInt(filters.teamMemberId)
-          );
-        }
-        
-        // Filter by activity type
-        if (filters.type) {
-          filteredActivities = filteredActivities.filter(activity => 
-            activity.type === filters.type
-          );
-        }
-        
-        // Filter by date range
-        if (filters.startDate) {
-          filteredActivities = filteredActivities.filter(activity => 
-            new Date(activity.createdAt) >= new Date(filters.startDate)
-          );
-        }
-        
-        if (filters.endDate) {
-          filteredActivities = filteredActivities.filter(activity => 
-            new Date(activity.createdAt) <= new Date(filters.endDate)
-          );
-        }
-        
-        // Sort by most recent first
-        filteredActivities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        
-        resolve(filteredActivities);
-      }, 200);
-    });
-  },
+const ACTIVITY_TYPES = {
+  TASK_CREATED: "task_created",
+  TASK_UPDATED: "task_updated", 
+  TASK_COMPLETED: "task_completed",
+  TASK_DELETED: "task_deleted",
+  COMMENT_CREATED: "comment_created",
+  COMMENT_UPDATED: "comment_updated",
+  COMMENT_DELETED: "comment_deleted",
+  FILE_UPLOADED: "file_uploaded",
+  FILE_DELETED: "file_deleted",
+  MILESTONE_CREATED: "milestone_created",
+  MILESTONE_COMPLETED: "milestone_completed",
+  PROJECT_CREATED: "project_created",
+  PROJECT_UPDATED: "project_updated",
+  TEAM_MEMBER_ADDED: "team_member_added",
+  USER_MENTIONED: "user_mentioned",
+  CHAT_MESSAGE: "chat_message",
+  TASK_ASSIGNED: "task_assigned"
+};
 
-  // Get activities for a specific project
-  getByProjectId: (projectId) => {
-    if (!projectId || typeof projectId !== 'number') {
-      throw new Error('Valid project ID is required');
-    }
-    return activityService.getAll({ projectId });
-  },
-
-  // Get activities by a specific team member
-  getByTeamMember: (teamMemberId) => {
-    if (!teamMemberId || typeof teamMemberId !== 'number') {
-      throw new Error('Valid team member ID is required');
-    }
-    return activityService.getAll({ teamMemberId });
-  },
-
-  // Create a new activity
-  create: (activityData) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const { type, userId, projectId, taskId, taskListId, commentId, fileId, milestoneId, description, metadata = {} } = activityData;
-        
-        if (!type || !userId) {
-          throw new Error('Activity type and user ID are required');
-        }
-        
-        const newActivity = {
-          Id: nextId++,
-          type,
-          userId,
-          projectId: projectId || null,
-          taskId: taskId || null,
-          taskListId: taskListId || null,
-          commentId: commentId || null,
-          fileId: fileId || null,
-          milestoneId: milestoneId || null,
-          description,
-          metadata,
-          createdAt: new Date().toISOString()
-        };
-        
-        activities.push(newActivity);
-        resolve({ ...newActivity });
-      }, 100);
-    });
-  },
-
-  // Get activity counts by type for dashboard
-  getActivityCounts: (projectId = null) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        let filteredActivities = activities;
-        
-        if (projectId) {
-          filteredActivities = activities.filter(activity => 
-            activity.projectId === parseInt(projectId)
-          );
-        }
-        
-        const counts = {
-          total: filteredActivities.length,
-          task_created: 0,
-          task_updated: 0,
-          task_completed: 0,
-          comment_created: 0,
-          file_uploaded: 0,
-          milestone_created: 0,
-          milestone_completed: 0,
-          project_updated: 0
-        };
-        
-        filteredActivities.forEach(activity => {
-          if (counts.hasOwnProperty(activity.type)) {
-            counts[activity.type]++;
-          }
-        });
-        
-        resolve(counts);
-      }, 100);
-    });
-  },
-
-  // Get recent activities (last 24 hours)
-  getRecentActivities: (limit = 10) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        const recentActivities = activities
-          .filter(activity => new Date(activity.createdAt) >= oneDayAgo)
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, limit);
-        
-        resolve(recentActivities);
-      }, 100);
-    });
-  },
-
-  // Clear all activities (for testing/reset)
-  clearAll: () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        activities = [];
-        nextId = 1;
-        resolve({ success: true });
-      }, 100);
-    });
-  },
-
-  // Activity type constants
-  ACTIVITY_TYPES: {
-    TASK_CREATED: 'task_created',
-    TASK_UPDATED: 'task_updated',
-    TASK_COMPLETED: 'task_completed',
-    TASK_DELETED: 'task_deleted',
-    COMMENT_CREATED: 'comment_created',
-    COMMENT_UPDATED: 'comment_updated',
-    COMMENT_DELETED: 'comment_deleted',
-    FILE_UPLOADED: 'file_uploaded',
-    FILE_DELETED: 'file_deleted',
-    MILESTONE_CREATED: 'milestone_created',
-    MILESTONE_UPDATED: 'milestone_updated',
-    MILESTONE_COMPLETED: 'milestone_completed',
-    MILESTONE_DELETED: 'milestone_deleted',
-    PROJECT_UPDATED: 'project_updated',
-    TASKLIST_CREATED: 'tasklist_created',
-    TASKLIST_UPDATED: 'tasklist_updated',
-    TASKLIST_DELETED: 'tasklist_deleted'
-  },
-
-  // Get activity type display info
-  getActivityTypeInfo: (type) => {
-    const typeInfo = {
-      task_created: { icon: 'Plus', color: 'text-green-600', bgColor: 'bg-green-100' },
-      task_updated: { icon: 'Edit', color: 'text-blue-600', bgColor: 'bg-blue-100' },
-      task_completed: { icon: 'CheckCircle', color: 'text-green-600', bgColor: 'bg-green-100' },
-      task_deleted: { icon: 'Trash2', color: 'text-red-600', bgColor: 'bg-red-100' },
-      comment_created: { icon: 'MessageSquare', color: 'text-purple-600', bgColor: 'bg-purple-100' },
-      comment_updated: { icon: 'Edit', color: 'text-purple-600', bgColor: 'bg-purple-100' },
-      comment_deleted: { icon: 'MessageSquareX', color: 'text-red-600', bgColor: 'bg-red-100' },
-      file_uploaded: { icon: 'Upload', color: 'text-orange-600', bgColor: 'bg-orange-100' },
-      file_deleted: { icon: 'FileX', color: 'text-red-600', bgColor: 'bg-red-100' },
-      milestone_created: { icon: 'Flag', color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
-      milestone_updated: { icon: 'Flag', color: 'text-yellow-600', bgColor: 'bg-yellow-100' },
-      milestone_completed: { icon: 'FlagTriangleRight', color: 'text-green-600', bgColor: 'bg-green-100' },
-      milestone_deleted: { icon: 'FlagOff', color: 'text-red-600', bgColor: 'bg-red-100' },
-      project_updated: { icon: 'Briefcase', color: 'text-indigo-600', bgColor: 'bg-indigo-100' },
-      tasklist_created: { icon: 'List', color: 'text-green-600', bgColor: 'bg-green-100' },
-      tasklist_updated: { icon: 'ListChecks', color: 'text-blue-600', bgColor: 'bg-blue-100' },
-      tasklist_deleted: { icon: 'ListX', color: 'text-red-600', bgColor: 'bg-red-100' }
-    };
+// Initialize with sample activities
+const initializeActivities = () => {
+  if (activities.length === 0) {
+    const sampleActivities = [
+      {
+        Id: nextId++,
+        type: ACTIVITY_TYPES.TASK_CREATED,
+        title: "New task created: 'Implement user authentication'",
+        description: "High priority task assigned to development team",
+        userId: 1,
+        projectId: 1,
+        taskId: 15,
+        createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 min ago
+        isRead: false
+      },
+      {
+        Id: nextId++,
+        type: ACTIVITY_TYPES.COMMENT_CREATED,
+        title: "Sarah Wilson commented on 'Database Migration'",
+        description: "Added clarification about migration process and timeline",
+        userId: 2,
+        projectId: 2,
+        taskId: 8,
+        createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 min ago
+        isRead: false
+      },
+      {
+        Id: nextId++,
+        type: ACTIVITY_TYPES.TASK_COMPLETED,
+        title: "Task completed: 'API Documentation Update'",
+        description: "Documentation has been updated with latest endpoint changes",
+        userId: 3,
+        projectId: 1,
+        taskId: 12,
+        createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 min ago
+        isRead: false
+      },
+      {
+        Id: nextId++,
+        type: ACTIVITY_TYPES.FILE_UPLOADED,
+        title: "New file uploaded: 'design-mockups-v2.fig'",
+        description: "Updated mockups with latest design revisions",
+        userId: 4,
+        projectId: 3,
+        fileName: "design-mockups-v2.fig",
+        createdAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 min ago
+        isRead: true
+      },
+      {
+        Id: nextId++,
+        type: ACTIVITY_TYPES.TASK_ASSIGNED,
+        title: "Task assigned: 'Mobile responsive testing'",
+        description: "Assigned to QA team for comprehensive testing across devices",
+        userId: 1,
+        assignedToUserId: 5,
+        projectId: 2,
+        taskId: 20,
+        createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1 hour ago
+        isRead: true
+      },
+      {
+        Id: nextId++,
+        type: ACTIVITY_TYPES.USER_MENTIONED,
+        title: "You were mentioned in 'Frontend Review'",
+        description: "@you Please review the latest frontend changes and provide feedback",
+        userId: 2,
+        mentionedUserId: 1,
+        projectId: 1,
+        taskId: 18,
+        createdAt: new Date(Date.now() - 90 * 60 * 1000).toISOString(), // 1.5 hours ago
+        isRead: false
+      },
+      {
+        Id: nextId++,
+        type: ACTIVITY_TYPES.MILESTONE_COMPLETED,
+        title: "Milestone completed: 'Phase 1 Development'",
+        description: "All tasks in Phase 1 have been successfully completed",
+        userId: 1,
+        projectId: 2,
+        milestoneId: 3,
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+        isRead: true
+      },
+      {
+        Id: nextId++,
+        type: ACTIVITY_TYPES.CHAT_MESSAGE,
+        title: "New message in 'Development Team' channel",
+        description: "Discussion about upcoming sprint planning meeting",
+        userId: 3,
+        channelId: 1,
+        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
+        isRead: true
+      }
+    ];
     
-    return typeInfo[type] || { icon: 'Activity', color: 'text-gray-600', bgColor: 'bg-gray-100' };
+    activities.push(...sampleActivities);
+  }
+};
+
+const activityService = {
+  getAll: () => {
+    initializeActivities();
+    return [...activities].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  },
+
+  getByProjectId: (projectId) => {
+    initializeActivities();
+    return activities
+      .filter(activity => activity.projectId === parseInt(projectId))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  },
+
+  getByTeamMember: (memberId) => {
+    initializeActivities();
+    return activities
+      .filter(activity => activity.userId === parseInt(memberId))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  },
+
+  create: (activityData) => {
+    initializeActivities();
+    const activity = {
+      Id: nextId++,
+      ...activityData,
+      createdAt: new Date().toISOString(),
+      isRead: false
+    };
+    activities.push(activity);
+    return activity;
+  },
+
+  getActivityCounts: () => {
+    initializeActivities();
+    const total = activities.length;
+    const unread = activities.filter(activity => !activity.isRead).length;
+    return { total, unread };
+  },
+
+  getRecentActivities: (limit = 50) => {
+    initializeActivities();
+    return [...activities]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, limit);
+  },
+
+  markAsRead: (activityId) => {
+    initializeActivities();
+    const activity = activities.find(a => a.Id === parseInt(activityId));
+    if (activity) {
+      activity.isRead = true;
+    }
+    return activity;
+  },
+
+  markAllAsRead: () => {
+    initializeActivities();
+    activities.forEach(activity => {
+      activity.isRead = true;
+    });
+    return true;
+  },
+
+  clearAll: () => {
+    activities.length = 0;
+    return true;
+  },
+
+  // Track specific activity types
+  trackTaskCreated: (taskData) => {
+    return activityService.create({
+      type: ACTIVITY_TYPES.TASK_CREATED,
+      title: `New task created: '${taskData.name}'`,
+      description: taskData.description || `Priority: ${taskData.priority || 'Normal'}`,
+      userId: taskData.createdBy || 1,
+      projectId: taskData.projectId,
+      taskId: taskData.Id
+    });
+  },
+
+  trackTaskCompleted: (taskData) => {
+    return activityService.create({
+      type: ACTIVITY_TYPES.TASK_COMPLETED,
+      title: `Task completed: '${taskData.name}'`,
+      description: taskData.description || 'Task has been marked as completed',
+      userId: taskData.completedBy || 1,
+      projectId: taskData.projectId,
+      taskId: taskData.Id
+    });
+  },
+
+  trackTaskAssigned: (taskData, assignedToUserId) => {
+    return activityService.create({
+      type: ACTIVITY_TYPES.TASK_ASSIGNED,
+      title: `Task assigned: '${taskData.name}'`,
+      description: `Assigned to team member`,
+      userId: taskData.assignedBy || 1,
+      assignedToUserId: assignedToUserId,
+      projectId: taskData.projectId,
+      taskId: taskData.Id
+    });
+  },
+
+  trackCommentCreated: (commentData) => {
+    return activityService.create({
+      type: ACTIVITY_TYPES.COMMENT_CREATED,
+      title: `New comment on '${commentData.taskName || 'task'}'`,
+      description: commentData.content?.substring(0, 100) + (commentData.content?.length > 100 ? '...' : ''),
+      userId: commentData.userId,
+      projectId: commentData.projectId,
+      taskId: commentData.taskId,
+      commentId: commentData.Id
+    });
+  },
+
+  trackFileUploaded: (fileData) => {
+    return activityService.create({
+      type: ACTIVITY_TYPES.FILE_UPLOADED,
+      title: `New file uploaded: '${fileData.name}'`,
+      description: `File size: ${(fileData.size / 1024 / 1024).toFixed(2)} MB`,
+      userId: fileData.uploadedBy || 1,
+      projectId: fileData.projectId,
+      fileName: fileData.name,
+      fileId: fileData.Id
+    });
+  },
+
+  trackUserMentioned: (mentionData) => {
+    return activityService.create({
+      type: ACTIVITY_TYPES.USER_MENTIONED,
+      title: `You were mentioned in '${mentionData.contextName}'`,
+      description: mentionData.content?.substring(0, 100) + (mentionData.content?.length > 100 ? '...' : ''),
+      userId: mentionData.mentionedBy,
+      mentionedUserId: mentionData.mentionedUserId,
+      projectId: mentionData.projectId,
+      taskId: mentionData.taskId
+    });
+  },
+
+  trackMilestoneCompleted: (milestoneData) => {
+    return activityService.create({
+      type: ACTIVITY_TYPES.MILESTONE_COMPLETED,
+      title: `Milestone completed: '${milestoneData.name}'`,
+      description: milestoneData.description || 'Milestone has been successfully completed',
+      userId: milestoneData.completedBy || 1,
+      projectId: milestoneData.projectId,
+      milestoneId: milestoneData.Id
+    });
+  },
+
+  trackProjectCreated: (projectData) => {
+    return activityService.create({
+      type: ACTIVITY_TYPES.PROJECT_CREATED,
+      title: `New project created: '${projectData.name}'`,
+      description: projectData.description || `Client: ${projectData.clientName || 'Unknown'}`,
+      userId: projectData.createdBy || 1,
+      projectId: projectData.Id
+    });
+  },
+
+  trackTeamMemberAdded: (memberData, projectId) => {
+    return activityService.create({
+      type: ACTIVITY_TYPES.TEAM_MEMBER_ADDED,
+      title: `New team member added: ${memberData.name}`,
+      description: `Role: ${memberData.role || 'Team Member'}`,
+      userId: memberData.addedBy || 1,
+      teamMemberId: memberData.Id,
+      projectId: projectId
+    });
+  },
+
+  trackChatMessage: (messageData) => {
+    return activityService.create({
+      type: ACTIVITY_TYPES.CHAT_MESSAGE,
+      title: `New message in '${messageData.channelName || 'channel'}'`,
+      description: messageData.content?.substring(0, 100) + (messageData.content?.length > 100 ? '...' : ''),
+      userId: messageData.userId,
+      channelId: messageData.channelId,
+      messageId: messageData.Id
+    });
+  },
+
+  ACTIVITY_TYPES,
+
+  getActivityTypeInfo: (type) => {
+    const typeMap = {
+      [ACTIVITY_TYPES.TASK_CREATED]: {
+        label: "Task Created",
+        icon: "Plus",
+        bgColor: "bg-green-100",
+        textColor: "text-green-700"
+      },
+      [ACTIVITY_TYPES.TASK_UPDATED]: {
+        label: "Task Updated", 
+        icon: "Edit",
+        bgColor: "bg-blue-100",
+        textColor: "text-blue-700"
+      },
+      [ACTIVITY_TYPES.TASK_COMPLETED]: {
+        label: "Task Completed",
+        icon: "CheckCircle",
+        bgColor: "bg-green-100", 
+        textColor: "text-green-700"
+      },
+      [ACTIVITY_TYPES.TASK_ASSIGNED]: {
+        label: "Task Assigned",
+        icon: "UserPlus",
+        bgColor: "bg-purple-100",
+        textColor: "text-purple-700"
+      },
+      [ACTIVITY_TYPES.COMMENT_CREATED]: {
+        label: "New Comment",
+        icon: "MessageCircle",
+        bgColor: "bg-orange-100",
+        textColor: "text-orange-700"
+      },
+      [ACTIVITY_TYPES.FILE_UPLOADED]: {
+        label: "File Uploaded",
+        icon: "Upload",
+        bgColor: "bg-indigo-100",
+        textColor: "text-indigo-700"
+      },
+      [ACTIVITY_TYPES.MILESTONE_CREATED]: {
+        label: "Milestone Created",
+        icon: "Flag",
+        bgColor: "bg-yellow-100",
+        textColor: "text-yellow-700"
+      },
+      [ACTIVITY_TYPES.MILESTONE_COMPLETED]: {
+        label: "Milestone Completed",
+        icon: "Award",
+        bgColor: "bg-green-100",
+        textColor: "text-green-700"
+      },
+      [ACTIVITY_TYPES.PROJECT_CREATED]: {
+        label: "Project Created",
+        icon: "Briefcase",
+        bgColor: "bg-blue-100",
+        textColor: "text-blue-700"
+      },
+      [ACTIVITY_TYPES.PROJECT_UPDATED]: {
+        label: "Project Updated",
+        icon: "Settings",
+        bgColor: "bg-gray-100",
+        textColor: "text-gray-700"
+      },
+      [ACTIVITY_TYPES.TEAM_MEMBER_ADDED]: {
+        label: "Team Member Added",
+        icon: "Users",
+        bgColor: "bg-teal-100",
+        textColor: "text-teal-700"
+      },
+      [ACTIVITY_TYPES.USER_MENTIONED]: {
+        label: "You were mentioned",
+        icon: "AtSign",
+        bgColor: "bg-red-100",
+        textColor: "text-red-700"
+      },
+      [ACTIVITY_TYPES.CHAT_MESSAGE]: {
+        label: "New Message",
+        icon: "MessageSquare",
+        bgColor: "bg-pink-100",
+        textColor: "text-pink-700"
+      }
+    };
+
+    return typeMap[type] || {
+      label: "Activity",
+      icon: "Activity",
+      bgColor: "bg-gray-100",
+      textColor: "text-gray-700"
+    };
   }
 };
 

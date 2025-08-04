@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import TimerWidget from "@/components/molecules/TimerWidget";
+import RecentActivityPanel from "@/components/molecules/RecentActivityPanel";
 import { TimerProvider } from "@/contexts/TimerContext";
 
 const Layout = ({ children }) => {
 const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activityPanelOpen, setActivityPanelOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
 return (
@@ -34,7 +36,11 @@ return (
           </main>
         </div>
         
-        <TimerWidget />
+<TimerWidget />
+        <RecentActivityPanel 
+          isOpen={activityPanelOpen}
+          onToggle={() => setActivityPanelOpen(!activityPanelOpen)}
+        />
       </div>
     </TimerProvider>
   );
