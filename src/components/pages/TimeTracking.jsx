@@ -300,13 +300,13 @@ const totalHours = filteredEntries.reduce((sum, entry) => sum + (entry.duration 
                             <span className="text-sm font-medium text-gray-900">{project?.name || 'Unknown Project'}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                          {entry.description || 'No description'}
 <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-{entry.description || 'No description'}
-</td>
-<td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-{(entry.duration || entry.hours || 0)}h
+                          {entry.description || 'No description'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {(entry.duration || entry.hours || 0)}h
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex items-center justify-end space-x-2">
                             <button
                               onClick={() => openEditModal(entry)}
@@ -328,8 +328,8 @@ const totalHours = filteredEntries.reduce((sum, entry) => sum + (entry.duration 
                 </tbody>
               </table>
             </div>
-          </div>
-        )
+</div>
+        )}
       )}
 
       <Modal
@@ -343,7 +343,7 @@ const totalHours = filteredEntries.reduce((sum, entry) => sum + (entry.duration 
           projects={projects}
           onSubmit={editingEntry ? handleEditEntry : handleCreateEntry}
           onCancel={closeModal}
-/>
+        />
       </Modal>
     </div>
   );

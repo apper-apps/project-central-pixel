@@ -296,7 +296,7 @@ actionLabel={clients.length === 0 ? null : "Add Project"}
                     );
                   })}
                 </tbody>
-              </table>
+</table>
             </div>
           </div>
         )}
@@ -314,7 +314,7 @@ actionLabel={clients.length === 0 ? null : "Add Project"}
           onSubmit={editingProject ? handleEditProject : handleCreateProject}
           onCancel={closeModal}
         />
-</Modal>
+      </Modal>
     </div>
   );
 };

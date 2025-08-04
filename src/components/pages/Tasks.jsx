@@ -362,7 +362,7 @@ const filteredTasks = tasks.filter(task => {
                     );
                   })}
                 </tbody>
-              </table>
+</table>
             </div>
           </div>
         )}
@@ -380,7 +380,7 @@ const filteredTasks = tasks.filter(task => {
           onSubmit={editingTask ? handleEditTask : handleCreateTask}
           onCancel={closeModal}
         />
-</Modal>
+      </Modal>
     </div>
   );
 };
