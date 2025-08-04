@@ -301,6 +301,88 @@
 .activity-panel-scroll::-webkit-scrollbar-thumb:hover {
   background: #a0aec0;
 }
+/* Kanban Board Styles */
+.kanban-column {
+  min-height: 600px;
+  transition: all 0.2s ease;
+}
+
+.kanban-column.drag-over {
+  background-color: rgba(59, 130, 246, 0.05);
+  border-color: #3b82f6;
+  transform: scale(1.02);
+}
+
+.kanban-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.kanban-tasks {
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 transparent;
+}
+
+.kanban-tasks::-webkit-scrollbar {
+  width: 6px;
+}
+
+.kanban-tasks::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kanban-tasks::-webkit-scrollbar-thumb {
+  background-color: #cbd5e0;
+  border-radius: 3px;
+}
+
+.kanban-tasks::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+.kanban-task-card {
+  transition: all 0.2s ease;
+  cursor: grab;
+}
+
+.kanban-task-card:active {
+  cursor: grabbing;
+}
+
+.kanban-task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.kanban-task-card.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg) scale(1.05);
+  z-index: 1000;
+}
+
+/* Kanban responsive design */
+@media (max-width: 1024px) {
+  .kanban-column {
+    min-height: 400px;
+  }
+  
+  .kanban-tasks {
+    max-height: calc(100vh - 250px);
+  }
+}
+
+@media (max-width: 768px) {
+  .kanban-column {
+    min-height: 300px;
+  }
+  
+  .kanban-tasks {
+    max-height: 300px;
+  }
+}
 
 /* Activity Type Colors */
 .activity-type-task {
@@ -353,6 +435,6 @@
 @media (max-width: 640px) {
   .activity-panel {
     width: 100vw;
-max-width: 380px;
+    max-width: 380px;
   }
 }

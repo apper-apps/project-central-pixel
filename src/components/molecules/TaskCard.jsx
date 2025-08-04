@@ -4,7 +4,7 @@ import Button from "@/components/atoms/Button";
 import Card from "@/components/atoms/Card";
 import CollaborationSection from "@/components/molecules/CollaborationSection";
 
-const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact = false }) => {
+const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact = false, kanban = false }) => {
   const [showCollaboration, setShowCollaboration] = useState(false);
 
   const handleToggleComplete = () => {
@@ -90,24 +90,51 @@ const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact =
         </div>
 </div>
       
-      <div className="flex items-center justify-between text-xs text-gray-500">
-<span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          task.completed 
-            ? 'status-completed' 
-            : 'status-in-progress'
-        }`}>
-          {task.completed ? 'Completed' : 'In Progress'}
-        </span>
-        <span>
-          Created {new Date(task.createdAt).toLocaleDateString()}
-        </span>
-      </div>
+      {!kanban && (
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            task.completed 
+              ? 'status-completed' 
+              : 'status-in-progress'
+          }`}>
+            {task.completed ? 'Completed' : 'In Progress'}
+          </span>
+          <span>
+            Created {new Date(task.createdAt).toLocaleDateString()}
+          </span>
+        </div>
+      )}
 
-      <CollaborationSection
-        taskId={task.Id}
-        isExpanded={showCollaboration}
-        onToggle={() => setShowCollaboration(!showCollaboration)}
-      />
+      {kanban && (
+        <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            task.completed 
+              ? 'status-completed' 
+              : task.status === 'inprogress'
+              ? 'status-in-progress'
+              : 'bg-gray-100 text-gray-600'
+          }`}>
+            {task.completed ? 'Done' : task.status === 'inprogress' ? 'In Progress' : 'To Do'}
+          </span>
+          {task.dueDate && (
+            <span className={`text-xs ${
+              new Date(task.dueDate) < new Date() && !task.completed 
+                ? 'text-red-600 font-medium' 
+                : 'text-gray-500'
+            }`}>
+              Due {new Date(task.dueDate).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+      )}
+
+      {!kanban && (
+        <CollaborationSection
+          taskId={task.Id}
+          isExpanded={showCollaboration}
+          onToggle={() => setShowCollaboration(!showCollaboration)}
+        />
+      )}
     </Card>
   );
 };

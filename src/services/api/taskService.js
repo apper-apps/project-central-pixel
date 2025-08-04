@@ -90,6 +90,27 @@ update: (id, taskData) => {
     });
   },
 
+  updateStatus: (id, status) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const index = tasks.findIndex(t => t.Id === parseInt(id));
+        if (index !== -1) {
+          const updatedTask = { 
+            ...tasks[index], 
+            status: status,
+            completed: status === 'completed',
+            updatedAt: new Date().toISOString()
+          };
+          
+          tasks[index] = updatedTask;
+          resolve({ ...updatedTask });
+        } else {
+          reject(new Error("Task not found"));
+        }
+      }, 200);
+    });
+  },
+
 delete: (id) => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {

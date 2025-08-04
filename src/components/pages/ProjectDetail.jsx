@@ -50,6 +50,8 @@ const [tasks, setTasks] = useState([]);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState(null);
 const [activeTab, setActiveTab] = useState('dashboard');
+const [draggedTask, setDraggedTask] = useState(null);
+const [dragOverColumn, setDragOverColumn] = useState(null);
   const [wikiDocuments, setWikiDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [showWikiModal, setShowWikiModal] = useState(false);
@@ -172,7 +174,7 @@ const handleCreateTask = async (taskData) => {
       console.error("Failed to update task:", err);
       toast.error("Failed to update task. Please try again.");
     }
-  };
+};
 
   const handleDeleteTask = async (taskId) => {
     if (window.confirm("Are you sure you want to delete this task?")) {
@@ -194,6 +196,86 @@ const handleCreateTask = async (taskData) => {
         toast.error("Failed to delete task. Please try again.");
       }
     }
+  };
+
+  // Kanban drag and drop handlers
+  const handleDragStart = (e, task) => {
+    setDraggedTask(task);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, column) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverColumn(column);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setDragOverColumn(null);
+  };
+
+  const handleDrop = async (e, targetStatus) => {
+    e.preventDefault();
+    setDragOverColumn(null);
+    
+    if (!draggedTask) return;
+    
+    const newCompleted = targetStatus === 'completed';
+    if (draggedTask.completed === newCompleted) {
+      setDraggedTask(null);
+      return;
+    }
+
+    try {
+      const updatedTask = await taskService.update(draggedTask.Id, {
+        completed: newCompleted,
+        status: targetStatus
+      });
+      
+      setTasks(prev => 
+        prev.map(task => 
+          task.Id === draggedTask.Id ? updatedTask : task
+        )
+      );
+      
+      toast.success(`Task moved to ${targetStatus === 'completed' ? 'Completed' : targetStatus === 'inprogress' ? 'In Progress' : 'To Do'}!`);
+    } catch (err) {
+      console.error("Failed to update task status:", err);
+      toast.error("Failed to update task status. Please try again.");
+    }
+    
+    setDraggedTask(null);
+  };
+
+  const getKanbanColumns = () => {
+    const todoTasks = tasks.filter(task => !task.completed && (!task.status || task.status === 'todo'));
+    const inProgressTasks = tasks.filter(task => !task.completed && task.status === 'inprogress');
+    const completedTasks = tasks.filter(task => task.completed);
+
+    return [
+      {
+        id: 'todo',
+        title: 'To Do',
+        tasks: todoTasks,
+        color: 'bg-gray-50 border-gray-200',
+        headerColor: 'bg-gray-100 text-gray-700'
+      },
+      {
+        id: 'inprogress',
+        title: 'In Progress',
+        tasks: inProgressTasks,
+        color: 'bg-blue-50 border-blue-200',
+        headerColor: 'bg-blue-100 text-blue-700'
+      },
+      {
+        id: 'completed',
+        title: 'Completed',
+        tasks: completedTasks,
+        color: 'bg-green-50 border-green-200',
+        headerColor: 'bg-green-100 text-green-700'
+      }
+    ];
   };
 
 // Task List handlers
@@ -1051,7 +1133,7 @@ const getDateTasks = (date) => {
                 <ApperIcon name="Flag" size={16} />
                 Milestones
               </button>
-              <button
+<button
                 onClick={() => setActiveTab('tasks')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
                   activeTab === 'tasks'
@@ -1061,6 +1143,17 @@ const getDateTasks = (date) => {
               >
                 <ApperIcon name="CheckSquare" size={16} />
                 Tasks
+              </button>
+              <button
+                onClick={() => setActiveTab('kanban')}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
+                  activeTab === 'kanban'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <ApperIcon name="Columns" size={16} />
+                Kanban
               </button>
             </div>
             
@@ -1297,6 +1390,83 @@ const getDateTasks = (date) => {
                   </div>
                 </Card>
               )}
+            </div>
+          )}
+
+          {/* Kanban Board Tab */}
+          {activeTab === 'kanban' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">Kanban Board</h2>
+                  <p className="text-sm text-gray-600 mt-1">Drag tasks between columns to update their status</p>
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={() => openCreateTaskModal()}
+                  className="flex items-center gap-2"
+                >
+                  <ApperIcon name="Plus" size={16} />
+                  Add Task
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[600px]">
+                {getKanbanColumns().map((column) => (
+                  <div
+                    key={column.id}
+                    className={`kanban-column border-2 border-dashed rounded-lg p-4 transition-all duration-200 ${
+                      column.color
+                    } ${
+                      dragOverColumn === column.id 
+                        ? 'border-blue-400 bg-blue-50' 
+                        : 'border-gray-200'
+                    }`}
+                    onDragOver={(e) => handleDragOver(e, column.id)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, column.id)}
+                  >
+                    <div className={`kanban-header p-3 rounded-lg mb-4 ${column.headerColor}`}>
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-lg">{column.title}</h3>
+                        <span className="bg-white px-2 py-1 rounded-full text-xs font-medium text-gray-700">
+                          {column.tasks.length}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="kanban-tasks space-y-3 min-h-[400px]">
+                      {column.tasks.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+                          <ApperIcon name="Archive" size={32} className="mb-2 opacity-50" />
+                          <p className="text-sm">No tasks</p>
+                          <p className="text-xs">Drag tasks here</p>
+                        </div>
+                      ) : (
+                        column.tasks.map((task) => (
+                          <div
+                            key={task.Id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, task)}
+                            className={`kanban-task-card cursor-move transition-all duration-200 ${
+                              draggedTask?.Id === task.Id ? 'opacity-50 transform scale-95' : ''
+                            }`}
+                          >
+                            <TaskCard
+                              task={task}
+                              project={project}
+                              onEdit={openEditTaskModal}
+                              onDelete={handleDeleteTask}
+                              onToggleComplete={handleToggleTaskComplete}
+                              kanban={true}
+                            />
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
