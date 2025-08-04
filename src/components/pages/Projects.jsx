@@ -204,7 +204,7 @@ actionLabel={clients.length === 0 ? null : "Add Project"}
               return project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-            }).map((project) => (
+}).map((project) => (
               <ProjectCard
                 key={project.Id}
                 project={project}
@@ -212,7 +212,7 @@ actionLabel={clients.length === 0 ? null : "Add Project"}
                 onEdit={openEditModal}
                 onDelete={handleDeleteProject}
               />
-))}
+            ))}
           </div>
         ) : (
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">

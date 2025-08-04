@@ -267,7 +267,7 @@ const filteredTasks = tasks.filter(task => {
       ) : (
         viewMode === "grid" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTasks.map((task) => (
+{filteredTasks.map((task) => (
               <TaskCard
                 key={task.Id}
                 task={task}

@@ -308,7 +308,7 @@ const handleFormSubmit = async (memberData) => {
       ) : (
         viewMode === "grid" ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredMembers.map((member) => (
+{filteredMembers.map((member) => (
               <TeamMemberCard
                 key={member.Id}
                 member={member}
