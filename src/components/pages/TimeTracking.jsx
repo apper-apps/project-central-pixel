@@ -235,8 +235,7 @@ const totalHours = filteredEntries.reduce((sum, entry) => sum + (entry.duration 
           </div>
         </div>
       )}
-
-      {filteredEntries.length === 0 ? (
+{filteredEntries.length === 0 ? (
         <Empty
           icon="Clock"
           title={
@@ -300,7 +299,7 @@ const totalHours = filteredEntries.reduce((sum, entry) => sum + (entry.duration 
                             <span className="text-sm font-medium text-gray-900">{project?.name || 'Unknown Project'}</span>
                           </div>
                         </td>
-<td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
                           {entry.description || 'No description'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -328,10 +327,9 @@ const totalHours = filteredEntries.reduce((sum, entry) => sum + (entry.duration 
                 </tbody>
               </table>
             </div>
-</div>
-        )}
+          </div>
+        )
       )}
-
       <Modal
         isOpen={showModal}
         onClose={closeModal}

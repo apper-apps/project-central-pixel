@@ -304,11 +304,11 @@ const handleFormSubmit = async (memberData) => {
               Add Team Member
             </Button>
           }
-/>
+        />
       ) : (
         viewMode === "grid" ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-{filteredMembers.map((member) => (
+            {filteredMembers.map((member) => (
               <TeamMemberCard
                 key={member.Id}
                 member={member}
@@ -393,16 +393,15 @@ const handleFormSubmit = async (memberData) => {
                             <ApperIcon name="Trash2" size={16} />
                           </button>
                         </div>
-</td>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
-</table>
+              </table>
             </div>
           </div>
-        )}
+        )
       )}
-
       {/* Team Member Form Modal */}
       <TeamMemberForm
         isOpen={isFormOpen}
