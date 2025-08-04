@@ -381,7 +381,7 @@ const filteredTasks = tasks.filter(task => {
           onCancel={closeModal}
         />
       </Modal>
-    </div>
+</div>
   );
 };
 

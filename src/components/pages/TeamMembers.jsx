@@ -410,7 +410,7 @@ const handleFormSubmit = async (memberData) => {
         member={editingMember}
         isLoading={isSubmitting}
       />
-    </div>
+</div>
   );
 }
 

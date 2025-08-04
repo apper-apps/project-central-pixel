@@ -315,7 +315,7 @@ actionLabel={clients.length === 0 ? null : "Add Project"}
           onCancel={closeModal}
         />
       </Modal>
-    </div>
+</div>
   );
 };
 

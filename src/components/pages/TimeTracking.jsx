@@ -7,20 +7,20 @@ import ApperIcon from "@/components/ApperIcon";
 import TimeEntryCard from "@/components/molecules/TimeEntryCard";
 import TimeEntryForm from "@/components/molecules/TimeEntryForm";
 import Loading from "@/components/ui/Loading";
+import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
-import Modal from "@/components/atoms/Modal";
 
 const TimeTracking = () => {
-const [timeEntries, setTimeEntries] = useState([]);
+  const [timeEntries, setTimeEntries] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingEntry, setEditingEntry] = useState(null);
-const [filter, setFilter] = useState("all"); // all, today, week, month
+const [editingEntry, setEditingEntry] = useState(null);
+  const [filter, setFilter] = useState("all"); // all, today, week, month
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("grid"); // grid, list
   const loadData = async () => {
@@ -109,7 +109,6 @@ const [filter, setFilter] = useState("all"); // all, today, week, month
     setShowModal(false);
     setEditingEntry(null);
   };
-
 const getFilteredEntries = () => {
     const now = new Date();
     const today = now.toISOString().split('T')[0];
@@ -178,7 +177,6 @@ const getFilteredEntries = () => {
           Log Time
         </Button>
       </div>
-
 <div className="space-y-4">
         <Input
           placeholder="Search time entries by description or project..."
@@ -190,10 +188,11 @@ const getFilteredEntries = () => {
       </div>
 
       {timeEntries.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-<div className="flex items-center justify-between mb-4">
+<div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
-<div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+<div className="flex items-center gap-4">
+              <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
                 {filterOptions.map((filterOption) => (
                   <button
                     key={filterOption.key}
@@ -235,8 +234,8 @@ const getFilteredEntries = () => {
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-600">Total Hours</p>
-<p className="text-2xl font-bold" style={{color: '#4A90E2'}}>{totalHours.toFixed(1)}h</p>
+<p className="text-sm text-gray-600">Total Hours</p>
+              <p className="text-2xl font-bold" style={{color: '#4A90E2'}}>{totalHours.toFixed(1)}h</p>
             </div>
           </div>
         </div>
@@ -264,8 +263,8 @@ const getFilteredEntries = () => {
               : "Try adjusting your filter or log some time for the selected period."
           }
           actionLabel={timeEntries.length === 0 && projects.length > 0 ? "Log Time" : null}
-          onAction={timeEntries.length === 0 && projects.length > 0 ? openCreateModal : null}
-/>
+onAction={timeEntries.length === 0 && projects.length > 0 ? openCreateModal : null}
+        />
       ) : (
         viewMode === "grid" ? (
           <div className="space-y-4">
@@ -350,7 +349,7 @@ const getFilteredEntries = () => {
           onSubmit={editingEntry ? handleEditEntry : handleCreateEntry}
           onCancel={closeModal}
         />
-      </Modal>
+</Modal>
     </div>
   );
 };
