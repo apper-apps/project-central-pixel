@@ -7,10 +7,10 @@ import ApperIcon from "@/components/ApperIcon";
 import TimeEntryCard from "@/components/molecules/TimeEntryCard";
 import TimeEntryForm from "@/components/molecules/TimeEntryForm";
 import Loading from "@/components/ui/Loading";
-import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 
 const TimeTracking = () => {
