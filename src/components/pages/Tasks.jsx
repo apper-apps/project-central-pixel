@@ -12,6 +12,7 @@ import Empty from "@/components/ui/Empty";
 import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
+import Pagination from "@/components/atoms/Pagination";
 
 const Tasks = () => {
 const [tasks, setTasks] = useState([]);
@@ -23,6 +24,9 @@ const [tasks, setTasks] = useState([]);
 const [filter, setFilter] = useState("all"); // all, pending, completed
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("grid"); // grid, list
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
+  
   const loadData = async () => {
     try {
       setLoading(true);
@@ -138,11 +142,32 @@ const filteredTasks = tasks.filter(task => {
     return matchesStatus && matchesSearch;
   });
 
+  // Pagination calculations
+  const totalItems = filteredTasks.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
+
   const taskCounts = {
     all: tasks.length,
     pending: tasks.filter(t => !t.completed).length,
     completed: tasks.filter(t => t.completed).length
   };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, searchTerm]);
 
   if (loading) {
     return (
@@ -267,7 +292,7 @@ const filteredTasks = tasks.filter(task => {
 ) : (
         viewMode === "grid" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTasks.map((task) => (
+            {paginatedTasks.map((task) => (
               <TaskCard
                 key={task.Id}
                 task={task}
@@ -293,7 +318,7 @@ const filteredTasks = tasks.filter(task => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {filteredTasks.map((task) => {
+                  {paginatedTasks.map((task) => {
                     const project = getProjectById(task.projectId);
                     return (
                       <tr key={task.Id} className="hover:bg-gray-50">
@@ -368,6 +393,18 @@ const filteredTasks = tasks.filter(task => {
         )
       )}
 
+      {/* Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={handlePageChange}
+        onItemsPerPageChange={handleItemsPerPageChange}
+        startItem={startIndex + 1}
+        endItem={endIndex}
+      />
+
       <Modal
         isOpen={showModal}
         onClose={closeModal}
@@ -384,5 +421,4 @@ const filteredTasks = tasks.filter(task => {
     </div>
   );
 };
-
 export default Tasks;

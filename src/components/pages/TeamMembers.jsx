@@ -11,7 +11,7 @@ import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 import Card from "@/components/atoms/Card";
-
+import Pagination from "@/components/atoms/Pagination";
 function TeamMembers() {
   const [members, setMembers] = useState([]);
   const [filteredMembers, setFilteredMembers] = useState([]);
@@ -25,16 +25,37 @@ const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [workloadStats, setWorkloadStats] = useState({});
   const [viewMode, setViewMode] = useState("grid"); // grid, list
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   useEffect(() => {
     fetchMembers();
     fetchWorkloadStats();
   }, []);
 
   useEffect(() => {
-    filterMembers();
+filterMembers();
   }, [members, searchTerm, statusFilter, departmentFilter]);
 
+  // Pagination calculations
+  const totalItems = filteredMembers.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedMembers = filteredMembers.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, departmentFilter]);
 const fetchMembers = async () => {
     try {
       setLoading(true);
@@ -294,7 +315,7 @@ const handleFormSubmit = async (memberData) => {
         </div>
       </div>
 {/* Team Members Grid */}
-      {filteredMembers.length === 0 ? (
+{filteredMembers.length === 0 ? (
         <Empty
           title="No team members found"
           description={searchTerm ? "Try adjusting your search criteria" : "Get started by adding your first team member"}
@@ -308,7 +329,7 @@ const handleFormSubmit = async (memberData) => {
       ) : (
         viewMode === "grid" ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredMembers.map((member) => (
+            {paginatedMembers.map((member) => (
               <TeamMemberCard
                 key={member.Id}
                 member={member}
@@ -332,7 +353,7 @@ const handleFormSubmit = async (memberData) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {filteredMembers.map((member) => (
+                  {paginatedMembers.map((member) => (
                     <tr key={member.Id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -402,6 +423,19 @@ const handleFormSubmit = async (memberData) => {
           </div>
         )
       )}
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={handlePageChange}
+        onItemsPerPageChange={handleItemsPerPageChange}
+        startItem={startIndex + 1}
+        endItem={endIndex}
+      />
+
       {/* Team Member Form Modal */}
       <TeamMemberForm
         isOpen={isFormOpen}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import Pagination from "@/components/atoms/Pagination";
 import clientService from "@/services/api/clientService";
 import { create, getAll, update } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
@@ -9,6 +10,7 @@ import ClientForm from "@/components/molecules/ClientForm";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
+import Projects from "@/components/pages/Projects";
 import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
@@ -23,6 +25,8 @@ const [clients, setClients] = useState([]);
 const [statusFilter, setStatusFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("grid"); // grid, list
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
 const filteredClients = clients.filter(client => {
     const matchesStatus = statusFilter === "All" || client.status === statusFilter;
     const matchesSearch = !searchTerm || 
@@ -32,6 +36,27 @@ const filteredClients = clients.filter(client => {
       client.phone?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   });
+
+  // Pagination calculations
+  const totalItems = filteredClients.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedClients = filteredClients.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, searchTerm]);
 
   const loadClients = async () => {
     try {
@@ -103,11 +128,10 @@ const filteredClients = clients.filter(client => {
     setShowModal(true);
   };
 
-  const closeModal = () => {
+const closeModal = () => {
     setShowModal(false);
-setEditingClient(null);
+    setEditingClient(null);
   };
-
   const handleViewClient = (clientId) => {
     navigate(`/clients/${clientId}`);
   };
@@ -218,7 +242,7 @@ setEditingClient(null);
             actionLabel="Add Client"
             onAction={openCreateModal} /> : viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredClients.map(client => <ClientCard
+              {paginatedClients.map(client => <ClientCard
                   key={client.Id}
                   client={client}
                   onEdit={openEditModal}
@@ -240,7 +264,7 @@ setEditingClient(null);
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {filteredClients.map((client) => (
+                    {paginatedClients.map((client) => (
                       <tr key={client.Id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div className="flex items-center">
@@ -309,6 +333,19 @@ setEditingClient(null);
               </div>
             </div>
           )}
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          startItem={startIndex + 1}
+          endItem={endIndex}
+        />
+
         <Modal
             isOpen={showModal}
             onClose={closeModal}
@@ -317,9 +354,10 @@ setEditingClient(null);
             <ClientForm
                 client={editingClient}
                 onSubmit={editingClient ? handleEditClient : handleCreateClient}
-                onCancel={closeModal} />
+onCancel={closeModal} />
         </Modal>
-    </div></div>
+    </div>
+    </div>
   );
 };
 
