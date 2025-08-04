@@ -27,35 +27,35 @@ const TimeEntryCard = ({ timeEntry, project, onEdit, onDelete }) => {
     }
   };
 
-const getProjectColor = (status) => {
+  const getProjectColor = (status) => {
     switch (status) {
       case "In Progress":
-        return "bg-blue-900 text-blue-300 border border-blue-600";
+        return "bg-blue-100 text-blue-800";
       case "Planning":
-        return "bg-yellow-900 text-yellow-300 border border-yellow-600";
+        return "bg-yellow-100 text-yellow-800";
       case "Completed":
-        return "bg-green-900 text-green-300 border border-green-600";
+        return "bg-green-100 text-green-800";
       case "On Hold":
-        return "bg-gray-700 text-gray-300 border border-gray-600";
+        return "bg-gray-100 text-gray-800";
       default:
-        return "bg-gray-700 text-gray-300 border border-gray-600";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   return (
-<Card className="p-6 hover:shadow-md transition-shadow">
+    <Card className="p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-3 mb-3">
             <div className="flex items-center space-x-2">
-<ApperIcon name="Clock" size={16} className="text-blue-400" />
-              <span className="text-lg font-semibold text-blue-400">
+              <ApperIcon name="Clock" size={16} className="text-blue-600" />
+              <span className="text-lg font-semibold text-blue-600">
                 {formatDuration(timeEntry.duration)}
               </span>
             </div>
             <div className="flex items-center space-x-2">
-<ApperIcon name="Calendar" size={14} className="text-gray-400" />
-              <span className="text-sm text-gray-300">
+              <ApperIcon name="Calendar" size={14} className="text-gray-500" />
+              <span className="text-sm text-gray-600">
                 {formatDate(timeEntry.date)}
               </span>
             </div>
@@ -63,19 +63,19 @@ const getProjectColor = (status) => {
 
           {project && (
             <div className="flex items-center space-x-2 mb-3">
-<ApperIcon name="Briefcase" size={14} className="text-gray-400" />
-              <span className="font-medium text-gray-100">{project.name}</span>
+              <ApperIcon name="Briefcase" size={14} className="text-gray-500" />
+              <span className="font-medium text-gray-900">{project.name}</span>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getProjectColor(project.status)}`}>
                 {project.status}
               </span>
             </div>
           )}
 
-<p className="text-gray-300 text-sm leading-relaxed mb-4">
+          <p className="text-gray-700 text-sm leading-relaxed mb-4">
             {timeEntry.description}
           </p>
 
-<div className="flex items-center text-xs text-gray-400">
+          <div className="flex items-center text-xs text-gray-500">
             <ApperIcon name="Plus" size={12} className="mr-1" />
             Created {new Date(timeEntry.createdAt).toLocaleDateString()}
           </div>
@@ -86,7 +86,7 @@ const getProjectColor = (status) => {
             variant="ghost"
             size="sm"
             onClick={() => onEdit(timeEntry)}
-className="text-gray-400 hover:text-blue-400"
+            className="text-gray-600 hover:text-blue-600"
           >
             <ApperIcon name="Edit" size={16} />
           </Button>
@@ -95,7 +95,7 @@ className="text-gray-400 hover:text-blue-400"
             size="sm"
             onClick={() => onDelete(timeEntry.Id)}
             className="text-gray-600 hover:text-red-600"
->
+          >
             <ApperIcon name="Trash2" size={16} />
           </Button>
         </div>
