@@ -196,9 +196,8 @@ class ReportService {
       };
     } catch (error) {
       console.error('Error fetching filter options:', error);
-      throw error;
+throw error;
     }
-}
   }
 
   // Resource Allocation Report Data
@@ -276,3 +275,4 @@ class ReportService {
 }
 
 const reportService = new ReportService();
+export default reportService;
