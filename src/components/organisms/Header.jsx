@@ -14,17 +14,17 @@ const Header = ({ onMenuClick }) => {
             className="lg:hidden mr-3 p-2"
           >
             <ApperIcon name="Menu" size={20} />
-          </Button>
+</Button>
           <div className="lg:hidden flex items-center">
 <div className="p-1.5 rounded-lg mr-2" style={{backgroundColor: 'rgba(74, 144, 226, 0.1)'}}>
               <ApperIcon name="Zap" size={16} style={{color: '#4A90E2'}} />
             </div>
-<span className="text-lg font-bold gradient-text">ClientFlow</span>
+<span className="text-lg font-bold gradient-text">Project Central</span>
           </div>
         </div>
         <div className="flex items-center space-x-4">
           <div className="hidden lg:block text-sm text-gray-600">
-            Welcome back to ClientFlow
+            Welcome back to Project Central
           </div>
         </div>
       </div>
