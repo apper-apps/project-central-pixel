@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import ApperIcon from '@/components/ApperIcon';
-import Button from '@/components/atoms/Button';
-import Input from '@/components/atoms/Input';
-import Card from '@/components/atoms/Card';
-import Loading from '@/components/ui/Loading';
-import Error from '@/components/ui/Error';
-import Empty from '@/components/ui/Empty';
-import TeamMemberCard from '@/components/molecules/TeamMemberCard';
-import TeamMemberForm from '@/components/molecules/TeamMemberForm';
-import teamMemberService from '@/services/api/teamMemberService';
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import teamMemberService, { create, getAll, getWorkloadStats, search, update } from "@/services/api/teamMemberService";
+import ApperIcon from "@/components/ApperIcon";
+import TeamMemberForm from "@/components/molecules/TeamMemberForm";
+import TeamMemberCard from "@/components/molecules/TeamMemberCard";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Empty from "@/components/ui/Empty";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
 
 function TeamMembers() {
   const [members, setMembers] = useState([]);
   const [filteredMembers, setFilteredMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -23,6 +23,7 @@ function TeamMembers() {
   const [editingMember, setEditingMember] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [workloadStats, setWorkloadStats] = useState({});
+  const [viewMode, setViewMode] = useState("grid"); // grid, list
 
   useEffect(() => {
     fetchMembers();
@@ -257,8 +258,35 @@ function TeamMembers() {
             </select>
           </div>
         </div>
-      </Card>
+</Card>
 
+      {/* View Mode Toggle */}
+      <div className="flex justify-end">
+        <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`p-2 rounded-md transition-colors ${
+              viewMode === "grid" 
+                ? "text-white shadow-sm"
+                : "hover:text-gray-900"
+            }`}
+            style={viewMode === "grid" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+          >
+            <ApperIcon name="Grid3X3" size={16} />
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`p-2 rounded-md transition-colors ${
+              viewMode === "list" 
+                ? "text-white shadow-sm"
+                : "hover:text-gray-900"
+            }`}
+            style={viewMode === "list" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+          >
+            <ApperIcon name="List" size={16} />
+          </button>
+        </div>
+      </div>
       {/* Team Members Grid */}
       {filteredMembers.length === 0 ? (
         <Empty
@@ -270,18 +298,103 @@ function TeamMembers() {
               Add Team Member
             </Button>
           }
-        />
+/>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredMembers.map((member) => (
-            <TeamMemberCard
-              key={member.Id}
-              member={member}
-              onEdit={handleEditMember}
-              onDelete={handleDeleteMember}
-            />
-          ))}
-        </div>
+        {viewMode === "grid" ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredMembers.map((member) => (
+              <TeamMemberCard
+                key={member.Id}
+                member={member}
+                onEdit={handleEditMember}
+                onDelete={handleDeleteMember}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Workload</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredMembers.map((member) => (
+                    <tr key={member.Id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 w-10 h-10">
+                            <img 
+                              src={member.avatar} 
+                              alt={member.name}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{member.name}</div>
+                            <div className="text-sm text-gray-500">{member.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {member.role}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {member.department}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          member.status === 'Active' ? 'bg-green-100 text-green-800' :
+                          member.status === 'Away' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {member.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                            <div 
+                              className={`h-2 rounded-full ${
+                                member.workloadPercentage <= 75 ? 'bg-green-500' :
+                                member.workloadPercentage <= 90 ? 'bg-yellow-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${Math.min(member.workloadPercentage || 0, 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-gray-600">{member.workloadPercentage || 0}%</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button
+                            onClick={() => handleEditMember(member)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <ApperIcon name="Edit2" size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteMember(member)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <ApperIcon name="Trash2" size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       )}
 
       {/* Team Member Form Modal */}

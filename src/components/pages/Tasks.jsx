@@ -14,7 +14,7 @@ import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 
 const Tasks = () => {
-  const [tasks, setTasks] = useState([]);
+const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -22,6 +22,7 @@ const Tasks = () => {
   const [editingTask, setEditingTask] = useState(null);
 const [filter, setFilter] = useState("all"); // all, pending, completed
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState("grid"); // grid, list
   const loadData = async () => {
     try {
       setLoading(true);
@@ -193,25 +194,51 @@ const filteredTasks = tasks.filter(task => {
         />
       </div>
       {tasks.length > 0 && (
-        <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
-          {[
-            { key: "all", label: "All", count: taskCounts.all },
-            { key: "pending", label: "Pending", count: taskCounts.pending },
-            { key: "completed", label: "Completed", count: taskCounts.completed }
-          ].map((filterOption) => (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+            {[
+              { key: "all", label: "All", count: taskCounts.all },
+              { key: "pending", label: "Pending", count: taskCounts.pending },
+              { key: "completed", label: "Completed", count: taskCounts.completed }
+            ].map((filterOption) => (
 <button
-              key={filterOption.key}
-              onClick={() => setFilter(filterOption.key)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filter === filterOption.key 
+                key={filterOption.key}
+                onClick={() => setFilter(filterOption.key)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  filter === filterOption.key 
+                    ? "text-white shadow-sm"
+                    : "hover:text-gray-900"
+                }`}
+                style={filter === filterOption.key ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+              >
+                {filterOption.label} ({filterOption.count})
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === "grid" 
                   ? "text-white shadow-sm"
                   : "hover:text-gray-900"
               }`}
-              style={filter === filterOption.key ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+              style={viewMode === "grid" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
             >
-              {filterOption.label} ({filterOption.count})
+              <ApperIcon name="Grid3X3" size={16} />
             </button>
-          ))}
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === "list" 
+                  ? "text-white shadow-sm"
+                  : "hover:text-gray-900"
+              }`}
+              style={viewMode === "list" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+            >
+              <ApperIcon name="List" size={16} />
+            </button>
+          </div>
         </div>
       )}
 
@@ -236,20 +263,109 @@ const filteredTasks = tasks.filter(task => {
           }
           actionLabel={tasks.length === 0 && projects.length > 0 ? "Add Task" : null}
           onAction={tasks.length === 0 && projects.length > 0 ? openCreateModal : null}
-        />
+/>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTasks.map((task) => (
-            <TaskCard
-              key={task.Id}
-              task={task}
-              project={getProjectById(task.projectId)}
-              onEdit={openEditModal}
-              onDelete={handleDeleteTask}
-              onToggleComplete={handleToggleComplete}
-            />
-          ))}
-        </div>
+        {viewMode === "grid" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTasks.map((task) => (
+              <TaskCard
+                key={task.Id}
+                task={task}
+                project={getProjectById(task.projectId)}
+                onEdit={openEditModal}
+                onDelete={handleDeleteTask}
+                onToggleComplete={handleToggleComplete}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredTasks.map((task) => {
+                    const project = getProjectById(task.projectId);
+                    return (
+                      <tr key={task.Id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={task.completed}
+                              onChange={() => handleToggleComplete(task.Id, !task.completed)}
+                              className="mr-3 h-4 w-4 text-blue-600 rounded border-gray-300"
+                            />
+                            <div>
+                              <div className={`text-sm font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                                {task.title}
+                              </div>
+                              {task.description && (
+                                <div className="text-sm text-gray-500 max-w-xs truncate">
+                                  {task.description}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: project?.color || '#4A90E2'}}></div>
+                            <span className="text-sm text-gray-900">{project?.name || 'No Project'}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            task.priority === 'High' ? 'bg-red-100 text-red-800' :
+                            task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {task.priority}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            task.completed ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {task.completed ? 'Completed' : 'Pending'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end space-x-2">
+                            <button
+                              onClick={() => openEditModal(task)}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              <ApperIcon name="Edit2" size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTask(task.Id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <ApperIcon name="Trash2" size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       )}
 
       <Modal

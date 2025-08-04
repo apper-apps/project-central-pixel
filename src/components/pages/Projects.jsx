@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import clientService from "@/services/api/clientService";
 import projectService from "@/services/api/projectService";
+import { create, getAll, update } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
 import ProjectForm from "@/components/molecules/ProjectForm";
 import ProjectCard from "@/components/molecules/ProjectCard";
@@ -13,14 +14,14 @@ import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 
 const Projects = () => {
-  const [projects, setProjects] = useState([]);
+const [projects, setProjects] = useState([]);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
 const [searchTerm, setSearchTerm] = useState("");
-
+  const [viewMode, setViewMode] = useState("grid"); // grid, list
   const loadData = async () => {
     try {
       setLoading(true);
@@ -149,7 +150,7 @@ const [searchTerm, setSearchTerm] = useState("");
         </Button>
 </div>
       
-      <div className="space-y-4">
+<div className="flex items-center justify-between">
         <Input
           placeholder="Search projects by name, description, or client..."
           value={searchTerm}
@@ -157,6 +158,30 @@ const [searchTerm, setSearchTerm] = useState("");
           icon={<ApperIcon name="Search" size={16} className="text-gray-400" />}
           className="max-w-md"
         />
+        <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`p-2 rounded-md transition-colors ${
+              viewMode === "grid" 
+                ? "text-white shadow-sm"
+                : "hover:text-gray-900"
+            }`}
+            style={viewMode === "grid" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+          >
+            <ApperIcon name="Grid3X3" size={16} />
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`p-2 rounded-md transition-colors ${
+              viewMode === "list" 
+                ? "text-white shadow-sm"
+                : "hover:text-gray-900"
+            }`}
+            style={viewMode === "list" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+          >
+            <ApperIcon name="List" size={16} />
+          </button>
+        </div>
       </div>
 
       {projects.length === 0 ? (
@@ -170,24 +195,111 @@ const [searchTerm, setSearchTerm] = useState("");
 actionLabel={clients.length === 0 ? null : "Add Project"}
           onAction={clients.length === 0 ? null : openCreateModal}
         />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.filter(project => {
-            if (!searchTerm) return true;
-            const client = getClientById(project.clientId);
-            return project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-          }).map((project) => (
-            <ProjectCard
-              key={project.Id}
-              project={project}
-              client={getClientById(project.clientId)}
-              onEdit={openEditModal}
-              onDelete={handleDeleteProject}
-            />
+) : (
+        {viewMode === "grid" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.filter(project => {
+              if (!searchTerm) return true;
+              const client = getClientById(project.clientId);
+              return project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+            }).map((project) => (
+              <ProjectCard
+                key={project.Id}
+                project={project}
+                client={getClientById(project.clientId)}
+                onEdit={openEditModal}
+                onDelete={handleDeleteProject}
+              />
 ))}
-        </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {projects.filter(project => {
+                    if (!searchTerm) return true;
+                    const client = getClientById(project.clientId);
+                    return project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+                  }).map((project) => {
+                    const client = getClientById(project.clientId);
+                    return (
+                      <tr key={project.Id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{project.name}</div>
+                            {project.description && (
+                              <div className="text-sm text-gray-500 max-w-xs truncate">
+                                {project.description}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {client?.name || 'No Client'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            project.status === 'Active' ? 'bg-green-100 text-green-800' :
+                            project.status === 'On Hold' ? 'bg-yellow-100 text-yellow-800' :
+                            project.status === 'Completed' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {project.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                              <div 
+                                className="bg-blue-600 h-2 rounded-full" 
+                                style={{ width: `${project.progress || 0}%` }}
+                              />
+                            </div>
+                            <span className="text-sm text-gray-600">{project.progress || 0}%</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'No due date'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end space-x-2">
+                            <button
+                              onClick={() => openEditModal(project)}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              <ApperIcon name="Edit2" size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProject(project.Id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <ApperIcon name="Trash2" size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       )}
 
       <Modal

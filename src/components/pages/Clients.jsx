@@ -15,13 +15,14 @@ import Modal from "@/components/atoms/Modal";
 
 const Clients = () => {
   const navigate = useNavigate();
-  const [clients, setClients] = useState([]);
+const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
 const [statusFilter, setStatusFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState("grid"); // grid, list
 const filteredClients = clients.filter(client => {
     const matchesStatus = statusFilter === "All" || client.status === statusFilter;
     const matchesSearch = !searchTerm || 
@@ -162,41 +163,152 @@ setEditingClient(null);
                 <ApperIcon name="Filter" size={16} className="text-gray-500" />
                 <span className="text-sm font-medium text-gray-700">Filter by status:</span>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center justify-between flex-1">
+              <div className="flex flex-wrap items-center gap-2">
 {["All", "Active", "Inactive", "Prospect"].map(status => (
-                  <button
-                    key={status}
-                    onClick={() => setStatusFilter(status)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 whitespace-nowrap ${
-                      statusFilter === status 
-                        ? "text-white border" 
-                        : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-                    }`}
-                    style={statusFilter === status ? {backgroundColor: '#4A90E2', borderColor: '#4A90E2'} : {}}
-                  >
-                    {status}
-                    {status !== "All" && (
-                      <span className="ml-1 text-xs opacity-75">
-                        ({clients.filter(c => c.status === status).length})
-                      </span>
-                    )}
-                  </button>
-                ))}
+                    <button
+                      key={status}
+                      onClick={() => setStatusFilter(status)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 whitespace-nowrap ${
+                        statusFilter === status 
+                          ? "text-white border" 
+                          : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                      }`}
+                      style={statusFilter === status ? {backgroundColor: '#4A90E2', borderColor: '#4A90E2'} : {}}
+                    >
+                      {status}
+                      {status !== "All" && (
+                        <span className="ml-1 text-xs opacity-75">
+                          ({clients.filter(c => c.status === status).length})
+                        </span>
+                      )}
+                    </button>
+                  ))}
+              </div>
+              <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded-md transition-colors ${
+                    viewMode === "grid" 
+                      ? "text-white shadow-sm"
+                      : "hover:text-gray-900"
+                  }`}
+                  style={viewMode === "grid" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+                >
+                  <ApperIcon name="Grid3X3" size={16} />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded-md transition-colors ${
+                    viewMode === "list" 
+                      ? "text-white shadow-sm"
+                      : "hover:text-gray-900"
+                  }`}
+                  style={viewMode === "list" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+                >
+                  <ApperIcon name="List" size={16} />
+                </button>
+              </div>
             </div>
         </div>
-        {clients.length === 0 ? <Empty
+{clients.length === 0 ? <Empty
             icon="Users"
             title="No clients yet"
             description="Start building your client base by adding your first client."
             actionLabel="Add Client"
-            onAction={openCreateModal} /> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredClients.map(client => <ClientCard
-                key={client.Id}
-                client={client}
-                onEdit={openEditModal}
-                onDelete={handleDeleteClient}
-                onView={handleViewClient} />)}
-        </div>}
+            onAction={openCreateModal} /> : viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredClients.map(client => <ClientCard
+                  key={client.Id}
+                  client={client}
+                  onEdit={openEditModal}
+                  onDelete={handleDeleteClient}
+                  onView={handleViewClient} />)}
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Projects</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Contact</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {filteredClients.map((client) => (
+                      <tr key={client.Id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 w-10 h-10">
+                              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <span className="text-sm font-medium text-blue-800">
+                                  {client.name?.charAt(0)?.toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">{client.name}</div>
+                              {client.company && (
+                                <div className="text-sm text-gray-500">{client.company}</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{client.email}</div>
+                          {client.phone && (
+                            <div className="text-sm text-gray-500">{client.phone}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            client.status === 'Active' ? 'status-completed' :
+                            client.status === 'Inactive' ? 'status-on-hold' :
+                            'status-in-progress'
+                          }`}>
+                            {client.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {client.projectCount || 0} projects
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {client.lastContact ? new Date(client.lastContact).toLocaleDateString() : 'Never'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end space-x-2">
+                            <button
+                              onClick={() => handleViewClient(client.Id)}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              <ApperIcon name="Eye" size={16} />
+                            </button>
+                            <button
+                              onClick={() => openEditModal(client)}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              <ApperIcon name="Edit2" size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClient(client.Id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <ApperIcon name="Trash2" size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         <Modal
             isOpen={showModal}
             onClose={closeModal}

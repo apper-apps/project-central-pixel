@@ -14,7 +14,7 @@ import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 
 const TimeTracking = () => {
-  const [timeEntries, setTimeEntries] = useState([]);
+const [timeEntries, setTimeEntries] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -22,6 +22,7 @@ const TimeTracking = () => {
   const [editingEntry, setEditingEntry] = useState(null);
 const [filter, setFilter] = useState("all"); // all, today, week, month
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState("grid"); // grid, list
   const loadData = async () => {
     try {
       setLoading(true);
@@ -190,22 +191,48 @@ const getFilteredEntries = () => {
 
       {timeEntries.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
+<div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
 <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
-              {filterOptions.map((filterOption) => (
+                {filterOptions.map((filterOption) => (
+                  <button
+                    key={filterOption.key}
+                    onClick={() => setFilter(filterOption.key)}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      filter === filterOption.key 
+                        ? "text-white shadow-sm"
+                        : "hover:text-gray-900"
+                    }`}
+                    style={filter === filterOption.key ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+                  >
+                    {filterOption.label} ({filterOption.count})
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
                 <button
-                  key={filterOption.key}
-                  onClick={() => setFilter(filterOption.key)}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    filter === filterOption.key 
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded-md transition-colors ${
+                    viewMode === "grid" 
                       ? "text-white shadow-sm"
                       : "hover:text-gray-900"
                   }`}
-                  style={filter === filterOption.key ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+                  style={viewMode === "grid" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
                 >
-                  {filterOption.label} ({filterOption.count})
+                  <ApperIcon name="Grid3X3" size={16} />
                 </button>
-              ))}
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded-md transition-colors ${
+                    viewMode === "list" 
+                      ? "text-white shadow-sm"
+                      : "hover:text-gray-900"
+                  }`}
+                  style={viewMode === "list" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+                >
+                  <ApperIcon name="List" size={16} />
+                </button>
+              </div>
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-600">Total Hours</p>
@@ -238,19 +265,77 @@ const getFilteredEntries = () => {
           }
           actionLabel={timeEntries.length === 0 && projects.length > 0 ? "Log Time" : null}
           onAction={timeEntries.length === 0 && projects.length > 0 ? openCreateModal : null}
-        />
+/>
       ) : (
-        <div className="space-y-4">
-          {filteredEntries.map((entry) => (
-            <TimeEntryCard
-              key={entry.Id}
-              timeEntry={entry}
-              project={getProjectById(entry.projectId)}
-              onEdit={openEditModal}
-              onDelete={handleDeleteEntry}
-            />
-          ))}
-        </div>
+        viewMode === "grid" ? (
+          <div className="space-y-4">
+            {filteredEntries.map((entry) => (
+              <TimeEntryCard
+                key={entry.Id}
+                timeEntry={entry}
+                project={getProjectById(entry.projectId)}
+                onEdit={openEditModal}
+                onDelete={handleDeleteEntry}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredEntries.map((entry) => {
+                    const project = getProjectById(entry.projectId);
+                    return (
+                      <tr key={entry.Id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(entry.date).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: project?.color || '#4A90E2'}}></div>
+                            <span className="text-sm font-medium text-gray-900">{project?.name || 'Unknown Project'}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                          {entry.description || 'No description'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {entry.hours}h
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end space-x-2">
+                            <button
+                              onClick={() => openEditModal(entry)}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              <ApperIcon name="Edit2" size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEntry(entry.Id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <ApperIcon name="Trash2" size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       )}
 
       <Modal

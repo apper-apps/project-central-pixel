@@ -13,7 +13,7 @@ import Card from "@/components/atoms/Card";
 
 export default function Reports() {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const [error, setError] = useState(null);
   const [filterOptions, setFilterOptions] = useState({ projects: [], teamMembers: [] });
   const [filters, setFilters] = useState({
     projectId: '',
@@ -21,7 +21,7 @@ export default function Reports() {
     startDate: '',
     endDate: ''
   });
-  
+  const [viewMode, setViewMode] = useState("chart"); // chart, list
 // Report data states
   const [projectStatusData, setProjectStatusData] = useState(null);
   const [teamPerformanceData, setTeamPerformanceData] = useState(null);
@@ -389,7 +389,33 @@ const [projectStatus, teamPerformance, timeTracking, resourceAllocation] = await
           <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
           <p className="text-gray-600 mt-1">Comprehensive insights into your projects and team performance</p>
         </div>
-        <div className="mt-4 sm:mt-0">
+        <div className="flex items-center gap-4 mt-4 sm:mt-0">
+          <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode("chart")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewMode === "chart" 
+                  ? "text-white shadow-sm"
+                  : "hover:text-gray-900"
+              }`}
+              style={viewMode === "chart" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+            >
+              <ApperIcon name="BarChart3" size={16} className="mr-1" />
+              Charts
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewMode === "list" 
+                  ? "text-white shadow-sm"
+                  : "hover:text-gray-900"
+              }`}
+              style={viewMode === "list" ? {backgroundColor: '#4A90E2', color: 'white'} : {color: '#6B7280'}}
+            >
+              <ApperIcon name="List" size={16} className="mr-1" />
+              Tables
+            </button>
+          </div>
           <Button
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-2"
@@ -468,31 +494,96 @@ const [projectStatus, teamPerformance, timeTracking, resourceAllocation] = await
           </div>
         </div>
         
-        {projectStatusData && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-medium mb-3">Status Distribution</h3>
-              {getProjectStatusPieConfig() && (
-                <Chart
-                  options={getProjectStatusPieConfig().options}
-                  series={getProjectStatusPieConfig().series}
-                  type="pie"
-                  height={300}
-                />
-              )}
+{projectStatusData && (
+          viewMode === "chart" ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-medium mb-3">Status Distribution</h3>
+                {getProjectStatusPieConfig() && (
+                  <Chart
+                    options={getProjectStatusPieConfig().options}
+                    series={getProjectStatusPieConfig().series}
+                    type="pie"
+                    height={300}
+                  />
+                )}
+              </div>
+              <div>
+                <h3 className="text-lg font-medium mb-3">Project Progress</h3>
+                {getProjectProgressBarConfig() && (
+                  <Chart
+                    options={getProjectProgressBarConfig().options}
+                    series={getProjectProgressBarConfig().series}
+                    type="bar"
+                    height={300}
+                  />
+                )}
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-medium mb-3">Project Progress</h3>
-              {getProjectProgressBarConfig() && (
-                <Chart
-                  options={getProjectProgressBarConfig().options}
-                  series={getProjectProgressBarConfig().series}
-                  type="bar"
-                  height={300}
-                />
-              )}
+          ) : (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium mb-3">Project Status Summary</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Count</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Percentage</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(projectStatusData.statusDistribution || {}).map(([status, count]) => {
+                        const total = Object.values(projectStatusData.statusDistribution).reduce((a, b) => a + b, 0);
+                        const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                        return (
+                          <tr key={status}>
+                            <td className="border border-gray-300 px-4 py-2">{status}</td>
+                            <td className="border border-gray-300 px-4 py-2">{count}</td>
+                            <td className="border border-gray-300 px-4 py-2">{percentage}%</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-medium mb-3">Project Progress Details</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Project Name</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Progress</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(projectStatusData.projectProgress || []).map((project) => (
+                        <tr key={project.name}>
+                          <td className="border border-gray-300 px-4 py-2">{project.name}</td>
+                          <td className="border border-gray-300 px-4 py-2">
+                            <div className="flex items-center">
+                              <div className="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                <div 
+                                  className="bg-blue-600 h-2 rounded-full" 
+                                  style={{ width: `${project.progress}%` }}
+                                />
+                              </div>
+                              <span>{project.progress}%</span>
+                            </div>
+                          </td>
+                          <td className="border border-gray-300 px-4 py-2">{project.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-          </div>
+          )
         )}
       </Card>
       
