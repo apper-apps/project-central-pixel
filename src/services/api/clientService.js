@@ -10,16 +10,12 @@ this.clients = Array.isArray(clientsData) ? [...clientsData] : [];
     return [...this.clients];
   }
 
-  async getById(id) {
-    await this.delay(200);
-    const client = this.clients.find(c => c.Id === parseInt(id));
-    if (!client) {
-      throw new Error("Client not found");
-    }
-if (!id) {
+async getById(id) {
+    if (!id) {
       throw new Error("Client ID is required");
     }
     
+    await this.delay(200);
     const client = this.clients.find(c => c && c.Id === parseInt(id));
     if (!client) {
       throw new Error("Client not found");
