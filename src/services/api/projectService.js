@@ -10,9 +10,19 @@ class ProjectService {
     return [...this.projects];
   }
 
-  async getById(id) {
+async getById(id) {
+    // Validate project ID
+    if (!id || id === null || id === undefined || id === '') {
+      throw new Error("Valid project ID is required");
+    }
+    
+    const numericId = parseInt(id);
+    if (isNaN(numericId) || numericId <= 0) {
+      throw new Error("Valid project ID is required");
+    }
+    
     await this.delay(200);
-    const project = this.projects.find(p => p.Id === parseInt(id));
+    const project = this.projects.find(p => p.Id === numericId);
     if (!project) {
       throw new Error("Project not found");
     }

@@ -1852,11 +1852,13 @@ const getDateTasks = (date) => {
             <span>Completed: {milestoneStats.completed}</span>
             <span>Pending: {milestoneStats.pending}</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
+<div className="w-full bg-gray-200 rounded-full h-3">
             <div 
-className="h-3 rounded-full transition-all duration-300"
-              style={{backgroundColor: '#4A90E2'}}
-              style={{ width: `${milestoneStats.completionRate}%` }}
+              className="h-3 rounded-full transition-all duration-300"
+              style={{ 
+                backgroundColor: '#4A90E2', 
+                width: `${milestoneStats.completionRate}%` 
+              }}
             ></div>
           </div>
           <p className="text-xs text-gray-500">
