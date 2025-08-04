@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import ApperIcon from "@/components/ApperIcon";
 
-const Sidebar = ({ isOpen, onClose }) => {
+const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }) => {
 const navigation = [
     { name: "Dashboard", href: "/", icon: "LayoutDashboard" },
     { name: "Clients", href: "/clients", icon: "Users" },
@@ -16,7 +16,7 @@ const navigation = [
   return (
     <>
       {/* Mobile backdrop */}
-      {isOpen && (
+{isOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onClose}
@@ -24,7 +24,9 @@ const navigation = [
       )}
       
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
+<div className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 transition-all duration-300 ${
+        isCollapsed ? 'lg:w-16' : 'lg:w-64'
+      }`}>
         <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto gradient-bg">
           <div className="flex items-center flex-shrink-0 px-6">
             <div className="flex items-center">
@@ -32,7 +34,17 @@ const navigation = [
                 <ApperIcon name="Zap" size={24} className="text-white" />
               </div>
               <span className="ml-3 text-xl font-bold text-white">ClientFlow</span>
-            </div>
+</div>
+            <button
+              onClick={onToggleCollapse}
+              className="hidden lg:flex items-center justify-center p-2 mx-2 mb-4 text-blue-100 hover:text-white hover:bg-blue-700 rounded-lg transition-colors"
+              title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <ApperIcon 
+                name={isCollapsed ? "ChevronRight" : "ChevronLeft"} 
+                size={20} 
+              />
+            </button>
           </div>
           <nav className="mt-8 flex-1 px-4">
             <div className="space-y-2">
@@ -51,9 +63,13 @@ isActive
                   <ApperIcon 
                     name={item.icon} 
                     size={20} 
-                    className="mr-3 flex-shrink-0" 
+className={`flex-shrink-0 ${isCollapsed ? 'lg:mr-0' : 'mr-3'}`} 
                   />
-                  {item.name}
+                  <span className={`transition-opacity duration-300 ${
+                    isCollapsed ? 'lg:hidden' : 'block'
+                  }`}>
+                    {item.name}
+                  </span>
                 </NavLink>
               ))}
             </div>
@@ -62,7 +78,7 @@ isActive
       </div>
 
       {/* Mobile Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 lg:hidden ${
+<div className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 lg:hidden ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}>
         <div className="flex flex-col h-full gradient-bg">
@@ -74,7 +90,7 @@ isActive
               <span className="ml-3 text-xl font-bold text-white">ClientFlow</span>
             </div>
             <button
-              onClick={onClose}
+onClick={onClose}
               className="text-blue-100 hover:text-white transition-colors"
             >
               <ApperIcon name="X" size={24} />
@@ -86,7 +102,7 @@ isActive
 <NavLink
                   key={item.name}
                   to={item.href}
-                  onClick={() => {
+onClick={() => {
                     onClose();
                   }}
                   className={({ isActive }) =>

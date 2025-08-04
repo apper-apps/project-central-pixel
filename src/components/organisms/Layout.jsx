@@ -5,18 +5,27 @@ import TimerWidget from "@/components/molecules/TimerWidget";
 import { TimerProvider } from "@/contexts/TimerContext";
 
 const Layout = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
 return (
     <TimerProvider>
 <div className="h-screen flex" style={{backgroundColor: '#FAFAFA'}}>
-        <Sidebar 
+<Sidebar 
           isOpen={sidebarOpen} 
-          onClose={() => setSidebarOpen(false)} 
+          onClose={() => setSidebarOpen(false)}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
         
-<div className="flex-1 flex flex-col overflow-hidden lg:pl-64">
-          <Header onMenuClick={() => setSidebarOpen(true)} />
+<div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
+          sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'
+        }`}>
+          <Header 
+            onMenuClick={() => setSidebarOpen(true)}
+            sidebarCollapsed={sidebarCollapsed}
+            onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+          />
           
           <main className="flex-1 overflow-x-hidden overflow-y-auto">
             <div className="container mx-auto px-4 py-6">
