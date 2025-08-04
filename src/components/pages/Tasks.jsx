@@ -6,6 +6,7 @@ import { create, getAll, update } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
 import TaskForm from "@/components/molecules/TaskForm";
 import TaskCard from "@/components/molecules/TaskCard";
+import CollaborationSection from "@/components/molecules/CollaborationSection";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
@@ -13,7 +14,6 @@ import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 import Pagination from "@/components/atoms/Pagination";
-
 const Tasks = () => {
 const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);

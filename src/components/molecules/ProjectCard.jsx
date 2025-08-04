@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ApperIcon from "@/components/ApperIcon";
-import Card from "@/components/atoms/Card";
 import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
 
 const ProjectCard = ({ project, client, onEdit, onDelete }) => {
   const navigate = useNavigate();
@@ -56,10 +56,6 @@ switch (status) {
               <span className="text-xs text-gray-600">Due: {formatDate(project.deadline)}</span>
             </div>
           )}
-          
-          <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
-            {project.description}
-          </p>
 
           {/* Milestone Progress */}
           {project.milestones && project.milestones.length > 0 && (
@@ -73,8 +69,8 @@ switch (status) {
               <div className="w-full bg-gray-200 rounded-full h-1.5">
                 <div 
 className="h-1.5 rounded-full transition-all duration-300"
-                  style={{backgroundColor: '#4A90E2'}}
-                  style={{ 
+                  style={{
+                    backgroundColor: '#4A90E2',
                     width: `${project.milestones.length > 0 ? 
                       Math.round((project.milestones.filter(m => m.isCompleted).length / project.milestones.length) * 100) 
                       : 0}%` 
@@ -111,7 +107,7 @@ size="sm"
             <ApperIcon name="Trash2" size={16} />
           </Button>
         </div>
-      </div>
+</div>
     </Card>
   );
 };

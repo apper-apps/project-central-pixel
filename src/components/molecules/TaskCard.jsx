@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import Card from "@/components/atoms/Card";
+import CollaborationSection from "@/components/molecules/CollaborationSection";
 
 const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact = false }) => {
+  const [showCollaboration, setShowCollaboration] = useState(false);
+
   const handleToggleComplete = () => {
     onToggleComplete(task.Id, !task.completed);
   };
@@ -99,6 +102,12 @@ const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact =
           Created {new Date(task.createdAt).toLocaleDateString()}
         </span>
       </div>
+
+      <CollaborationSection
+        taskId={task.Id}
+        isExpanded={showCollaboration}
+        onToggle={() => setShowCollaboration(!showCollaboration)}
+      />
     </Card>
   );
 };

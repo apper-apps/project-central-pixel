@@ -7,13 +7,13 @@ import { create, getAll, update } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
 import ProjectForm from "@/components/molecules/ProjectForm";
 import ProjectCard from "@/components/molecules/ProjectCard";
+import CollaborationSection from "@/components/molecules/CollaborationSection";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
-
 const Projects = () => {
 const [projects, setProjects] = useState([]);
   const [clients, setClients] = useState([]);
