@@ -8,6 +8,7 @@ const [formData, setFormData] = useState({
     clientId: "",
     description: "",
     status: "Planning",
+    startDate: "",
     deadline: "",
     deliverables: ""
   });
@@ -21,6 +22,7 @@ useEffect(() => {
         clientId: project.clientId || "",
         description: project.description || "",
         status: project.status || "Planning",
+        startDate: project.startDate || "",
         deadline: project.deadline || "",
         deliverables: project.deliverables || ""
       });
@@ -42,6 +44,9 @@ const validateForm = () => {
       newErrors.description = "Description is required";
     }
     
+if (!formData.startDate) {
+      newErrors.startDate = "Start date is required";
+    }
     if (!formData.deadline) {
       newErrors.deadline = "Deadline is required";
     }
@@ -130,6 +135,15 @@ const validateForm = () => {
         )}
       </div>
       
+      <Input
+label="Start Date"
+        name="startDate"
+        type="date"
+        value={formData.startDate}
+        onChange={handleChange}
+        error={errors.startDate}
+        required
+      />
       <Input
         label="Deadline"
         name="deadline"

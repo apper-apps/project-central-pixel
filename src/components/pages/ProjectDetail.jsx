@@ -1633,7 +1633,7 @@ const getDateTasks = (date) => {
                                           size={16} 
                                           className={task.completed ? "text-green-600" : "text-gray-400"}
                                         />
-                                      </Button>
+</Button>
                                       <div className="flex-1 min-w-0">
                                         <div className="font-medium text-sm text-gray-900 truncate">{task.name}</div>
                                         <div className="text-xs text-gray-500 flex items-center gap-2 mt-1">
@@ -1646,7 +1646,9 @@ const getDateTasks = (date) => {
                                           }`}>
                                             {task.priority}
                                           </span>
-                                          <span>{format(taskStart, 'MMM dd')} - {format(taskEnd, 'MMM dd')}</span>
+                                          <span>
+                                            {task.startDate ? format(parseISO(task.startDate), 'MMM dd') : format(taskStart, 'MMM dd')} - {format(taskEnd, 'MMM dd')}
+                                          </span>
                                           {isOverdue && (
                                             <span className="text-red-600 font-medium">Overdue</span>
                                           )}
@@ -1745,9 +1747,12 @@ const getDateTasks = (date) => {
                                           <div className="w-4 h-4 bg-purple-600 rounded-full flex items-center justify-center">
                                             <ApperIcon name="Flag" size={10} className="text-white" />
                                           </div>
-                                          <div className="flex-1 min-w-0">
+<div className="flex-1 min-w-0">
                                             <div className="font-medium text-sm text-gray-900 truncate">{milestone.title}</div>
                                             <div className="text-xs text-gray-500">
+                                              {milestone.startDate && (
+                                                <span>Start: {format(parseISO(milestone.startDate), 'MMM dd, yyyy')} • </span>
+                                              )}
                                               Due: {format(milestoneDate, 'MMM dd, yyyy')}
                                             </div>
                                           </div>
@@ -1826,6 +1831,16 @@ const getDateTasks = (date) => {
             <div className="flex items-center">
               <ApperIcon name="Calendar" size={16} className="mr-2 text-gray-500" />
               <span className="text-gray-900">{formatDate(project.deadline)}</span>
+</div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+            <div className="flex items-center">
+              <ApperIcon name="Calendar" size={16} className="mr-2 text-gray-500" />
+              <span className="text-gray-900">
+                {project.startDate ? format(parseISO(project.startDate), 'MMM dd, yyyy') : 'Not set'}
+              </span>
             </div>
           </div>
           

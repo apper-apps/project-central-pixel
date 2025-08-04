@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { format, parseISO } from "date-fns";
 import taskService from "@/services/api/taskService";
 import projectService from "@/services/api/projectService";
 import { create, getAll, update } from "@/services/api/teamMemberService";
@@ -11,9 +12,9 @@ import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import Input from "@/components/atoms/Input";
+import Pagination from "@/components/atoms/Pagination";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
-import Pagination from "@/components/atoms/Pagination";
 const Tasks = () => {
 const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -312,6 +313,7 @@ const filteredTasks = tasks.filter(task => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -356,6 +358,9 @@ const filteredTasks = tasks.filter(task => {
                           }`}>
                             {task.priority}
                           </span>
+                        </td>
+<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {task.startDate ? format(parseISO(task.startDate), 'MMM dd, yyyy') : '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}

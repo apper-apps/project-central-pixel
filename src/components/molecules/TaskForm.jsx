@@ -9,6 +9,7 @@ const [formData, setFormData] = useState({
     description: "",
     projectId: "",
     priority: "Medium",
+    startDate: "",
     dueDate: "",
     completed: false
   });
@@ -21,6 +22,7 @@ useEffect(() => {
         description: task.description || "",
         projectId: task.projectId || "",
         priority: task.priority || "Medium",
+        startDate: task.startDate || "",
         dueDate: task.dueDate || "",
         completed: task.completed || false
       });
@@ -30,6 +32,7 @@ useEffect(() => {
         description: "",
         projectId: projects.length > 0 ? projects[0].Id : "",
         priority: "Medium",
+        startDate: "",
         dueDate: "",
         completed: false
       });
@@ -160,6 +163,14 @@ className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus
         </select>
       </div>
 
+<Input
+        label="Start Date"
+        name="startDate"
+        type="date"
+        value={formData.startDate}
+        onChange={handleChange}
+        placeholder="Select start date"
+      />
       <Input
         label="Due Date"
         name="dueDate"

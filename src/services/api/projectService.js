@@ -37,6 +37,7 @@ async create(projectData) {
       ...projectData,
       clientId: parseInt(projectData.clientId),
       status: projectData.status || "Planning",
+      startDate: projectData.startDate || "",
       deadline: projectData.deadline || "",
       deliverables: projectData.deliverables || "",
       milestones: [],
@@ -59,6 +60,7 @@ async update(id, projectData) {
       ...projectData,
       clientId: parseInt(projectData.clientId),
       status: projectData.status || this.projects[index].status,
+      startDate: projectData.startDate || this.projects[index].startDate,
       deadline: projectData.deadline || this.projects[index].deadline,
       deliverables: projectData.deliverables || this.projects[index].deliverables,
       chatEnabled: projectData.chatEnabled !== undefined ? projectData.chatEnabled : this.projects[index].chatEnabled
@@ -99,7 +101,7 @@ async update(id, projectData) {
       this.projects[projectIndex].milestones = [];
     }
 
-    const allMilestones = this.projects.flatMap(p => p.milestones || []);
+const allMilestones = this.projects.flatMap(p => p.milestones || []);
     const newId = allMilestones.length > 0 ? Math.max(...allMilestones.map(m => m.Id)) + 1 : 1;
     
     const newMilestone = {
@@ -107,6 +109,7 @@ async update(id, projectData) {
       projectId: parseInt(projectId),
       title: milestoneData.title,
       description: milestoneData.description || "",
+      startDate: milestoneData.startDate || "",
       dueDate: milestoneData.dueDate,
       isCompleted: false,
       completedDate: null,
@@ -117,7 +120,7 @@ async update(id, projectData) {
     return { ...newMilestone };
   }
 
-  async updateMilestone(milestoneId, milestoneData) {
+async updateMilestone(milestoneId, milestoneData) {
     await this.delay(300);
     
     for (let project of this.projects) {
@@ -126,7 +129,8 @@ async update(id, projectData) {
         if (milestoneIndex !== -1) {
           project.milestones[milestoneIndex] = {
             ...project.milestones[milestoneIndex],
-            ...milestoneData
+            ...milestoneData,
+            startDate: milestoneData.startDate || project.milestones[milestoneIndex].startDate
           };
           return { ...project.milestones[milestoneIndex] };
         }

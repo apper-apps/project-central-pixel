@@ -3,19 +3,21 @@ import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
 
 const MilestoneForm = ({ milestone, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     title: "",
     description: "",
+    startDate: "",
     dueDate: ""
   });
 
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
+useEffect(() => {
     if (milestone) {
       setFormData({
         title: milestone.title || "",
         description: milestone.description || "",
+        startDate: milestone.startDate || "",
         dueDate: milestone.dueDate || ""
       });
     }
@@ -87,6 +89,14 @@ const MilestoneForm = ({ milestone, onSubmit, onCancel }) => {
         )}
       </div>
       
+<Input
+        label="Start Date"
+        name="startDate"
+        type="date"
+        value={formData.startDate}
+        onChange={handleChange}
+        error={errors.startDate}
+      />
       <Input
         label="Due Date"
         name="dueDate"
