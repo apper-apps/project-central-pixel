@@ -774,7 +774,7 @@ const getDateTasks = (date) => {
     );
   };
   return (
-    <div className="space-y-6">
+<div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -801,11 +801,11 @@ const getDateTasks = (date) => {
             <ApperIcon name="Edit2" size={16} />
             Edit Project
           </Button>
-<Button
+          <Button
             variant="primary"
             onClick={openCreateMilestoneModal}
             className="flex items-center gap-2"
->
+          >
             <ApperIcon name="Flag" size={16} />
             New Milestone
           </Button>
@@ -820,288 +820,7 @@ const getDateTasks = (date) => {
         </div>
       </div>
 
-      {/* Project Information */}
-      <Card className="p-6">
-        <div className="flex items-start justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Project Information</h2>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(project.status)}`}>
-            {project.status}
-          </span>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Client</label>
-            <div className="flex items-center">
-              <ApperIcon name="User" size={16} className="mr-2 text-gray-500" />
-              <span 
-                className="text-blue-600 hover:text-blue-800 cursor-pointer"
-                onClick={() => client && navigate(`/clients/${client.Id}`)}
-              >
-                {client?.name || "Unknown Client"}
-              </span>
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Deadline</label>
-            <div className="flex items-center">
-              <ApperIcon name="Calendar" size={16} className="mr-2 text-gray-500" />
-              <span className="text-gray-900">{formatDate(project.deadline)}</span>
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Task Progress</label>
-            <div className="flex items-center">
-              <ApperIcon name="CheckCircle" size={16} className="mr-2 text-gray-500" />
-              <span className="text-gray-900">
-                {taskStats.completed}/{taskStats.total} ({taskStats.completionRate}%)
-              </span>
-            </div>
-</div>
-        </div>
-      </Card>
-
-{/* Milestone Progress */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Milestone Progress</h3>
-          <span className="text-2xl font-bold text-blue-600">{milestoneStats.completionRate}%</span>
-        </div>
-        <div className="space-y-3">
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Completed: {milestoneStats.completed}</span>
-            <span>Pending: {milestoneStats.pending}</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <div 
-              className="milestone-progress-bar h-3 rounded-full transition-all duration-300"
-              style={{ width: `${milestoneStats.completionRate}%` }}
-            ></div>
-          </div>
-          <p className="text-xs text-gray-500">
-            {milestoneStats.total} total milestones
-          </p>
-        </div>
-        
-        {project.deliverables && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Deliverables</label>
-            <p className="text-gray-900 whitespace-pre-wrap">{project.deliverables}</p>
-          </div>
-        )}
-      </Card>
-
-      {/* Client Information */}
-      {client && (
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Client Details</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`/clients/${client.Id}`)}
-              className="flex items-center gap-2"
-            >
-              View Full Details
-              <ApperIcon name="ArrowRight" size={16} />
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
-              <p className="text-gray-900">{client.company}</p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <div className="flex items-center">
-                <ApperIcon name="Mail" size={16} className="mr-2 text-gray-500" />
-                <a href={`mailto:${client.email}`} className="text-blue-600 hover:text-blue-800">
-                  {client.email}
-                </a>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-              <div className="flex items-center">
-                <ApperIcon name="Phone" size={16} className="mr-2 text-gray-500" />
-                <a href={`tel:${client.phone}`} className="text-blue-600 hover:text-blue-800">
-                  {client.phone}
-                </a>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
-{/* Milestones Section */}
-<div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Project Structure
-          </h2>
-          <div className="text-sm text-gray-600">
-            {milestones.length} milestones • {taskLists.length} task lists • {tasks.length} tasks
-          </div>
-        </div>
-
-        {milestones.length === 0 ? (
-          <Empty
-            icon="Flag"
-            title="No milestones yet"
-            description="Create milestones to organize your project into manageable phases. Each milestone can contain multiple task lists."
-            actionLabel="Add First Milestone"
-            onAction={openCreateMilestoneModal}
-          />
-        ) : (
-          <div className="space-y-6">
-            {milestones.map((milestone) => {
-              const milestoneTaskLists = getMilestoneTaskLists(milestone.Id);
-              const milestoneTasks = tasks.filter(task => 
-                milestoneTaskLists.some(tl => tl.tasks.includes(task.Id))
-              );
-              const completedTasks = milestoneTasks.filter(task => task.completed).length;
-              const totalTasks = milestoneTasks.length;
-              const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-              return (
-                <Card key={milestone.Id} className="p-6">
-                  <div className="mb-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {milestone.title}
-                          </h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
-                            milestone.isCompleted 
-                              ? 'bg-green-100 text-green-800 border-green-200'
-                              : 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                          }`}>
-                            {milestone.isCompleted ? 'Completed' : 'In Progress'}
-                          </span>
-                        </div>
-                        
-                        {milestone.description && (
-                          <p className="text-gray-600 text-sm mb-3">
-                            {milestone.description}
-                          </p>
-                        )}
-
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                          <div className="flex items-center gap-1">
-                            <ApperIcon name="Calendar" size={14} />
-                            <span>Due: {new Date(milestone.dueDate).toLocaleDateString()}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <ApperIcon name="List" size={14} />
-                            <span>{milestoneTaskLists.length} task lists</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <ApperIcon name="CheckSquare" size={14} />
-                            <span>{totalTasks} tasks ({completedTasks} completed)</span>
-                          </div>
-                        </div>
-
-                        {totalTasks > 0 && (
-                          <div className="mb-4">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs text-gray-600">Progress</span>
-                              <span className="text-xs font-medium text-gray-900">{completionRate}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div 
-                                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${completionRate}%` }}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2 ml-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditMilestoneModal(milestone)}
-                          className="p-2"
-                        >
-                          <ApperIcon name="Edit2" size={16} className="text-gray-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteMilestone(milestone.Id)}
-                          className="p-2 text-red-600 hover:text-red-700"
-                        >
-                          <ApperIcon name="Trash2" size={16} />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Task Lists for this Milestone */}
-                  <div className="space-y-3">
-                    {milestoneTaskLists.length === 0 ? (
-                      <div className="text-center py-6 border-2 border-dashed border-gray-200 rounded-lg">
-                        <ApperIcon name="List" size={24} className="text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600 mb-3">No task lists in this milestone yet</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={openCreateTaskListModal}
-                          className="flex items-center gap-2"
-                        >
-                          <ApperIcon name="Plus" size={14} />
-                          Add Task List
-                        </Button>
-                      </div>
-                    ) : (
-                      milestoneTaskLists.map((taskList) => (
-                        <TaskListCard
-                          key={taskList.Id}
-                          taskList={taskList}
-                          tasks={tasks}
-                          project={project}
-                          onEdit={openEditTaskListModal}
-                          onDelete={handleDeleteTaskList}
-                          onAddTask={openCreateTaskModal}
-                          onEditTask={openEditTaskModal}
-                          onDeleteTask={handleDeleteTask}
-                          onToggleTaskComplete={async (taskId) => {
-                            try {
-                              const taskToUpdate = tasks.find(t => t.Id === taskId);
-                              const updatedTask = await taskService.update(taskId, {
-                                ...taskToUpdate,
-                                completed: !taskToUpdate.completed
-                              });
-                              setTasks(prev => 
-                                prev.map(task => 
-                                  task.Id === taskId ? updatedTask : task
-                                )
-                              );
-                              toast.success(updatedTask.completed ? "Task marked as completed!" : "Task marked as pending!");
-                            } catch (err) {
-                              console.error("Failed to toggle task:", err);
-                              toast.error("Failed to update task. Please try again.");
-                            }
-                          }}
-                        />
-                      ))
-                    )}
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Tasks Section */}
-{/* Project Views */}
+      {/* Project Views */}
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <h2 className="text-xl font-semibold text-gray-900">
@@ -1308,7 +1027,7 @@ const getDateTasks = (date) => {
           </Card>
         )}
 
-{activeTab === 'gantt' && (
+        {activeTab === 'gantt' && (
           <Card className="p-6">
             <div className="space-y-4">
               {/* Gantt Controls */}
@@ -1634,6 +1353,288 @@ const getDateTasks = (date) => {
           </Card>
         )}
       </div>
+
+      {/* Project Information */}
+      <Card className="p-6">
+        <div className="flex items-start justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Project Information</h2>
+          <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(project.status)}`}>
+            {project.status}
+          </span>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Client</label>
+            <div className="flex items-center">
+              <ApperIcon name="User" size={16} className="mr-2 text-gray-500" />
+              <span 
+                className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                onClick={() => client && navigate(`/clients/${client.Id}`)}
+              >
+                {client?.name || "Unknown Client"}
+              </span>
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Deadline</label>
+            <div className="flex items-center">
+              <ApperIcon name="Calendar" size={16} className="mr-2 text-gray-500" />
+              <span className="text-gray-900">{formatDate(project.deadline)}</span>
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Task Progress</label>
+            <div className="flex items-center">
+              <ApperIcon name="CheckCircle" size={16} className="mr-2 text-gray-500" />
+              <span className="text-gray-900">
+                {taskStats.completed}/{taskStats.total} ({taskStats.completionRate}%)
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+{/* Milestone Progress */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Milestone Progress</h3>
+          <span className="text-2xl font-bold text-blue-600">{milestoneStats.completionRate}%</span>
+        </div>
+        <div className="space-y-3">
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Completed: {milestoneStats.completed}</span>
+            <span>Pending: {milestoneStats.pending}</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <div 
+              className="milestone-progress-bar h-3 rounded-full transition-all duration-300"
+              style={{ width: `${milestoneStats.completionRate}%` }}
+            ></div>
+          </div>
+          <p className="text-xs text-gray-500">
+            {milestoneStats.total} total milestones
+          </p>
+        </div>
+        
+        {project.deliverables && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Deliverables</label>
+            <p className="text-gray-900 whitespace-pre-wrap">{project.deliverables}</p>
+          </div>
+        )}
+      </Card>
+
+      {/* Client Information */}
+      {client && (
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Client Details</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/clients/${client.Id}`)}
+              className="flex items-center gap-2"
+            >
+              View Full Details
+              <ApperIcon name="ArrowRight" size={16} />
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
+              <p className="text-gray-900">{client.company}</p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <div className="flex items-center">
+                <ApperIcon name="Mail" size={16} className="mr-2 text-gray-500" />
+                <a href={`mailto:${client.email}`} className="text-blue-600 hover:text-blue-800">
+                  {client.email}
+                </a>
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+              <div className="flex items-center">
+                <ApperIcon name="Phone" size={16} className="mr-2 text-gray-500" />
+                <a href={`tel:${client.phone}`} className="text-blue-600 hover:text-blue-800">
+                  {client.phone}
+                </a>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+{/* Milestones Section */}
+<div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Project Structure
+          </h2>
+          <div className="text-sm text-gray-600">
+            {milestones.length} milestones • {taskLists.length} task lists • {tasks.length} tasks
+          </div>
+        </div>
+
+        {milestones.length === 0 ? (
+          <Empty
+            icon="Flag"
+            title="No milestones yet"
+            description="Create milestones to organize your project into manageable phases. Each milestone can contain multiple task lists."
+            actionLabel="Add First Milestone"
+            onAction={openCreateMilestoneModal}
+          />
+        ) : (
+          <div className="space-y-6">
+            {milestones.map((milestone) => {
+              const milestoneTaskLists = getMilestoneTaskLists(milestone.Id);
+              const milestoneTasks = tasks.filter(task => 
+                milestoneTaskLists.some(tl => tl.tasks.includes(task.Id))
+              );
+              const completedTasks = milestoneTasks.filter(task => task.completed).length;
+              const totalTasks = milestoneTasks.length;
+              const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+              return (
+                <Card key={milestone.Id} className="p-6">
+                  <div className="mb-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {milestone.title}
+                          </h3>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                            milestone.isCompleted 
+                              ? 'bg-green-100 text-green-800 border-green-200'
+                              : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                          }`}>
+                            {milestone.isCompleted ? 'Completed' : 'In Progress'}
+                          </span>
+                        </div>
+                        
+                        {milestone.description && (
+                          <p className="text-gray-600 text-sm mb-3">
+                            {milestone.description}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                          <div className="flex items-center gap-1">
+                            <ApperIcon name="Calendar" size={14} />
+                            <span>Due: {new Date(milestone.dueDate).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <ApperIcon name="List" size={14} />
+                            <span>{milestoneTaskLists.length} task lists</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <ApperIcon name="CheckSquare" size={14} />
+                            <span>{totalTasks} tasks ({completedTasks} completed)</span>
+                          </div>
+                        </div>
+
+                        {totalTasks > 0 && (
+                          <div className="mb-4">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs text-gray-600">Progress</span>
+                              <span className="text-xs font-medium text-gray-900">{completionRate}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${completionRate}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 ml-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditMilestoneModal(milestone)}
+                          className="p-2"
+                        >
+                          <ApperIcon name="Edit2" size={16} className="text-gray-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteMilestone(milestone.Id)}
+                          className="p-2 text-red-600 hover:text-red-700"
+                        >
+                          <ApperIcon name="Trash2" size={16} />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Task Lists for this Milestone */}
+                  <div className="space-y-3">
+                    {milestoneTaskLists.length === 0 ? (
+                      <div className="text-center py-6 border-2 border-dashed border-gray-200 rounded-lg">
+                        <ApperIcon name="List" size={24} className="text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-3">No task lists in this milestone yet</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={openCreateTaskListModal}
+                          className="flex items-center gap-2"
+                        >
+                          <ApperIcon name="Plus" size={14} />
+                          Add Task List
+                        </Button>
+                      </div>
+                    ) : (
+                      milestoneTaskLists.map((taskList) => (
+                        <TaskListCard
+                          key={taskList.Id}
+                          taskList={taskList}
+                          tasks={tasks}
+                          project={project}
+                          onEdit={openEditTaskListModal}
+                          onDelete={handleDeleteTaskList}
+                          onAddTask={openCreateTaskModal}
+                          onEditTask={openEditTaskModal}
+                          onDeleteTask={handleDeleteTask}
+                          onToggleTaskComplete={async (taskId) => {
+                            try {
+                              const taskToUpdate = tasks.find(t => t.Id === taskId);
+                              const updatedTask = await taskService.update(taskId, {
+                                ...taskToUpdate,
+                                completed: !taskToUpdate.completed
+                              });
+                              setTasks(prev => 
+                                prev.map(task => 
+                                  task.Id === taskId ? updatedTask : task
+                                )
+                              );
+                              toast.success(updatedTask.completed ? "Task marked as completed!" : "Task marked as pending!");
+                            } catch (err) {
+                              console.error("Failed to toggle task:", err);
+                              toast.error("Failed to update task. Please try again.");
+                            }
+                          }}
+                        />
+                      ))
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Tasks Section */}
 
       {/* Edit Project Modal */}
       <Modal
