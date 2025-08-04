@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { addDays, addMonths, differenceInDays, endOfDay, endOfMonth, endOfWeek, format, getDay, isFuture, isPast, isSameDay, isSameMonth, isToday, parseISO, startOfDay, startOfMonth, startOfWeek, subMonths } from "date-fns";
+import { addDays, addMonths, differenceInDays, endOfDay, endOfMonth, endOfWeek, format, formatDistanceToNow, getDay, isFuture, isPast, isSameDay, isSameMonth, isToday, parseISO, startOfDay, startOfMonth, startOfWeek, subMonths } from "date-fns";
+import activityService from "@/services/api/activityService";
 import taskService from "@/services/api/taskService";
 import clientService from "@/services/api/clientService";
 import taskListService from "@/services/api/taskListService";
@@ -15,9 +16,9 @@ import WikiDocumentForm from "@/components/molecules/WikiDocumentForm";
 import CalendarEventForm from "@/components/molecules/CalendarEventForm";
 import TaskForm from "@/components/molecules/TaskForm";
 import ProjectForm from "@/components/molecules/ProjectForm";
+import ChatChannel from "@/components/molecules/ChatChannel";
 import TaskCard from "@/components/molecules/TaskCard";
 import MilestoneForm from "@/components/molecules/MilestoneForm";
-import ChatChannel from "@/components/molecules/ChatChannel";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
@@ -56,7 +57,8 @@ const [activeTab, setActiveTab] = useState('structure');
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [showEventModal, setShowEventModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [teamMembers, setTeamMembers] = useState([]);
+const [teamMembers, setTeamMembers] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [timelineView, setTimelineView] = useState('gantt'); // gantt or calendar
   const [timelineStart, setTimelineStart] = useState(() => {
     // Set default start to beginning of current month
@@ -71,7 +73,7 @@ const loadProjectData = async () => {
       setLoading(true);
       setError("");
       
-const [projectData, tasksData, taskListsData, clientsData, projectsData, milestonesData, wikiData, eventsData, teamData] = await Promise.all([
+const [projectData, tasksData, taskListsData, clientsData, projectsData, milestonesData, wikiData, eventsData, teamData, activitiesData] = await Promise.all([
         projectService.getById(id),
         taskService.getByProjectId(id),
         taskListService.getByProjectId(id),
@@ -80,18 +82,19 @@ const [projectData, tasksData, taskListsData, clientsData, projectsData, milesto
         projectService.getMilestonesByProjectId(id),
         projectService.getWikiDocuments(id),
         projectService.getCalendarEvents(id),
-        getAll()
+        getAll(),
+        activityService.getByProjectId(parseInt(id))
       ]);
 setProject(projectData);
       setMilestones(milestonesData || []);
-      setTasks(tasksData);
+setTasks(tasksData);
       setTaskLists(taskListsData || []);
       setClients(clientsData);
       setProjects(projectsData);
       setWikiDocuments(wikiData || []);
       setCalendarEvents(eventsData || []);
       setTeamMembers(teamData || []);
-      
+      setActivities(activitiesData || []);
       // Find the client for this project
       const projectClient = clientsData.find(c => c.Id === projectData.clientId);
       setClient(projectClient);
@@ -524,8 +527,61 @@ switch (status) {
   const formatDate = (dateString) => {
     if (!dateString) return "No deadline";
     return new Date(dateString).toLocaleDateString();
-  };
+};
 
+  const renderActivitySection = () => {
+    const recentActivities = activities.slice(0, 10);
+    
+    return (
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+            <ApperIcon name="Activity" size={20} className="mr-2" />
+            Recent Activity
+          </h3>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/activity-feed', { state: { projectId: project.Id } })}
+            className="text-sm"
+          >
+            View All Activity
+          </Button>
+        </div>
+        
+        {recentActivities.length === 0 ? (
+          <div className="text-center py-6">
+            <ApperIcon name="Activity" size={48} className="mx-auto text-gray-400 mb-3" />
+            <p className="text-gray-500">No recent activity</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {recentActivities.map((activity) => {
+              const typeInfo = activityService.getActivityTypeInfo(activity.type);
+              const teamMember = teamMembers.find(m => m.Id === activity.userId);
+              
+              return (
+                <div key={activity.Id} className="flex items-start space-x-3">
+                  <div className={`flex-shrink-0 w-8 h-8 rounded-full ${typeInfo.bgColor} flex items-center justify-center`}>
+                    <ApperIcon name={typeInfo.icon} size={16} className={typeInfo.color} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-900">
+                      <span className="font-medium">{teamMember?.name || 'Unknown User'}</span>
+                      {' '}
+                      {activity.description}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+    );
+  };
 const getTaskStats = () => {
     const total = tasks.length;
     const completed = tasks.filter(task => task.completed).length;
@@ -914,7 +970,8 @@ const getDateTasks = (date) => {
         )}
       </Card>
     );
-  };
+};
+  
   return (
 <div className="space-y-6">
       {/* Header */}
@@ -1024,6 +1081,17 @@ const getDateTasks = (date) => {
               >
                 <ApperIcon name="CalendarDays" size={16} />
                 Calendar
+</button>
+              <button
+                onClick={() => setActiveTab('activity')}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  activeTab === 'activity'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <ApperIcon name="Activity" size={16} className="mr-2" />
+                Activity
               </button>
             </div>
             
@@ -1397,8 +1465,11 @@ const getDateTasks = (date) => {
                 )}
               </div>
             </div>
-          </Card>
+</Card>
         )}
+
+        {/* Activity Tab */}
+        {activeTab === 'activity' && renderActivitySection()}
 
         {activeTab === 'gantt' && (
           <Card className="p-6">

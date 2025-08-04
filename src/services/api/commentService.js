@@ -1,4 +1,8 @@
-import commentsData from '@/services/mockData/comments.json';
+import commentsData from "@/services/mockData/comments.json";
+import activityService from "./activityService.js";
+import React from "react";
+import { create, getAll, getById, update } from "@/services/api/teamMemberService";
+import Error from "@/components/ui/Error";
 
 let comments = [...commentsData];
 
@@ -172,11 +176,65 @@ const commentService = {
       .filter(c => c.parentId === parentId)
       .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-    return Promise.resolve({
+return Promise.resolve({
       parent: { ...parentComment },
       replies: replies.map(r => ({ ...r }))
     });
   }
+};
+// Import activity service to track comment activities
+
+// Override create method to track activity
+const originalCreate = commentService.create;
+commentService.create = async (commentData) => {
+  const newComment = await originalCreate(commentData);
+  
+  // Track comment creation activity
+  await activityService.create({
+    type: activityService.ACTIVITY_TYPES.COMMENT_CREATED,
+    userId: newComment.authorId,
+    projectId: newComment.projectId,
+    taskId: newComment.taskId,
+    commentId: newComment.Id,
+    description: `added a comment${newComment.taskId ? ' to a task' : ''}${newComment.projectId ? ' in project' : ''}`
+  });
+  
+  return newComment;
+};
+
+// Override update method to track activity
+const originalCommentUpdate = commentService.update;
+commentService.update = async (id, updateData) => {
+  const updatedComment = await originalCommentUpdate(id, updateData);
+  
+  // Track comment update activity
+  await activityService.create({
+    type: activityService.ACTIVITY_TYPES.COMMENT_UPDATED,
+    userId: updatedComment.authorId,
+    projectId: updatedComment.projectId,
+    taskId: updatedComment.taskId,
+    commentId: updatedComment.Id,
+    description: `updated a comment${updatedComment.taskId ? ' on a task' : ''}${updatedComment.projectId ? ' in project' : ''}`
+  });
+  
+  return updatedComment;
+};
+
+// Override delete method to track activity
+const originalCommentDelete = commentService.delete;
+commentService.delete = async (id) => {
+  const comment = await commentService.getById(id);
+  await originalCommentDelete(id);
+  
+  // Track comment deletion activity
+  await activityService.create({
+    type: activityService.ACTIVITY_TYPES.COMMENT_DELETED,
+    userId: comment.authorId,
+    projectId: comment.projectId,
+    taskId: comment.taskId,
+    commentId: comment.Id,
+    description: `deleted a comment${comment.taskId ? ' from a task' : ''}${comment.projectId ? ' in project' : ''}`
+  });
 };
 
 export default commentService;

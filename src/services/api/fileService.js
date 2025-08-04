@@ -180,7 +180,45 @@ const fileService = {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
+}
+};
+
+// Import activity service to track file activities
+import activityService from './activityService.js';
+
+// Override upload method to track activity
+const originalUpload = fileService.upload;
+fileService.upload = async (fileData) => {
+  const newFile = await originalUpload(fileData);
+  
+  // Track file upload activity
+  await activityService.create({
+    type: activityService.ACTIVITY_TYPES.FILE_UPLOADED,
+    userId: newFile.uploadedBy,
+    projectId: newFile.projectId,
+    taskId: newFile.taskId,
+    fileId: newFile.Id,
+    description: `uploaded file "${newFile.fileName}"${newFile.taskId ? ' to a task' : ''}${newFile.projectId ? ' in project' : ''}`
+  });
+  
+  return newFile;
+};
+
+// Override delete method to track activity
+const originalFileDelete = fileService.delete;
+fileService.delete = async (id) => {
+  const file = await fileService.getById(id);
+  await originalFileDelete(id);
+  
+  // Track file deletion activity
+  await activityService.create({
+    type: activityService.ACTIVITY_TYPES.FILE_DELETED,
+    userId: file.uploadedBy,
+    projectId: file.projectId,
+    taskId: file.taskId,
+    fileId: file.Id,
+    description: `deleted file "${file.fileName}"${file.taskId ? ' from a task' : ''}${file.projectId ? ' in project' : ''}`
+  });
 };
 
 export default fileService;

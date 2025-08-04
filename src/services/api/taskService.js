@@ -129,6 +129,77 @@ getByProjectId: (projectId) => {
         }
       }, 300);
     });
-  }
+}
 };
+
+// Import activity service to track task activities
+import activityService from './activityService.js';
+
+// Override create method to track activity
+const originalCreate = taskService.create;
+taskService.create = async (taskData) => {
+  const newTask = await originalCreate(taskData);
+  
+  // Track task creation activity
+  await activityService.create({
+    type: activityService.ACTIVITY_TYPES.TASK_CREATED,
+    userId: taskData.assignedTo || 1, // Default to user 1 if no assignee
+    projectId: taskData.projectId,
+    taskId: newTask.Id,
+    description: `created task "${newTask.name}"${taskData.projectId ? '' : ' in project'}`
+  });
+  
+  return newTask;
+};
+
+// Override update method to track activity
+const originalUpdate = taskService.update;
+taskService.update = async (id, taskData) => {
+  const updatedTask = await originalUpdate(id, taskData);
+  
+  // Track task update activity
+  await activityService.create({
+    type: activityService.ACTIVITY_TYPES.TASK_UPDATED,
+    userId: taskData.assignedTo || updatedTask.assignedTo || 1,
+    projectId: updatedTask.projectId,
+    taskId: updatedTask.Id,
+    description: `updated task "${updatedTask.name}"`
+  });
+  
+  return updatedTask;
+};
+
+// Override delete method to track activity
+const originalDelete = taskService.delete;
+taskService.delete = async (id) => {
+  const task = await taskService.getById(id);
+  await originalDelete(id);
+  
+  // Track task deletion activity
+  await activityService.create({
+    type: activityService.ACTIVITY_TYPES.TASK_DELETED,
+    userId: task.assignedTo || 1,
+    projectId: task.projectId,
+    taskId: task.Id,
+    description: `deleted task "${task.name}"`
+  });
+};
+
+// Override markComplete method to track activity
+const originalMarkComplete = taskService.markComplete;
+taskService.markComplete = async (id) => {
+  const completedTask = await originalMarkComplete(id);
+  
+  // Track task completion activity
+  await activityService.create({
+    type: activityService.ACTIVITY_TYPES.TASK_COMPLETED,
+    userId: completedTask.assignedTo || 1,
+    projectId: completedTask.projectId,
+    taskId: completedTask.Id,
+    description: `completed task "${completedTask.name}"`
+  });
+  
+  return completedTask;
+};
+
 export default taskService;

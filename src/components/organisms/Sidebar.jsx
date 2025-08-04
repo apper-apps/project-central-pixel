@@ -10,6 +10,7 @@ const navigation = [
     { name: "Tasks", href: "/tasks", icon: "CheckSquare" },
     { name: "Team", href: "/team", icon: "Users" },
     { name: "Chat", href: "/chat", icon: "MessageCircle" },
+    { name: "Activity Feed", href: "/activity-feed", icon: "Bell" },
     { name: "Time Tracking", href: "/time-tracking", icon: "Clock" },
     { name: "Reports", href: "/reports", icon: "BarChart3" }
   ];
