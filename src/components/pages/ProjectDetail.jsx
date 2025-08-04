@@ -47,7 +47,11 @@ const [tasks, setTasks] = useState([]);
   const [editingMilestone, setEditingMilestone] = useState(null);
 const [activeTab, setActiveTab] = useState('structure');
   const [timelineView, setTimelineView] = useState('gantt'); // gantt or calendar
-  const [timelineStart, setTimelineStart] = useState(new Date());
+  const [timelineStart, setTimelineStart] = useState(() => {
+    // Set default start to beginning of current month
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(null);
   const timelineRef = useRef(null);
@@ -1304,13 +1308,42 @@ const getDateTasks = (date) => {
           </Card>
         )}
 
-        {activeTab === 'gantt' && (
+{activeTab === 'gantt' && (
           <Card className="p-6">
             <div className="space-y-4">
+              {/* Gantt Controls */}
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Gantt Chart
-                </h3>
+                <div className="flex items-center gap-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Gantt Chart
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTimelineStart(addDays(timelineStart, -30))}
+                    >
+                      <ApperIcon name="ChevronLeft" size={16} />
+                    </Button>
+                    <span className="text-sm font-medium text-gray-700 min-w-[200px] text-center">
+                      {format(timelineStart, 'MMM d, yyyy')} - {format(addDays(timelineStart, 89), 'MMM d, yyyy')}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTimelineStart(addDays(timelineStart, 30))}
+                    >
+                      <ApperIcon name="ChevronRight" size={16} />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTimelineStart(new Date())}
+                    >
+                      Today
+                    </Button>
+                  </div>
+                </div>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-red-500 rounded" />
@@ -1341,156 +1374,259 @@ const getDateTasks = (date) => {
                 />
               ) : (
                 <div className="timeline-container overflow-x-auto">
-                  <div className="min-w-[1200px]">
-                    {/* Gantt Header with Dates */}
-                    <div className="flex mb-4 pb-2 border-b border-gray-200">
-                      <div className="w-80 text-sm font-medium text-gray-700">Task Details</div>
-                      <div className="flex-1">
-                        <div className="grid grid-cols-30 gap-px text-xs text-gray-600 text-center">
-                          {Array.from({ length: 30 }, (_, i) => {
-                            const date = addDays(new Date(), i);
-                            return (
-                              <div key={i} className="py-1">
-                                <div className="font-medium">{format(date, 'dd')}</div>
-                                <div className="text-gray-500">{format(date, 'MMM')}</div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Gantt Tasks */}
-                    <div className="space-y-1">
-                      {tasks.map((task) => {
-                        const startDate = new Date(task.startDate || task.createdAt);
-                        const endDate = new Date(task.dueDate);
-                        const today = new Date();
-                        const duration = Math.max(1, differenceInDays(endDate, startDate) + 1);
-                        const startOffset = Math.max(0, differenceInDays(startDate, today));
-                        const isOverdue = !task.completed && isPast(endDate);
+                  <div style={{ minWidth: '1400px' }}>
+                    {/* Calculate timeline bounds */}
+                    {(() => {
+                      const timelineEnd = addDays(timelineStart, 89); // 90 days total
+                      const totalDays = 90;
+                      const today = new Date();
+                      
+                      // Generate date headers
+                      const generateDates = () => {
+                        const dates = [];
+                        for (let i = 0; i < totalDays; i += 7) { // Weekly columns
+                          dates.push(addDays(timelineStart, i));
+                        }
+                        return dates;
+                      };
+                      
+                      const weekDates = generateDates();
+                      
+                      // Task positioning helper
+                      const getTaskPosition = (task) => {
+                        const taskStart = task.startDate ? parseISO(task.startDate) : parseISO(task.createdAt);
+                        const taskEnd = task.dueDate ? parseISO(task.dueDate) : addDays(taskStart, 1);
                         
-                        return (
-                          <div key={task.Id} className="flex items-center group hover:bg-gray-50 rounded p-2">
-                            <div className="w-80 pr-4">
-                              <div className="flex items-center gap-3">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleTimelineTaskUpdate(task.Id, { completed: !task.completed })}
-                                  className="p-1"
-                                >
-                                  <ApperIcon 
-                                    name={task.completed ? "CheckSquare" : "Square"} 
-                                    size={16} 
-                                    className={task.completed ? "text-green-600" : "text-gray-400"}
-                                  />
-                                </Button>
-                                <div className="flex-1">
-                                  <div className="font-medium text-sm text-gray-900">{task.name}</div>
-                                  <div className="text-xs text-gray-500 flex items-center gap-2">
-                                    <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                                      task.priority === 'High' 
-                                        ? 'bg-red-100 text-red-700'
-                                        : task.priority === 'Medium' 
-                                          ? 'bg-yellow-100 text-yellow-700'
-                                          : 'bg-blue-100 text-blue-700'
-                                    }`}>
-                                      {task.priority}
-                                    </span>
-                                    <span>{format(startDate, 'MMM dd')} - {format(endDate, 'MMM dd')}</span>
-                                    {isOverdue && (
-                                      <span className="text-red-600 font-medium">Overdue</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
+                        const startOffset = Math.max(0, differenceInDays(taskStart, timelineStart));
+                        const endOffset = Math.min(totalDays, differenceInDays(taskEnd, timelineStart) + 1);
+                        const duration = Math.max(1, endOffset - startOffset);
+                        
+                        return {
+                          left: (startOffset / totalDays) * 100,
+                          width: (duration / totalDays) * 100,
+                          visible: startOffset < totalDays && endOffset > 0
+                        };
+                      };
+                      
+                      return (
+                        <>
+                          {/* Gantt Header */}
+                          <div className="flex mb-4 pb-2 border-b border-gray-200">
+                            <div className="w-80 text-sm font-medium text-gray-700 flex items-center px-4">
+                              Task Details
                             </div>
-                            
-                            <div className="flex-1 relative h-10">
-                              <div className="grid grid-cols-30 gap-px h-full">
-                                {Array.from({ length: 30 }, (_, i) => (
-                                  <div key={i} className="border-r border-gray-100 last:border-r-0" />
+                            <div className="flex-1 relative">
+                              <div className="flex">
+                                {weekDates.map((date, index) => (
+                                  <div
+                                    key={date.toISOString()}
+                                    className="flex-1 px-2 py-2 text-center border-r border-gray-100 last:border-r-0"
+                                    style={{ minWidth: `${100 / weekDates.length}%` }}
+                                  >
+                                    <div className="text-xs font-medium text-gray-700">
+                                      {format(date, 'MMM dd')}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      {format(date, 'yyyy')}
+                                    </div>
+                                  </div>
                                 ))}
                               </div>
                               
-                              <div 
-                                className={`absolute top-1 bottom-1 rounded-md shadow-sm transition-all duration-200 group-hover:shadow-md timeline-task-bar ${
-                                  task.completed 
-                                    ? 'bg-gradient-to-r from-green-500 to-green-600' 
-                                    : isOverdue
-                                      ? 'bg-gradient-to-r from-red-500 to-red-600'
-                                      : task.priority === 'High' 
-                                        ? 'bg-gradient-to-r from-red-400 to-red-500' 
-                                        : task.priority === 'Medium' 
-                                          ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' 
-                                          : 'bg-gradient-to-r from-blue-400 to-blue-500'
-                                }`}
-                                style={{
-                                  left: `${(startOffset / 30) * 100}%`,
-                                  width: `${Math.min(100 - (startOffset / 30) * 100, (duration / 30) * 100)}%`
-                                }}
-                              >
-                                <div className="px-2 py-1 text-xs text-white font-medium truncate h-full flex items-center">
-                                  {task.name}
-                                </div>
-                                {task.completed && (
-                                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                    <ApperIcon name="Check" size={12} className="text-white" />
-                                  </div>
-                                )}
-                              </div>
+                              {/* Today indicator */}
+                              {differenceInDays(today, timelineStart) >= 0 && differenceInDays(today, timelineStart) < totalDays && (
+                                <div 
+                                  className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20 pointer-events-none"
+                                  style={{
+                                    left: `${(differenceInDays(today, timelineStart) / totalDays) * 100}%`
+                                  }}
+                                />
+                              )}
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                    
-                    {/* Milestones in Gantt */}
-                    {milestones.length > 0 && (
-                      <div className="mt-6 pt-4 border-t border-gray-200">
-                        <div className="space-y-1">
-                          {milestones.map((milestone) => {
-                            const milestoneDate = new Date(milestone.dueDate);
-                            const today = new Date();
-                            const offset = differenceInDays(milestoneDate, today);
-                            
-                            return (
-                              <div key={milestone.Id} className="flex items-center group hover:bg-gray-50 rounded p-2">
-                                <div className="w-80 pr-4">
-                                  <div className="flex items-center gap-3">
-                                    <ApperIcon name="Flag" size={16} className="text-purple-600" />
-                                    <div>
-                                      <div className="font-medium text-sm text-gray-900">{milestone.title}</div>
-                                      <div className="text-xs text-gray-500">
-                                        Due: {format(milestoneDate, 'MMM dd, yyyy')}
+                          
+                          {/* Gantt Tasks */}
+                          <div className="space-y-1">
+                            {tasks.map((task) => {
+                              const taskStart = task.startDate ? parseISO(task.startDate) : parseISO(task.createdAt);
+                              const taskEnd = task.dueDate ? parseISO(task.dueDate) : addDays(taskStart, 1);
+                              const position = getTaskPosition(task);
+                              const isOverdue = !task.completed && isPast(taskEnd);
+                              
+                              if (!position.visible) return null;
+                              
+                              return (
+                                <div key={task.Id} className="flex items-center group hover:bg-gray-50 rounded-lg p-2 transition-colors">
+                                  <div className="w-80 pr-4">
+                                    <div className="flex items-center gap-3">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleTimelineTaskUpdate(task.Id, { completed: !task.completed })}
+                                        className="p-1 hover:bg-gray-100"
+                                      >
+                                        <ApperIcon 
+                                          name={task.completed ? "CheckSquare" : "Square"} 
+                                          size={16} 
+                                          className={task.completed ? "text-green-600" : "text-gray-400"}
+                                        />
+                                      </Button>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="font-medium text-sm text-gray-900 truncate">{task.name}</div>
+                                        <div className="text-xs text-gray-500 flex items-center gap-2 mt-1">
+                                          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                                            task.priority === 'High' 
+                                              ? 'bg-red-100 text-red-700'
+                                              : task.priority === 'Medium' 
+                                                ? 'bg-yellow-100 text-yellow-700'
+                                                : 'bg-blue-100 text-blue-700'
+                                          }`}>
+                                            {task.priority}
+                                          </span>
+                                          <span>{format(taskStart, 'MMM dd')} - {format(taskEnd, 'MMM dd')}</span>
+                                          {isOverdue && (
+                                            <span className="text-red-600 font-medium">Overdue</span>
+                                          )}
+                                        </div>
                                       </div>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => openEditTaskModal(task)}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                                      >
+                                        <ApperIcon name="Edit" size={14} />
+                                      </Button>
                                     </div>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex-1 relative h-10">
-                                  <div className="grid grid-cols-30 gap-px h-full">
-                                    {Array.from({ length: 30 }, (_, i) => (
-                                      <div key={i} className="border-r border-gray-100 last:border-r-0" />
-                                    ))}
                                   </div>
                                   
-                                  {offset >= 0 && offset <= 30 && (
-                                    <div 
-                                      className="absolute top-0 bottom-0 w-1 bg-purple-600 timeline-milestone"
-                                      style={{ left: `${(offset / 30) * 100}%` }}
-                                    >
-                                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-purple-600 rotate-45" />
+                                  <div className="flex-1 relative" style={{ height: '48px' }}>
+                                    {/* Background grid */}
+                                    <div className="absolute inset-0 flex">
+                                      {weekDates.map((date, index) => (
+                                        <div 
+                                          key={index} 
+                                          className="flex-1 border-r border-gray-100 last:border-r-0"
+                                          style={{ minWidth: `${100 / weekDates.length}%` }}
+                                        />
+                                      ))}
                                     </div>
-                                  )}
+                                    
+                                    {/* Task bar */}
+                                    <div 
+                                      className={`absolute top-2 bottom-2 rounded-md shadow-sm transition-all duration-200 group-hover:shadow-md timeline-task-bar cursor-pointer ${
+                                        task.completed 
+                                          ? 'bg-gradient-to-r from-green-500 to-green-600' 
+                                          : isOverdue
+                                            ? 'bg-gradient-to-r from-red-500 to-red-600'
+                                            : task.priority === 'High' 
+                                              ? 'bg-gradient-to-r from-red-400 to-red-500' 
+                                              : task.priority === 'Medium' 
+                                                ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' 
+                                                : 'bg-gradient-to-r from-blue-400 to-blue-500'
+                                      }`}
+                                      style={{
+                                        left: `${position.left}%`,
+                                        width: `${Math.max(2, position.width)}%`
+                                      }}
+                                      onClick={() => openEditTaskModal(task)}
+                                      title={`${task.name} - ${task.priority} Priority`}
+                                    >
+                                      <div className="px-3 py-2 text-xs text-white font-medium truncate h-full flex items-center">
+                                        <span className="truncate">{task.name}</span>
+                                        {task.completed && (
+                                          <ApperIcon name="Check" size={12} className="text-white ml-2 flex-shrink-0" />
+                                        )}
+                                      </div>
+                                      
+                                      {/* Progress indicator */}
+                                      {!task.completed && task.progress > 0 && (
+                                        <div 
+                                          className="absolute bottom-0 left-0 h-1 bg-white bg-opacity-40 rounded-b-md"
+                                          style={{ width: `${task.progress}%` }}
+                                        />
+                                      )}
+                                    </div>
+                                    
+                                    {/* Today indicator overlay */}
+                                    {differenceInDays(today, timelineStart) >= 0 && differenceInDays(today, timelineStart) < totalDays && (
+                                      <div 
+                                        className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10 pointer-events-none"
+                                        style={{
+                                          left: `${(differenceInDays(today, timelineStart) / totalDays) * 100}%`
+                                        }}
+                                      />
+                                    )}
+                                  </div>
                                 </div>
+                              );
+                            })}
+                          </div>
+                          
+                          {/* Milestones */}
+                          {milestones.length > 0 && (
+                            <div className="mt-6 pt-4 border-t border-gray-200">
+                              <h4 className="text-sm font-medium text-gray-700 mb-3">Project Milestones</h4>
+                              <div className="space-y-1">
+                                {milestones.map((milestone) => {
+                                  const milestoneDate = parseISO(milestone.dueDate);
+                                  const offset = differenceInDays(milestoneDate, timelineStart);
+                                  const isVisible = offset >= 0 && offset < totalDays;
+                                  
+                                  if (!isVisible) return null;
+                                  
+                                  return (
+                                    <div key={milestone.Id} className="flex items-center group hover:bg-gray-50 rounded-lg p-2 transition-colors">
+                                      <div className="w-80 pr-4">
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-4 h-4 bg-purple-600 rounded-full flex items-center justify-center">
+                                            <ApperIcon name="Flag" size={10} className="text-white" />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <div className="font-medium text-sm text-gray-900 truncate">{milestone.title}</div>
+                                            <div className="text-xs text-gray-500">
+                                              Due: {format(milestoneDate, 'MMM dd, yyyy')}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex-1 relative" style={{ height: '48px' }}>
+                                        {/* Background grid */}
+                                        <div className="absolute inset-0 flex">
+                                          {weekDates.map((date, index) => (
+                                            <div 
+                                              key={index} 
+                                              className="flex-1 border-r border-gray-100 last:border-r-0"
+                                              style={{ minWidth: `${100 / weekDates.length}%` }}
+                                            />
+                                          ))}
+                                        </div>
+                                        
+                                        {/* Milestone marker */}
+                                        <div 
+                                          className="absolute top-1/2 transform -translate-y-1/2 -translate-x-1/2 z-15"
+                                          style={{ left: `${(offset / totalDays) * 100}%` }}
+                                        >
+                                          <div className="relative">
+                                            <div className="w-4 h-4 bg-purple-600 rounded-full border-2 border-white shadow-md timeline-milestone">
+                                              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-b-4 border-transparent border-b-purple-600" />
+                                            </div>
+                                            <div className="absolute top-6 left-1/2 transform -translate-x-1/2 text-xs text-purple-700 font-medium whitespace-nowrap bg-white px-2 py-1 rounded shadow-sm">
+                                              {milestone.title}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               )}
