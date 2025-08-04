@@ -129,13 +129,12 @@ const filteredTasks = tasks.filter(task => {
     const matchesStatus = filter === "all" || 
       (filter === "completed" && task.completed) ||
       (filter === "pending" && !task.completed);
+(filter === "pending" && !task.completed);
     
     const matchesSearch = !searchTerm || 
-      task.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getProjectById(task.projectId)?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    return matchesStatus && matchesSearch;
   });
 
   const taskCounts = {
@@ -265,7 +264,7 @@ const filteredTasks = tasks.filter(task => {
           onAction={tasks.length === 0 && projects.length > 0 ? openCreateModal : null}
 />
       ) : (
-        {viewMode === "grid" ? (
+        viewMode === "grid" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredTasks.map((task) => (
               <TaskCard

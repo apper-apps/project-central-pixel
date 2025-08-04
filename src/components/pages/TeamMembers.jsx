@@ -34,10 +34,10 @@ const [loading, setLoading] = useState(true);
     filterMembers();
   }, [members, searchTerm, statusFilter, departmentFilter]);
 
-  const fetchMembers = async () => {
+const fetchMembers = async () => {
     try {
       setLoading(true);
-      const data = teamMemberService.getAll();
+      const data = await teamMemberService.getAll();
       setMembers(data);
       setError(null);
     } catch (err) {
@@ -48,21 +48,26 @@ const [loading, setLoading] = useState(true);
     }
   };
 
-  const fetchWorkloadStats = async () => {
+const fetchWorkloadStats = async () => {
     try {
-      const stats = teamMemberService.getWorkloadStats();
+      const stats = await teamMemberService.getWorkloadStats();
       setWorkloadStats(stats);
     } catch (err) {
       console.error('Error fetching workload stats:', err);
     }
   };
 
-  const filterMembers = () => {
+const filterMembers = () => {
     let filtered = [...members];
 
     // Apply search filter
     if (searchTerm) {
-      filtered = teamMemberService.search(searchTerm);
+      filtered = filtered.filter(member => 
+        member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.department?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
     // Apply status filter
@@ -88,12 +93,12 @@ const [loading, setLoading] = useState(true);
     setIsFormOpen(true);
   };
 
-  const handleDeleteMember = (member) => {
+const handleDeleteMember = async (member) => {
     if (window.confirm(`Are you sure you want to remove ${member.name} from the team?`)) {
       try {
-        teamMemberService.delete(member.Id);
+        await teamMemberService.delete(member.Id);
         setMembers(prev => prev.filter(m => m.Id !== member.Id));
-        fetchWorkloadStats();
+        await fetchWorkloadStats();
         toast.success(`${member.name} has been removed from the team`);
       } catch (err) {
         toast.error('Failed to remove team member. Please try again.');
@@ -102,21 +107,21 @@ const [loading, setLoading] = useState(true);
     }
   };
 
-  const handleFormSubmit = async (memberData) => {
+const handleFormSubmit = async (memberData) => {
     try {
       setIsSubmitting(true);
       
       if (editingMember) {
-        const updatedMember = teamMemberService.update(editingMember.Id, memberData);
+        const updatedMember = await teamMemberService.update(editingMember.Id, memberData);
         setMembers(prev => prev.map(m => m.Id === editingMember.Id ? updatedMember : m));
         toast.success(`${memberData.name} has been updated successfully`);
       } else {
-        const newMember = teamMemberService.create(memberData);
+        const newMember = await teamMemberService.create(memberData);
         setMembers(prev => [...prev, newMember]);
         toast.success(`${memberData.name} has been added to the team`);
       }
       
-      fetchWorkloadStats();
+      await fetchWorkloadStats();
       setIsFormOpen(false);
       setEditingMember(null);
     } catch (err) {
@@ -287,7 +292,7 @@ const [loading, setLoading] = useState(true);
           </button>
         </div>
       </div>
-      {/* Team Members Grid */}
+{/* Team Members Grid */}
       {filteredMembers.length === 0 ? (
         <Empty
           title="No team members found"
@@ -298,9 +303,9 @@ const [loading, setLoading] = useState(true);
               Add Team Member
             </Button>
           }
-/>
+        />
       ) : (
-        {viewMode === "grid" ? (
+        viewMode === "grid" ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredMembers.map((member) => (
               <TeamMemberCard
