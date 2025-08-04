@@ -30,13 +30,14 @@ async create(projectData) {
       deadline: projectData.deadline || "",
       deliverables: projectData.deliverables || "",
       milestones: [],
+      chatEnabled: true,
       createdAt: new Date().toISOString()
     };
     this.projects.push(newProject);
     return { ...newProject };
   }
 
-  async update(id, projectData) {
+async update(id, projectData) {
     await this.delay(400);
     const index = this.projects.findIndex(p => p.Id === parseInt(id));
     if (index === -1) {
@@ -49,7 +50,8 @@ async create(projectData) {
       clientId: parseInt(projectData.clientId),
       status: projectData.status || this.projects[index].status,
       deadline: projectData.deadline || this.projects[index].deadline,
-      deliverables: projectData.deliverables || this.projects[index].deliverables
+      deliverables: projectData.deliverables || this.projects[index].deliverables,
+      chatEnabled: projectData.chatEnabled !== undefined ? projectData.chatEnabled : this.projects[index].chatEnabled
     };
     
     return { ...this.projects[index] };

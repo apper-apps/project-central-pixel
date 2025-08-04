@@ -11,10 +11,13 @@ import ApperIcon from "@/components/ApperIcon";
 import TaskListCard from "@/components/molecules/TaskListCard";
 import MilestoneCard from "@/components/molecules/MilestoneCard";
 import TaskListForm from "@/components/molecules/TaskListForm";
+import WikiDocumentForm from "@/components/molecules/WikiDocumentForm";
+import CalendarEventForm from "@/components/molecules/CalendarEventForm";
 import TaskForm from "@/components/molecules/TaskForm";
 import ProjectForm from "@/components/molecules/ProjectForm";
 import TaskCard from "@/components/molecules/TaskCard";
 import MilestoneForm from "@/components/molecules/MilestoneForm";
+import ChatChannel from "@/components/molecules/ChatChannel";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
@@ -23,8 +26,6 @@ import Projects from "@/components/pages/Projects";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 import Card from "@/components/atoms/Card";
-import WikiDocumentForm from "@/components/molecules/WikiDocumentForm";
-import CalendarEventForm from "@/components/molecules/CalendarEventForm";
 const ProjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -968,8 +969,8 @@ const getDateTasks = (date) => {
             Project Views
           </h2>
           <div className="flex items-center gap-3">
-            <div className="flex bg-gray-100 rounded-lg p-1">
-<button
+<div className="flex bg-gray-100 rounded-lg p-1">
+              <button
                 onClick={() => setActiveTab('structure')}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
                   activeTab === 'structure'
@@ -1001,6 +1002,17 @@ const getDateTasks = (date) => {
               >
                 <ApperIcon name="BookOpen" size={16} />
                 Wiki
+              </button>
+              <button
+                onClick={() => setActiveTab('chat')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'chat'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <ApperIcon name="MessageCircle" size={16} />
+                Chat
               </button>
               <button
                 onClick={() => setActiveTab('calendar')}
@@ -1302,6 +1314,15 @@ const getDateTasks = (date) => {
               </Card>
             </div>
           </div>
+        )}
+
+{/* Chat Tab */}
+        {activeTab === 'chat' && (
+          <ChatChannel 
+            projectId={project.Id}
+            channelType="project"
+            channelName={`${project.name} Chat`}
+          />
         )}
 
         {/* Calendar Tab */}
