@@ -9,7 +9,8 @@ const navigation = [
     { name: "Projects", href: "/projects", icon: "Briefcase" },
     { name: "Tasks", href: "/tasks", icon: "CheckSquare" },
     { name: "Team", href: "/team", icon: "Users" },
-    { name: "Time Tracking", href: "/time-tracking", icon: "Clock" }
+    { name: "Time Tracking", href: "/time-tracking", icon: "Clock" },
+    { name: "Reports", href: "/reports", icon: "BarChart3" }
   ];
 
   return (

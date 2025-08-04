@@ -11,6 +11,7 @@ import Tasks from "@/components/pages/Tasks";
 import TimeTracking from "@/components/pages/TimeTracking";
 import TeamMembers from "@/components/pages/TeamMembers";
 import TeamMemberDetail from "@/components/pages/TeamMemberDetail";
+import Reports from "@/components/pages/Reports";
 function App() {
   return (
 <BrowserRouter>
@@ -25,6 +26,7 @@ function App() {
           <Route path="/time-tracking" element={<TimeTracking />} />
           <Route path="/team" element={<TeamMembers />} />
           <Route path="/team/:id" element={<TeamMemberDetail />} />
+          <Route path="/reports" element={<Reports />} />
         </Routes>
       </Layout>
       
