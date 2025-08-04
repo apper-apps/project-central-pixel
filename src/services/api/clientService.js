@@ -2,7 +2,7 @@ import clientsData from "@/services/mockData/clients.json";
 
 class ClientService {
   constructor() {
-    this.clients = [...clientsData];
+this.clients = Array.isArray(clientsData) ? [...clientsData] : [];
   }
 
   async getAll() {
@@ -16,7 +16,16 @@ class ClientService {
     if (!client) {
       throw new Error("Client not found");
     }
-return { ...client };
+if (!id) {
+      throw new Error("Client ID is required");
+    }
+    
+    const client = this.clients.find(c => c && c.Id === parseInt(id));
+    if (!client) {
+      throw new Error("Client not found");
+    }
+    
+    return { ...client };
   }
 
   async getProjectsByClientId(clientId) {

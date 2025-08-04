@@ -27,7 +27,9 @@ const [statusFilter, setStatusFilter] = useState("All");
   const [viewMode, setViewMode] = useState("grid"); // grid, list
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
-const filteredClients = clients.filter(client => {
+const filteredClients = (clients || []).filter(client => {
+    if (!client) return false;
+    
     const matchesStatus = statusFilter === "All" || client.status === statusFilter;
     const matchesSearch = !searchTerm || 
       client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -58,15 +60,24 @@ const filteredClients = clients.filter(client => {
     setCurrentPage(1);
   }, [statusFilter, searchTerm]);
 
-  const loadClients = async () => {
+const loadClients = async () => {
     try {
       setLoading(true);
       setError("");
       const data = await clientService.getAll();
-      setClients(data);
+      
+      // Validate received data
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid client data format received");
+      }
+      
+      setClients(data || []);
     } catch (err) {
       console.error("Failed to load clients:", err);
-      setError("Failed to load clients. Please try again.");
+      const errorMessage = err?.message?.includes("Client not found") 
+        ? "No clients found in the system."
+        : err?.message || "Failed to load clients. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -76,24 +87,45 @@ const filteredClients = clients.filter(client => {
     loadClients();
   }, []);
 
-  const handleCreateClient = async (clientData) => {
+const handleCreateClient = async (clientData) => {
     try {
+      if (!clientData) {
+        throw new Error("Client data is required");
+      }
+      
       const newClient = await clientService.create(clientData);
-      setClients(prev => [...prev, newClient]);
+      if (!newClient) {
+        throw new Error("Failed to create client - no data returned");
+      }
+      
+      setClients(prev => [...(prev || []), newClient]);
       setShowModal(false);
       toast.success("Client created successfully!");
     } catch (err) {
       console.error("Failed to create client:", err);
-      toast.error("Failed to create client. Please try again.");
+      const errorMessage = err?.message || "Failed to create client. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
-  const handleEditClient = async (clientData) => {
+const handleEditClient = async (clientData) => {
     try {
+      if (!editingClient?.Id) {
+        throw new Error("No client selected for editing");
+      }
+      
+      if (!clientData) {
+        throw new Error("Client data is required");
+      }
+      
       const updatedClient = await clientService.update(editingClient.Id, clientData);
+      if (!updatedClient) {
+        throw new Error("Failed to update client - no data returned");
+      }
+      
       setClients(prev => 
-        prev.map(client => 
-          client.Id === editingClient.Id ? updatedClient : client
+        (prev || []).map(client => 
+          client?.Id === editingClient.Id ? updatedClient : client
         )
       );
       setShowModal(false);
@@ -101,19 +133,28 @@ const filteredClients = clients.filter(client => {
       toast.success("Client updated successfully!");
     } catch (err) {
       console.error("Failed to update client:", err);
-      toast.error("Failed to update client. Please try again.");
+      const errorMessage = err?.message || "Failed to update client. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
-  const handleDeleteClient = async (clientId) => {
+const handleDeleteClient = async (clientId) => {
+    if (!clientId) {
+      toast.error("Invalid client ID");
+      return;
+    }
+    
     if (window.confirm("Are you sure you want to delete this client?")) {
       try {
         await clientService.delete(clientId);
-        setClients(prev => prev.filter(client => client.Id !== clientId));
+        setClients(prev => (prev || []).filter(client => client?.Id !== clientId));
         toast.success("Client deleted successfully!");
       } catch (err) {
         console.error("Failed to delete client:", err);
-        toast.error("Failed to delete client. Please try again.");
+        const errorMessage = err?.message?.includes("Client not found")
+          ? "Client not found - it may have already been deleted."
+          : err?.message || "Failed to delete client. Please try again.";
+        toast.error(errorMessage);
       }
     }
   };
