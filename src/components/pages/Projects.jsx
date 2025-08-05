@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Pagination from "@/components/atoms/Pagination";
+import { create, getAll, update } from "@/services/api/issueService";
 import clientService from "@/services/api/clientService";
 import projectService from "@/services/api/projectService";
-import { create, getAll, update } from "@/services/api/teamMemberService";
+import * as teamMemberService from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
 import ProjectForm from "@/components/molecules/ProjectForm";
 import ProjectCard from "@/components/molecules/ProjectCard";
@@ -12,9 +13,11 @@ import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import Input from "@/components/atoms/Input";
+import Pagination from "@/components/atoms/Pagination";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 const Projects = () => {
+  const navigate = useNavigate();
 const [projects, setProjects] = useState([]);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -125,7 +128,7 @@ const [itemsPerPage, setItemsPerPage] = useState(25);
 
   const closeModal = () => {
     setShowModal(false);
-    setEditingProject(null);
+setEditingProject(null);
   };
 
   if (loading) {
@@ -262,11 +265,16 @@ const [itemsPerPage, setItemsPerPage] = useState(25);
                     <tbody className="divide-y divide-gray-200">
                       {paginatedProjects.map((project) => {
                         const client = getClientById(project.clientId);
-                        return (
+return (
                           <tr key={project.Id} className="hover:bg-gray-50">
                             <td className="px-6 py-4">
                               <div>
-                                <div className="text-sm font-medium text-gray-900">{project.name}</div>
+                                <div 
+                                  className="text-sm font-medium text-gray-900 hover:text-blue-600 cursor-pointer"
+                                  onClick={() => navigate(`/projects/${project.Id}`)}
+                                >
+                                  {project.name}
+                                </div>
                                 {project.description && (
                                   <div className="text-sm text-gray-500 max-w-xs truncate">
                                     {project.description}

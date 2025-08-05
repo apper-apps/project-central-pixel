@@ -320,7 +320,7 @@ const closeModal = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {paginatedClients.map((client) => (
+{paginatedClients.map((client) => (
                       <tr key={client.Id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div className="flex items-center">
@@ -332,7 +332,12 @@ const closeModal = () => {
                               </div>
                             </div>
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{client.name}</div>
+                              <div 
+                                className="text-sm font-medium text-gray-900 hover:text-blue-600 cursor-pointer"
+                                onClick={() => navigate(`/clients/${client.Id}`)}
+                              >
+                                {client.name}
+                              </div>
                               {client.company && (
                                 <div className="text-sm text-gray-500">{client.company}</div>
                               )}
