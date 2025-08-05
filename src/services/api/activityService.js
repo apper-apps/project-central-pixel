@@ -1,5 +1,5 @@
-import { create, getAll } from "@/services/api/issueService";
-import { create, getAll } from "@/services/api/teamMemberService";
+import { create as createIssue, getAll as getAllIssues } from "@/services/api/issueService";
+import { create as createTeamMember, getAll as getAllTeamMembers } from "@/services/api/teamMemberService";
 // Mock activity service with comprehensive tracking
 const activities = [];
 let nextId = 1;
