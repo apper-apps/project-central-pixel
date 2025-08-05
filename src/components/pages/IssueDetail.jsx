@@ -8,7 +8,7 @@ import ApperIcon from '@/components/ApperIcon';
 import IssueForm from '@/components/molecules/IssueForm';
 import CommentForm from '@/components/molecules/CommentForm';
 import issueService, { issueTypes } from '@/services/api/issueService';
-import { projectService } from '@/services/api/projectService';
+import projectService from '@/services/api/projectService';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 
