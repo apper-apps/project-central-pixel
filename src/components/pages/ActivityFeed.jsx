@@ -11,8 +11,10 @@ import Empty from '@/components/ui/Empty';
 import Button from '@/components/atoms/Button';
 import Card from '@/components/atoms/Card';
 import Input from '@/components/atoms/Input';
+import { useNavigate } from 'react-router-dom';
 
 const ActivityFeed = () => {
+  const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
   const [projects, setProjects] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
@@ -349,9 +351,29 @@ const ActivityFeed = () => {
               <div className="space-y-3">
                 {activities.map((activity) => {
                   const typeInfo = activityService.getActivityTypeInfo(activity.type);
+const handleActivityClick = () => {
+                    if (activity.projectId && activity.taskId) {
+                      // Navigate to task within project context (if we had task detail pages)
+                      navigate(`/projects/${activity.projectId}`);
+                    } else if (activity.projectId && activity.type.includes('project')) {
+                      navigate(`/projects/${activity.projectId}`);
+                    } else if (activity.projectId) {
+                      navigate(`/projects/${activity.projectId}`);
+                    }
+                  };
+
+                  const isClickable = activity.projectId || activity.taskId || activity.issueId;
                   
                   return (
-                    <Card key={activity.Id} className="p-4 hover:shadow-md transition-shadow">
+                    <Card 
+                      key={activity.Id} 
+                      className={`p-4 transition-all duration-200 ${
+                        isClickable 
+                          ? 'hover:shadow-md hover:bg-gray-50 cursor-pointer' 
+                          : 'hover:shadow-sm'
+                      }`}
+                      onClick={isClickable ? handleActivityClick : undefined}
+                    >
                       <div className="flex items-start space-x-3">
                         <div className={`flex-shrink-0 w-10 h-10 rounded-full ${typeInfo.bgColor} flex items-center justify-center`}>
                           <ApperIcon name={typeInfo.icon} size={20} className={typeInfo.color} />
@@ -367,7 +389,7 @@ const ActivityFeed = () => {
                             </p>
                           </div>
                           
-                          <p className="text-sm text-gray-600 mt-1">
+                          <p className={`text-sm mt-1 ${isClickable ? 'text-gray-700' : 'text-gray-600'}`}>
                             {activity.description}
                           </p>
                           
@@ -379,6 +401,12 @@ const ActivityFeed = () => {
                             {activity.projectId && (
                               <span className="text-xs text-gray-500">
                                 in {getProjectName(activity.projectId)}
+                              </span>
+                            )}
+                            
+                            {isClickable && (
+                              <span className="text-xs text-blue-600 font-medium">
+                                Click to view →
                               </span>
                             )}
                           </div>

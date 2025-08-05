@@ -1,3 +1,5 @@
+import { create, getAll } from "@/services/api/issueService";
+import { create, getAll } from "@/services/api/teamMemberService";
 // Mock activity service with comprehensive tracking
 const activities = [];
 let nextId = 1;
@@ -23,6 +25,7 @@ const ACTIVITY_TYPES = {
 };
 
 // Initialize with sample activities
+// Initialize with sample activities
 const initializeActivities = () => {
   if (activities.length === 0) {
     const sampleActivities = [
@@ -30,10 +33,12 @@ const initializeActivities = () => {
         Id: nextId++,
         type: ACTIVITY_TYPES.TASK_CREATED,
         title: "New task created: 'Implement user authentication'",
-        description: "High priority task assigned to development team",
+        description: "Created high priority task for development team - click to view project",
         userId: 1,
         projectId: 1,
         taskId: 15,
+        targetType: 'project',
+        targetId: 1,
         createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 min ago
         isRead: false
       },
@@ -41,10 +46,12 @@ const initializeActivities = () => {
         Id: nextId++,
         type: ACTIVITY_TYPES.COMMENT_CREATED,
         title: "Sarah Wilson commented on 'Database Migration'",
-        description: "Added clarification about migration process and timeline",
+        description: "Added clarification about migration process and timeline - click to view project",
         userId: 2,
         projectId: 2,
         taskId: 8,
+        targetType: 'project',
+        targetId: 2,
         createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 min ago
         isRead: false
       },
@@ -52,10 +59,12 @@ const initializeActivities = () => {
         Id: nextId++,
         type: ACTIVITY_TYPES.TASK_COMPLETED,
         title: "Task completed: 'API Documentation Update'",
-        description: "Documentation has been updated with latest endpoint changes",
+        description: "Documentation has been updated with latest endpoint changes - click to view project",
         userId: 3,
         projectId: 1,
         taskId: 12,
+        targetType: 'project',
+        targetId: 1,
         createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 min ago
         isRead: false
       },
@@ -63,10 +72,12 @@ const initializeActivities = () => {
         Id: nextId++,
         type: ACTIVITY_TYPES.FILE_UPLOADED,
         title: "New file uploaded: 'design-mockups-v2.fig'",
-        description: "Updated mockups with latest design revisions",
+        description: "Updated mockups with latest design revisions - click to view project",
         userId: 4,
         projectId: 3,
         fileName: "design-mockups-v2.fig",
+        targetType: 'project',
+        targetId: 3,
         createdAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 min ago
         isRead: true
       },
@@ -74,11 +85,13 @@ const initializeActivities = () => {
         Id: nextId++,
         type: ACTIVITY_TYPES.TASK_ASSIGNED,
         title: "Task assigned: 'Mobile responsive testing'",
-        description: "Assigned to QA team for comprehensive testing across devices",
+        description: "Assigned to QA team for comprehensive testing across devices - click to view project",
         userId: 1,
         assignedToUserId: 5,
         projectId: 2,
         taskId: 20,
+        targetType: 'project',
+        targetId: 2,
         createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1 hour ago
         isRead: true
       },
@@ -86,11 +99,13 @@ const initializeActivities = () => {
         Id: nextId++,
         type: ACTIVITY_TYPES.USER_MENTIONED,
         title: "You were mentioned in 'Frontend Review'",
-        description: "@you Please review the latest frontend changes and provide feedback",
+        description: "Please review the latest frontend changes and provide feedback - click to view project",
         userId: 2,
         mentionedUserId: 1,
         projectId: 1,
         taskId: 18,
+        targetType: 'project',
+        targetId: 1,
         createdAt: new Date(Date.now() - 90 * 60 * 1000).toISOString(), // 1.5 hours ago
         isRead: false
       },
@@ -98,10 +113,12 @@ const initializeActivities = () => {
         Id: nextId++,
         type: ACTIVITY_TYPES.MILESTONE_COMPLETED,
         title: "Milestone completed: 'Phase 1 Development'",
-        description: "All tasks in Phase 1 have been successfully completed",
+        description: "All tasks in Phase 1 have been successfully completed - click to view project",
         userId: 1,
         projectId: 2,
         milestoneId: 3,
+        targetType: 'project',
+        targetId: 2,
         createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
         isRead: true
       },
@@ -117,7 +134,7 @@ const initializeActivities = () => {
       }
     ];
     
-    activities.push(...sampleActivities);
+activities.push(...sampleActivities);
   }
 };
 
