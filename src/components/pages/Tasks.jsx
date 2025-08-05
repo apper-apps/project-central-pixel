@@ -388,17 +388,19 @@ const filteredTasks = tasks.filter(task => {
                             {task.completed ? 'Completed' : 'Pending'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end space-x-2">
+<td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end space-x-1">
                             <button
                               onClick={() => openEditModal(task)}
-                              className="text-blue-600 hover:text-blue-900"
+                              className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-md transition-colors"
+                              title="Edit task"
                             >
                               <ApperIcon name="Edit2" size={16} />
                             </button>
                             <button
                               onClick={() => handleDeleteTask(task.Id)}
-                              className="text-red-600 hover:text-red-900"
+                              className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-md transition-colors"
+                              title="Delete task"
                             >
                               <ApperIcon name="Trash2" size={16} />
                             </button>

@@ -70,12 +70,12 @@ const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact =
             </div>
           </div>
         </div>
-        <div className="flex items-center space-x-1 ml-4">
+<div className="flex items-center space-x-1 ml-4 flex-shrink-0">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onEdit(task)}
-            className="p-2"
+            className="p-2 hover:bg-gray-100 transition-colors"
           >
             <ApperIcon name="Edit2" size={14} />
           </Button>
@@ -83,7 +83,7 @@ const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact =
             variant="ghost"
             size="sm"
             onClick={() => onDelete(task.Id)}
-            className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
           >
             <ApperIcon name="Trash2" size={14} />
           </Button>
