@@ -438,3 +438,130 @@
     max-width: 380px;
   }
 }
+
+/* Header Search and Dropdown Styles */
+.search-dropdown {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.search-result-item {
+  transition: all 0.15s ease;
+}
+
+.search-result-item:hover {
+  background-color: #f8fafc;
+  transform: translateX(2px);
+}
+
+.notification-badge {
+  animation: badge-pulse 2s infinite;
+}
+
+.notification-item {
+  transition: all 0.2s ease;
+}
+
+.notification-item:hover {
+  background-color: #f8fafc;
+}
+
+.notification-unread {
+  position: relative;
+}
+
+.notification-unread::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+.profile-dropdown {
+  animation: slideUp 0.2s ease-out;
+}
+
+.profile-menu-item {
+  transition: all 0.15s ease;
+}
+
+.profile-menu-item:hover {
+  background-color: #f8fafc;
+  padding-left: 1.25rem;
+}
+
+.avatar-gradient {
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+}
+
+/* Responsive Header Adjustments */
+@media (max-width: 768px) {
+  .search-dropdown {
+    left: -1rem;
+    right: -1rem;
+    width: calc(100% + 2rem);
+  }
+  
+  .notification-dropdown,
+  .profile-dropdown {
+    left: -8rem;
+    width: 20rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .notification-dropdown,
+  .profile-dropdown {
+    left: -12rem;
+    width: 16rem;
+  }
+}
+
+/* Search Input Focus Enhancement */
+.search-input:focus {
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  border-color: #4A90E2;
+}
+
+/* Notification Badge Animation */
+@keyframes notification-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.notification-badge {
+  animation: notification-pulse 2s infinite;
+}
+
+/* Dropdown Shadow Enhancement */
+.dropdown-shadow {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Profile Modal Custom Styles */
+.profile-modal .modal-content {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.profile-form-section {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
