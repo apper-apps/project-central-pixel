@@ -10,7 +10,7 @@ import activityService from '@/services/api/activityService';
 import ApperIcon from '@/components/ApperIcon';
 import Button from '@/components/atoms/Button';
 import Card from '@/components/atoms/Card';
-import Modal from '@/services/molecules/Modal';
+import Modal from '@/components/atoms/Modal';
 import Loading from '@/components/ui/Loading';
 import Error from '@/components/ui/Error';
 import Empty from '@/components/ui/Empty';
