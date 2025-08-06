@@ -2335,10 +2335,15 @@ const getDateTasks = (date) => {
                       <Card key={milestone.Id} className="p-6">
                         <div className="mb-4">
                           <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
+<div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-lg font-semibold text-gray-900">
-                                  {milestone.title}
+                                <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                                  <button
+                                    onClick={() => navigate(`/projects/${project.Id}/milestones/${milestone.Id}`)}
+                                    className="text-left hover:underline focus:outline-none focus:underline"
+                                  >
+                                    {milestone.title}
+                                  </button>
                                 </h3>
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
                                   milestone.isCompleted 

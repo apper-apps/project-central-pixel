@@ -14,6 +14,7 @@ import Clients from "@/components/pages/Clients";
 import ClientDetail from "@/components/pages/ClientDetail";
 import Projects from "@/components/pages/Projects";
 import ProjectDetail from "@/components/pages/ProjectDetail";
+import MilestoneDetail from "@/components/pages/MilestoneDetail";
 import Dashboard from "@/components/pages/Dashboard";
 import Issues from "@/components/pages/Issues";
 import IssueDetail from "@/components/pages/IssueDetail";
@@ -25,8 +26,9 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/clients/:id" element={<ClientDetail />} />
-          <Route path="/projects" element={<Projects />} />
+<Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
+          <Route path="/projects/:projectId/milestones/:id" element={<MilestoneDetail />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/issues" element={<Issues />} />
           <Route path="/issues/:id" element={<IssueDetail />} />
