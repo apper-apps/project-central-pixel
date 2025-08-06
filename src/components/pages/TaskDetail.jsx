@@ -24,8 +24,8 @@ const TaskDetail = () => {
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-
+const [showEditModal, setShowEditModal] = useState(false);
+  const [showCollaboration, setShowCollaboration] = useState(false);
   useEffect(() => {
     loadTaskData();
   }, [id]);
@@ -315,11 +315,12 @@ const TaskDetail = () => {
 
       {/* Collaboration Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+<div className="lg:col-span-2">
           <CollaborationSection 
-            entityType="task"
-            entityId={task.Id}
+            taskId={task.Id}
             projectId={task.projectId}
+            isExpanded={showCollaboration}
+            onToggle={() => setShowCollaboration(!showCollaboration)}
           />
         </div>
 
