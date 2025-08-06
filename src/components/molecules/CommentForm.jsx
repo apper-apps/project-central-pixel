@@ -3,7 +3,7 @@ import Button from '@/components/atoms/Button';
 import ApperIcon from '@/components/ApperIcon';
 import { toast } from 'react-toastify';
 
-const CommentForm = ({ onSubmit, parentId = null, initialContent = '', onCancel = null, isEdit = false }) => {
+const CommentForm = ({ onSubmit, parentId = null, initialContent = '', onCancel = null, isEdit = false, taskId }) => {
   const [content, setContent] = useState(initialContent);
   const [loading, setLoading] = useState(false);
   const [mentions, setMentions] = useState([]);
@@ -50,9 +50,10 @@ const CommentForm = ({ onSubmit, parentId = null, initialContent = '', onCancel 
 
     setLoading(true);
     try {
-      await onSubmit({
+await onSubmit({
         content: content.trim(),
-        parentId
+        parentId,
+        taskId
       });
       
       if (!isEdit) {

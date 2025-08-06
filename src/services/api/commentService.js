@@ -19,16 +19,6 @@ const commentService = {
     );
   },
 
-  getByProjectId: (projectId) => {
-    if (!projectId || typeof projectId !== 'number') {
-      throw new Error('Valid project ID is required');
-    }
-    return Promise.resolve(
-      comments
-        .filter(comment => comment.projectId === projectId)
-        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-    );
-  },
 
   // Get all comments (for admin/moderation purposes)
   getAll: () => {
@@ -53,7 +43,7 @@ const commentService = {
       throw new Error('Valid comment data is required');
     }
 
-    const { taskId, projectId, authorId, content, parentId } = commentData;
+const { taskId, authorId, content, parentId } = commentData;
 
     if (!authorId || typeof authorId !== 'number') {
       throw new Error('Author ID is required');
@@ -61,11 +51,8 @@ const commentService = {
     if (!content || typeof content !== 'string' || content.trim().length === 0) {
       throw new Error('Comment content is required');
     }
-    if (!taskId && !projectId) {
-      throw new Error('Either task ID or project ID is required');
-    }
-if (taskId && projectId) {
-      throw new Error('Comment cannot be associated with both task and project. Please specify either taskId OR projectId, not both.');
+    if (!taskId || typeof taskId !== 'number') {
+      throw new Error('Task ID is required');
     }
 
     // Extract mentions from content
@@ -82,9 +69,8 @@ if (taskId && projectId) {
     }
 
     const newComment = {
-      Id: Math.max(...comments.map(c => c.Id), 0) + 1,
-      taskId: taskId || null,
-      projectId: projectId || null,
+Id: Math.max(...comments.map(c => c.Id), 0) + 1,
+      taskId,
       authorId,
       content: content.trim(),
       createdAt: new Date().toISOString(),
@@ -193,10 +179,9 @@ commentService.create = async (commentData) => {
   await activityService.create({
     type: activityService.ACTIVITY_TYPES.COMMENT_CREATED,
     userId: newComment.authorId,
-    projectId: newComment.projectId,
     taskId: newComment.taskId,
     commentId: newComment.Id,
-    description: `added a comment${newComment.taskId ? ' to a task' : ''}${newComment.projectId ? ' in project' : ''}`
+    description: 'added a comment to a task'
   });
   
   return newComment;
@@ -211,10 +196,9 @@ commentService.update = async (id, updateData) => {
   await activityService.create({
     type: activityService.ACTIVITY_TYPES.COMMENT_UPDATED,
     userId: updatedComment.authorId,
-    projectId: updatedComment.projectId,
     taskId: updatedComment.taskId,
     commentId: updatedComment.Id,
-    description: `updated a comment${updatedComment.taskId ? ' on a task' : ''}${updatedComment.projectId ? ' in project' : ''}`
+    description: 'updated a comment on a task'
   });
   
   return updatedComment;
@@ -230,10 +214,9 @@ commentService.delete = async (id) => {
   await activityService.create({
     type: activityService.ACTIVITY_TYPES.COMMENT_DELETED,
     userId: comment.authorId,
-    projectId: comment.projectId,
     taskId: comment.taskId,
     commentId: comment.Id,
-    description: `deleted a comment${comment.taskId ? ' from a task' : ''}${comment.projectId ? ' in project' : ''}`
+    description: 'deleted a comment from a task'
   });
 };
 
