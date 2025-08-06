@@ -27,7 +27,8 @@ const [filter, setFilter] = useState("all"); // all, today, week, month
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [modalMode, setModalMode] = useState("create"); // create, edit
-  const [viewMode, setViewMode] = useState("grid"); // grid, list
+const [viewMode, setViewMode] = useState("grid"); // grid, list, calendar
+  const [calendarDate, setCalendarDate] = useState(new Date());
   const loadData = async () => {
     try {
       setLoading(true);
@@ -249,18 +250,59 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Filters and Search */}
+{/* Filters and Search */}
       <div className="bg-white p-4 rounded-lg border border-gray-200">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-          <div className="flex-1">
-            <Input
-              placeholder="Search descriptions and projects..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              icon="Search"
-            />
+        <div className="flex flex-col gap-4">
+          {/* Search and View Mode Row */}
+          <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Search descriptions and projects..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                icon="Search"
+              />
+            </div>
+            
+            {/* View Mode Toggle */}
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  viewMode === "grid"
+                    ? "bg-white shadow-sm text-blue-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <ApperIcon name="Grid3X3" size={16} className="mr-1" />
+                Grid
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  viewMode === "list"
+                    ? "bg-white shadow-sm text-blue-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <ApperIcon name="List" size={16} className="mr-1" />
+                List
+              </button>
+              <button
+                onClick={() => setViewMode("calendar")}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  viewMode === "calendar"
+                    ? "bg-white shadow-sm text-blue-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <ApperIcon name="Calendar" size={16} className="mr-1" />
+                Calendar
+              </button>
+            </div>
           </div>
-          
+
+          {/* Filters Row */}
           <div className="flex flex-wrap gap-2">
             {/* Date Filter */}
             <select
@@ -274,23 +316,25 @@ useEffect(() => {
               <option value="month">This Month</option>
             </select>
 
-            {/* Sort Options */}
-            <select
-              value={`${sortBy}-${sortOrder}`}
-              onChange={(e) => {
-                const [field, order] = e.target.value.split('-');
-                setSortBy(field);
-                setSortOrder(order);
-              }}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="date-desc">Newest First</option>
-              <option value="date-asc">Oldest First</option>
-              <option value="project-asc">Project A-Z</option>
-              <option value="project-desc">Project Z-A</option>
-              <option value="duration-desc">Longest First</option>
-              <option value="duration-asc">Shortest First</option>
-            </select>
+            {/* Sort Options - Hide in calendar view */}
+            {viewMode !== "calendar" && (
+              <select
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('-');
+                  setSortBy(field);
+                  setSortOrder(order);
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="date-desc">Newest First</option>
+                <option value="date-asc">Oldest First</option>
+                <option value="project-asc">Project A-Z</option>
+                <option value="project-desc">Project Z-A</option>
+                <option value="duration-desc">Longest First</option>
+                <option value="duration-asc">Shortest First</option>
+              </select>
+            )}
 
             {(filter !== "all" || searchTerm) && (
               <Button
@@ -309,38 +353,182 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Time Entries */}
-      {filteredEntries.length === 0 ? (
-        <Empty
-          icon="Clock"
-          title="No time entries found"
-          description={
-            searchTerm || filter !== "all"
-              ? "Try adjusting your search or filter criteria"
-              : "Start tracking time by clicking 'Log Time' above"
-          }
-          action={
-            <Button onClick={openCreateModal} variant="primary">
-              <ApperIcon name="Plus" size={16} className="mr-2" />
-              Log Your First Entry
-            </Button>
-          }
-        />
-      ) : (
-        <div className="space-y-4">
-          {filteredEntries.map((entry) => {
-            const project = getProjectById(entry.projectId);
-            return (
-              <TimeEntryCard
-                key={entry.Id}
-                timeEntry={entry}
-                project={project}
-                onEdit={() => openEditModal(entry)}
-                onDelete={() => handleDeleteEntry(entry.Id)}
-              />
-            );
-          })}
+{/* Calendar View */}
+      {viewMode === "calendar" ? (
+        <div className="bg-white rounded-lg border border-gray-200">
+          {/* Calendar Header */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </h3>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const newDate = new Date(calendarDate);
+                    newDate.setMonth(newDate.getMonth() - 1);
+                    setCalendarDate(newDate);
+                  }}
+                >
+                  <ApperIcon name="ChevronLeft" size={16} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCalendarDate(new Date())}
+                >
+                  Today
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const newDate = new Date(calendarDate);
+                    newDate.setMonth(newDate.getMonth() + 1);
+                    setCalendarDate(newDate);
+                  }}
+                >
+                  <ApperIcon name="ChevronRight" size={16} />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Calendar Grid */}
+          <div className="p-4">
+            <div className="grid grid-cols-7 gap-1 mb-4">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-7 gap-1">
+              {(() => {
+                const year = calendarDate.getFullYear();
+                const month = calendarDate.getMonth();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const startDate = new Date(firstDay);
+                startDate.setDate(startDate.getDate() - firstDay.getDay());
+                
+                const days = [];
+                const currentDate = new Date(startDate);
+                
+                for (let i = 0; i < 42; i++) {
+                  const dateStr = currentDate.toISOString().split('T')[0];
+                  const dayEntries = filteredEntries.filter(entry => entry.date === dateStr);
+                  const totalHours = dayEntries.reduce((sum, entry) => sum + entry.duration, 0);
+                  const isCurrentMonth = currentDate.getMonth() === month;
+                  const isToday = dateStr === new Date().toISOString().split('T')[0];
+                  
+                  days.push(
+                    <div
+                      key={dateStr}
+                      className={`min-h-[100px] p-1 border border-gray-100 transition-colors ${
+                        isCurrentMonth 
+                          ? 'bg-white hover:bg-gray-50' 
+                          : 'bg-gray-50 text-gray-400'
+                      } ${isToday ? 'ring-2 ring-blue-500' : ''}`}
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                        <span className={`text-sm font-medium ${
+                          isToday ? 'text-blue-600' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+                        }`}>
+                          {currentDate.getDate()}
+                        </span>
+                        {totalHours > 0 && (
+                          <span className="text-xs text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded">
+                            {totalHours}h
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-1">
+                        {dayEntries.slice(0, 3).map((entry) => {
+                          const project = getProjectById(entry.projectId);
+                          const projectColors = {
+                            1: 'bg-blue-500',
+                            2: 'bg-green-500',
+                            3: 'bg-purple-500',
+                            4: 'bg-orange-500',
+                          };
+                          
+                          return (
+                            <div
+                              key={entry.Id}
+                              className={`text-xs p-1 rounded text-white cursor-pointer hover:opacity-80 transition-opacity ${
+                                projectColors[entry.projectId] || 'bg-gray-500'
+                              }`}
+                              title={`${project?.name || 'Unknown Project'}: ${entry.description} (${entry.duration}h)`}
+                              onClick={() => openEditModal(entry)}
+                            >
+                              <div className="truncate font-medium">
+                                {project?.name || 'Unknown'}
+                              </div>
+                              <div className="truncate opacity-90">
+                                {entry.description}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        
+                        {dayEntries.length > 3 && (
+                          <div className="text-xs text-gray-500 text-center py-1">
+                            +{dayEntries.length - 3} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                  
+                  currentDate.setDate(currentDate.getDate() + 1);
+                }
+                
+                return days;
+              })()}
+            </div>
+          </div>
         </div>
+      ) : (
+        <>
+          {/* Time Entries */}
+          {filteredEntries.length === 0 ? (
+            <Empty
+              icon="Clock"
+              title="No time entries found"
+              description={
+                searchTerm || filter !== "all"
+                  ? "Try adjusting your search or filter criteria"
+                  : "Start tracking time by clicking 'Log Time' above"
+              }
+              action={
+                <Button onClick={openCreateModal} variant="primary">
+                  <ApperIcon name="Plus" size={16} className="mr-2" />
+                  Log Your First Entry
+                </Button>
+              }
+            />
+          ) : (
+            <div className={viewMode === "grid" ? "grid grid-cols-1 lg:grid-cols-2 gap-4" : "space-y-4"}>
+              {filteredEntries.map((entry) => {
+                const project = getProjectById(entry.projectId);
+                return (
+                  <TimeEntryCard
+                    key={entry.Id}
+                    timeEntry={entry}
+                    project={project}
+                    onEdit={() => openEditModal(entry)}
+                    onDelete={() => handleDeleteEntry(entry.Id)}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
 
       {/* Create/Edit Modal */}
