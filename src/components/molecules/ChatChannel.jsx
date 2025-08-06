@@ -5,15 +5,16 @@ import { create as createIssue, getAll as getAllIssues } from "@/services/api/is
 import chatService from "@/services/api/chatService";
 import { create as createTeamMember, getAll as getAllTeamMembers } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
+import TeamMemberForm from "@/components/molecules/TeamMemberForm";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
 import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
+import Modal from "@/components/atoms/Modal";
 import Card from "@/components/atoms/Card";
-
 const ChatChannel = ({ projectId = null, channelType = 'team', channelName = 'Team Chat' }) => {
-  const [showThread, setShowThread] = useState(false);
+const [showThread, setShowThread] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [threadReplies, setThreadReplies] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(null);
@@ -26,6 +27,11 @@ const ChatChannel = ({ projectId = null, channelType = 'team', channelName = 'Te
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sending, setSending] = useState(false);
+  const [showCreateChannel, setShowCreateChannel] = useState(false);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [channelForm, setChannelForm] = useState({ name: '', description: '', type: 'team' });
+  const [creatingChannel, setCreatingChannel] = useState(false);
+  const [addingMember, setAddingMember] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -40,9 +46,9 @@ const ChatChannel = ({ projectId = null, channelType = 'team', channelName = 'Te
   }, [messages]);
 
   const loadChatData = async () => {
-    try {
+try {
       setLoading(true);
-const [messagesData, membersData] = await Promise.all([
+      const [messagesData, membersData] = await Promise.all([
         chatService.getMessagesByChannel(projectId, channelType),
         getAllTeamMembers()
       ]);
@@ -53,6 +59,49 @@ const [messagesData, membersData] = await Promise.all([
       toast.error('Failed to load chat');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateChannel = async (e) => {
+    e.preventDefault();
+    if (!channelForm.name.trim()) {
+      toast.error('Channel name is required');
+      return;
+    }
+
+    try {
+      setCreatingChannel(true);
+      const newChannel = await chatService.createChannel({
+        ...channelForm,
+        projectId: channelType === 'project' ? projectId : null
+      });
+      toast.success(`Channel "${newChannel.name}" created successfully`);
+      setShowCreateChannel(false);
+      setChannelForm({ name: '', description: '', type: 'team' });
+      loadChatData(); // Refresh chat data
+    } catch (err) {
+      toast.error('Failed to create channel');
+    } finally {
+      setCreatingChannel(false);
+    }
+  };
+
+  const handleAddTeamMember = async (memberData) => {
+    try {
+      setAddingMember(true);
+      const newMember = await createTeamMember(memberData);
+      
+      if (channelType === 'team') {
+        await chatService.addMemberToChannel(1, newMember.Id); // Add to main team channel
+      }
+      
+      toast.success(`${newMember.name} has been added to the team`);
+      setShowAddMember(false);
+      loadChatData(); // Refresh to update member list
+    } catch (err) {
+      toast.error('Failed to add team member');
+    } finally {
+      setAddingMember(false);
     }
   };
 
@@ -96,8 +145,7 @@ const handleDeleteMessage = async (messageId) => {
       toast.error('Failed to delete message');
     }
   };
-
-  const handleOpenThread = async (message) => {
+const handleOpenThread = async (message) => {
     setSelectedMessage(message);
     setShowThread(true);
     try {
@@ -195,10 +243,28 @@ const handleDeleteMessage = async (messageId) => {
               </div>
               <h2 className="text-xl font-bold text-gray-900">{channelName}</h2>
             </div>
-            <div className="flex items-center space-x-2">
+<div className="flex items-center space-x-2">
               <Button variant="ghost" size="sm">
                 <ApperIcon name="Users" size={16} />
                 <span className="ml-1">{teamMembers.length}</span>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowCreateChannel(true)}
+                title="Create Channel"
+              >
+                <ApperIcon name="Plus" size={16} />
+                <span className="ml-1 hidden sm:inline">Channel</span>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowAddMember(true)}
+                title="Add Team Member"
+              >
+                <ApperIcon name="UserPlus" size={16} />
+                <span className="ml-1 hidden sm:inline">Member</span>
               </Button>
               <Button variant="ghost" size="sm">
                 <ApperIcon name="Settings" size={16} />
@@ -462,7 +528,87 @@ messages.map((message, index) => {
           </div>
         </div>
       )}
-    </div>
+</div>
+
+    {/* Create Channel Modal */}
+    <Modal 
+      isOpen={showCreateChannel} 
+      onClose={() => setShowCreateChannel(false)}
+      title="Create New Channel"
+    >
+      <form onSubmit={handleCreateChannel} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Channel Name
+          </label>
+          <Input
+            type="text"
+            value={channelForm.name}
+            onChange={(e) => setChannelForm(prev => ({ ...prev, name: e.target.value }))}
+            placeholder="e.g. project-alpha, design-team"
+            required
+            className="w-full"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Description (Optional)
+          </label>
+          <textarea
+            value={channelForm.description}
+            onChange={(e) => setChannelForm(prev => ({ ...prev, description: e.target.value }))}
+            placeholder="What is this channel about?"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+            rows={3}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Channel Type
+          </label>
+          <select
+            value={channelForm.type}
+            onChange={(e) => setChannelForm(prev => ({ ...prev, type: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="team">Team Channel</option>
+            <option value="project">Project Channel</option>
+          </select>
+        </div>
+        <div className="flex justify-end space-x-3 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowCreateChannel(false)}
+            disabled={creatingChannel}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={creatingChannel}
+          >
+            {creatingChannel ? (
+              <>
+                <ApperIcon name="Loader" size={16} className="animate-spin mr-2" />
+                Creating...
+              </>
+            ) : (
+              'Create Channel'
+            )}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+
+    {/* Add Team Member Modal */}
+    <TeamMemberForm
+      isOpen={showAddMember}
+      onClose={() => setShowAddMember(false)}
+      onSubmit={handleAddTeamMember}
+      isLoading={addingMember}
+    />
+    
   );
 };
 // Helper functions

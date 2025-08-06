@@ -1,10 +1,17 @@
 import chatMessagesData from '@/services/mockData/chatMessages.json';
 
 class ChatService {
-  constructor() {
+constructor() {
     this.messages = [...chatMessagesData];
     this.reactions = [];
     this.threads = [];
+    this.channels = [
+      { Id: 1, name: 'Team Chat', type: 'team', projectId: null, createdAt: new Date().toISOString(), memberCount: 5 },
+      { Id: 2, name: 'E-commerce Platform', type: 'project', projectId: 1, createdAt: new Date().toISOString(), memberCount: 3 },
+      { Id: 3, name: 'Mobile App Dev', type: 'project', projectId: 2, createdAt: new Date().toISOString(), memberCount: 2 },
+      { Id: 4, name: 'Marketing Website', type: 'project', projectId: 3, createdAt: new Date().toISOString(), memberCount: 2 }
+    ];
+    this.nextChannelId = 5;
   }
 
   // Simulate network delay
@@ -24,6 +31,26 @@ class ChatService {
       throw new Error("Message not found");
     }
     return { ...message };
+  }
+
+async getChannelsByType(channelType = 'team') {
+    await this.delay(200);
+    return this.channels.filter(channel => channel.type === channelType);
+  }
+
+  async createChannel(channelData) {
+    await this.delay(300);
+    const newChannel = {
+      Id: this.nextChannelId++,
+      name: channelData.name,
+      type: channelData.type || 'team',
+      projectId: channelData.projectId || null,
+      description: channelData.description || '',
+      createdAt: new Date().toISOString(),
+      memberCount: 1
+    };
+    this.channels.push(newChannel);
+    return newChannel;
   }
 
   async getMessagesByChannel(projectId = null, channelType = 'team') {
@@ -106,8 +133,7 @@ class ChatService {
         reactions: this.getMessageReactions(message.Id)
       }));
   }
-
-  getThreadCount(messageId) {
+getThreadCount(messageId) {
     return this.messages.filter(m => m.parentId === parseInt(messageId)).length;
   }
 
@@ -115,7 +141,16 @@ class ChatService {
     return this.getThreadCount(messageId) > 0;
   }
 
-  // Emoji reactions
+  async addMemberToChannel(channelId, memberId) {
+    await this.delay(200);
+    const channel = this.channels.find(c => c.Id === parseInt(channelId));
+    if (channel) {
+      channel.memberCount = (channel.memberCount || 0) + 1;
+      return true;
+    }
+    return false;
+  }
+// Emoji reactions
   async addReaction(messageId, emoji, userId) {
     await this.delay(200);
     const reaction = {
