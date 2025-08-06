@@ -151,24 +151,6 @@ const RecentActivityPanel = ({ isOpen, onToggle }) => {
       )}
 
       {/* Toggle Button */}
-      <button
-        onClick={onToggle}
-        className={cn(
-          "fixed top-20 right-4 z-50 p-3 rounded-full shadow-lg transition-all duration-300",
-          "bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
-          isOpen ? "right-80 lg:right-96" : "right-4"
-        )}
-      >
-        <div className="relative">
-          <ApperIcon name="Bell" size={20} className="text-gray-700" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
-          )}
-        </div>
-      </button>
 
       {/* Activity Panel */}
       <div className={cn(
