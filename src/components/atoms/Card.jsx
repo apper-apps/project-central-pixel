@@ -7,6 +7,9 @@ const Card = React.forwardRef(({
   children, 
   ...props 
 }, ref) => {
+  // Filter out non-DOM props to prevent React warnings
+  const { multiline, ...domProps } = props;
+
   return (
     <div
       ref={ref}
@@ -15,7 +18,7 @@ const Card = React.forwardRef(({
         hover && "hover:shadow-md hover:scale-[1.02] cursor-pointer",
         className
       )}
-      {...props}
+      {...domProps}
     >
       {children}
     </div>
