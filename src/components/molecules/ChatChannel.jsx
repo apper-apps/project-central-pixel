@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { create as createIssue, getAll as getAllIssues } from "@/services/api/issueService";
 import chatService from "@/services/api/chatService";
-import { create as createTeamMember, getAll as getAllTeamMembers, getTeamMembers } from "@/services/api/teamMemberService";
+import { create as createTeamMember, getAll as getAllTeamMembers } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
@@ -42,9 +42,9 @@ const ChatChannel = ({ projectId = null, channelType = 'team', channelName = 'Te
   const loadChatData = async () => {
     try {
       setLoading(true);
-      const [messagesData, membersData] = await Promise.all([
-chatService.getMessagesByChannel(projectId, channelType),
-        getTeamMembers()
+const [messagesData, membersData] = await Promise.all([
+        chatService.getMessagesByChannel(projectId, channelType),
+        getAllTeamMembers()
       ]);
       setMessages(messagesData);
       setTeamMembers(membersData);
