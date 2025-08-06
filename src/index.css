@@ -565,3 +565,355 @@
   margin-bottom: 0;
   padding-bottom: 0;
 }
+
+/* Slack-Style Chat Styles */
+.slack-chat-container {
+  background: #ffffff;
+}
+
+.slack-messages-container {
+  background: #ffffff;
+}
+
+.slack-message {
+  padding: 8px 20px;
+  position: relative;
+}
+
+.slack-message:hover {
+  background-color: #f8f9fa;
+}
+
+.slack-message-content {
+  line-height: 1.46668;
+  word-wrap: break-word;
+}
+
+.slack-message-content a {
+  color: #1264a3;
+  text-decoration: none;
+}
+
+.slack-message-content a:hover {
+  text-decoration: underline;
+}
+
+.slack-message-input {
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 11px 12px 13px;
+  font-size: 15px;
+  line-height: 1.46668;
+  resize: none;
+  background: #ffffff;
+}
+
+.slack-message-input:focus {
+  border-color: #1264a3;
+  box-shadow: 0 0 0 1px #1264a3, 0 0 0 5px rgba(18, 100, 163, 0.1);
+}
+
+.slack-send-button {
+  background: #007a5a;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.slack-send-button:hover:not(:disabled) {
+  background: #148567;
+}
+
+.slack-send-button:disabled {
+  background: #e8e8e8;
+  color: #a5a5a5;
+  cursor: not-allowed;
+}
+
+/* Thread Styles */
+.slack-thread-container {
+  border-left: 2px solid #e8e8e8;
+  margin-left: 42px;
+  padding-left: 16px;
+}
+
+.slack-thread-replies {
+  color: #1264a3;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.slack-thread-replies:hover {
+  text-decoration: underline;
+}
+
+/* Reaction Styles */
+.slack-reaction {
+  background: #f8f9fa;
+  border: 1px solid #e1e5e9;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 4px 2px 0;
+  transition: all 0.1s ease;
+}
+
+.slack-reaction:hover {
+  background: #e8f4f8;
+  border-color: #1264a3;
+}
+
+.slack-reaction.user-reacted {
+  background: #e8f4f8;
+  border-color: #1264a3;
+  color: #1264a3;
+}
+
+/* Mention Styles */
+.slack-mention {
+  background: #e8f4f8;
+  color: #1264a3;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.slack-mention-suggestions {
+  background: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.slack-mention-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.slack-mention-item:hover {
+  background: #f8f9fa;
+}
+
+.slack-mention-item:last-child {
+  border-bottom: none;
+}
+
+/* Channel Header Styles */
+.slack-channel-header {
+  background: white;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slack-channel-name {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1d1c1d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slack-channel-info {
+  color: #696969;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* Emoji Picker Styles */
+.slack-emoji-picker {
+  background: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  z-index: 1000;
+}
+
+.slack-emoji-item {
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 18px;
+  transition: background-color 0.1s ease;
+}
+
+.slack-emoji-item:hover {
+  background: #f8f9fa;
+}
+
+/* Message Actions */
+.slack-message-actions {
+  position: absolute;
+  right: 16px;
+  top: 0;
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.slack-message:hover .slack-message-actions {
+  opacity: 1;
+}
+
+.slack-action-button {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #696969;
+  transition: all 0.1s ease;
+}
+
+.slack-action-button:hover {
+  background: #f8f9fa;
+  color: #1d1c1d;
+}
+
+/* Date Separator */
+.slack-date-separator {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  color: #696969;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.slack-date-separator::before,
+.slack-date-separator::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e8e8e8;
+}
+
+.slack-date-separator::before {
+  margin-right: 16px;
+}
+
+.slack-date-separator::after {
+  margin-left: 16px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .slack-message {
+    padding: 8px 16px;
+  }
+  
+  .slack-channel-header {
+    padding: 16px;
+  }
+  
+  .slack-message-actions {
+    position: static;
+    opacity: 1;
+    margin-top: 8px;
+    justify-content: flex-end;
+  }
+}
+
+/* File Attachment Styles */
+.slack-attachment {
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 400px;
+}
+
+.slack-attachment-icon {
+  width: 32px;
+  height: 32px;
+  background: #e1e5e9;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #696969;
+}
+
+.slack-attachment-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.slack-attachment-name {
+  font-weight: 600;
+  color: #1264a3;
+  text-decoration: none;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slack-attachment-name:hover {
+  text-decoration: underline;
+}
+
+.slack-attachment-size {
+  color: #696969;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* Message Status Indicators */
+.slack-message-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #696969;
+}
+
+.slack-edited-indicator {
+  font-style: italic;
+}
+
+.slack-timestamp-hover {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  font-size: 12px;
+  color: #696969;
+}
+
+.slack-message:hover .slack-timestamp-hover {
+  opacity: 1;
+}

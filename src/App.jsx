@@ -36,7 +36,8 @@ function App() {
           <Route path="/issues/:id" element={<IssueDetail />} />
           <Route path="/team" element={<TeamMembers />} />
           <Route path="/team/:id" element={<TeamMemberDetail />} />
-          <Route path="/chat" element={<TeamChat />} />
+<Route path="/chat" element={<TeamChat />} />
+          <Route path="/chat/:channelId" element={<TeamChat />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/activity-feed" element={<ActivityFeed />} />
         </Routes>
