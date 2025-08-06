@@ -27,18 +27,18 @@ const TimeEntryCard = ({ timeEntry, project, onEdit, onDelete }) => {
     }
   };
 
-  const getProjectColor = (status) => {
+const getProjectColor = (status) => {
     switch (status) {
       case "In Progress":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800 border-blue-200";
       case "Planning":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "Completed":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 border-green-200";
       case "On Hold":
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 border-gray-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
@@ -62,10 +62,10 @@ const TimeEntryCard = ({ timeEntry, project, onEdit, onDelete }) => {
           </div>
 
           {project && (
-            <div className="flex items-center space-x-2 mb-3">
+<div className="flex items-center space-x-2 mb-3">
               <ApperIcon name="Briefcase" size={14} className="text-gray-500" />
               <span className="font-medium text-gray-900">{project.name}</span>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getProjectColor(project.status)}`}>
+              <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getProjectColor(project.status)}`}>
                 {project.status}
               </span>
             </div>
