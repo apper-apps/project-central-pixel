@@ -530,7 +530,7 @@ messages.map((message, index) => {
       )}
 </div>
 
-    {/* Create Channel Modal */}
+    /* Create Channel Modal */
     <Modal 
       isOpen={showCreateChannel} 
       onClose={() => setShowCreateChannel(false)}
