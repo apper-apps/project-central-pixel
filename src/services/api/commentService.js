@@ -2,7 +2,7 @@ import commentsData from "@/services/mockData/comments.json";
 import activityService from "./activityService.js";
 import React from "react";
 import { create, getAll, getById, update } from "@/services/api/teamMemberService";
-import Error from "@/components/ui/Error";
+// Removed improper React component import - services should use native Error objects
 
 let comments = [...commentsData];
 
