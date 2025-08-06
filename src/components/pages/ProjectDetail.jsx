@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { addDays, addMonths, differenceInDays, endOfDay, endOfMonth, endOfWeek, format, formatDistanceToNow, getDay, isFuture, isPast, isSameDay, isSameMonth, isToday, parseISO, startOfDay, startOfMonth, startOfWeek, subMonths } from "date-fns";
+import timeEntryService from "@/services/api/timeEntryService";
 import taskService from "@/services/api/taskService";
 import clientService from "@/services/api/clientService";
 import taskListService from "@/services/api/taskListService";
@@ -61,7 +62,8 @@ const [dragOverColumn, setDragOverColumn] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
 const [teamMembers, setTeamMembers] = useState([]);
-  const [activities, setActivities] = useState([]);
+const [activities, setActivities] = useState([]);
+  const [timeEntries, setTimeEntries] = useState([]);
   const [timelineView, setTimelineView] = useState('gantt'); // gantt or calendar
   const [timelineStart, setTimelineStart] = useState(() => {
     // Set default start to beginning of current month
@@ -76,7 +78,7 @@ const loadProjectData = async () => {
       setLoading(true);
       setError("");
       
-const [projectData, tasksData, taskListsData, clientsData, projectsData, milestonesData, wikiData, eventsData, teamData, activitiesData] = await Promise.all([
+const [projectData, tasksData, taskListsData, clientsData, projectsData, milestonesData, wikiData, eventsData, teamData, activitiesData, timeEntriesData] = await Promise.all([
         projectService.getById(id),
         taskService.getByProjectId(id),
         taskListService.getByProjectId(id),
@@ -86,7 +88,8 @@ const [projectData, tasksData, taskListsData, clientsData, projectsData, milesto
         projectService.getWikiDocuments(id),
         projectService.getCalendarEvents(id),
         getAll(),
-        activityService.getByProjectId(parseInt(id))
+        activityService.getByProjectId(parseInt(id)),
+        timeEntryService.getByProjectId(parseInt(id))
       ]);
 setProject(projectData);
       setMilestones(milestonesData || []);
@@ -97,7 +100,8 @@ setTasks(tasksData);
       setWikiDocuments(wikiData || []);
       setCalendarEvents(eventsData || []);
       setTeamMembers(teamData || []);
-      setActivities(activitiesData || []);
+setActivities(activitiesData || []);
+      setTimeEntries(timeEntriesData || []);
       // Find the client for this project
       const projectClient = clientsData.find(c => c.Id === projectData.clientId);
       setClient(projectClient);
@@ -794,8 +798,7 @@ const getDateTasks = (date) => {
       return isSameDay(parseISO(task.dueDate), date);
     });
   };
-
-  const getMilestoneTaskLists = (milestoneId) => {
+const getMilestoneTaskLists = (milestoneId) => {
     return taskLists.filter(tl => tl.milestoneId === milestoneId);
   };
 
@@ -809,6 +812,23 @@ const getDateTasks = (date) => {
   const isProjectDeadline = (date) => {
     if (!project?.deadline) return false;
     return isSameDay(parseISO(project.deadline), date);
+  };
+
+  const getDateTimeEntries = (date) => {
+    return timeEntries.filter(entry => {
+      if (!entry.date) return false;
+      return isSameDay(parseISO(entry.date), date);
+    });
+  };
+
+  const getDateTimeTotal = (date) => {
+    const entries = getDateTimeEntries(date);
+    return entries.reduce((total, entry) => total + entry.duration, 0);
+  };
+
+  const getTaskName = (taskId) => {
+    const task = tasks.find(t => t.Id === taskId);
+    return task ? task.name : 'General Work';
   };
 
   const getDateEventCount = (date) => {
@@ -1064,10 +1084,37 @@ const getDateTasks = (date) => {
                   ))}
                 </div>
               </div>
+)}
+
+            {/* Time Entries for the selected date */}
+            {getDateTimeEntries(selectedCalendarDate).length > 0 && (
+              <div className="mt-4">
+                <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+                  <ApperIcon name="Clock" size={16} className="mr-2" />
+                  Logged Time ({getDateTimeTotal(selectedCalendarDate).toFixed(1)}h)
+                </h4>
+                <div className="space-y-2">
+                  {getDateTimeEntries(selectedCalendarDate).map(entry => (
+                    <div key={entry.Id} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-blue-900">
+                          {getTaskName(entry.taskId)}
+                        </span>
+                        <span className="text-sm font-semibold text-blue-700">
+                          {entry.duration}h
+                        </span>
+                      </div>
+                      <p className="text-xs text-blue-800 line-clamp-2">
+                        {entry.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
             
-            {getDateEventCount(selectedCalendarDate) === 0 && (
-              <p className="text-gray-500 text-sm">No tasks or milestones on this date.</p>
+            {getDateEventCount(selectedCalendarDate) === 0 && getDateTimeEntries(selectedCalendarDate).length === 0 && (
+              <p className="text-gray-500 text-sm">No tasks, milestones, or time entries on this date.</p>
             )}
           </div>
         )}

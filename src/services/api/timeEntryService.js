@@ -32,8 +32,9 @@ async create(timeEntryData) {
     const newId = this.timeEntries.length > 0 ? Math.max(...this.timeEntries.map(entry => entry.Id)) + 1 : 1;
     const newTimeEntry = {
       Id: newId,
-      ...timeEntryData,
+...timeEntryData,
       projectId: parseInt(timeEntryData.projectId),
+      taskId: timeEntryData.taskId ? parseInt(timeEntryData.taskId) : null,
       duration: parseFloat(timeEntryData.duration),
       createdAt: new Date().toISOString()
     };
@@ -46,8 +47,9 @@ async create(timeEntryData) {
     const newId = this.timeEntries.length > 0 ? Math.max(...this.timeEntries.map(entry => entry.Id)) + 1 : 1;
     const newTimeEntry = {
       Id: newId,
-      ...timeEntryData,
+...timeEntryData,
       projectId: parseInt(timeEntryData.projectId),
+      taskId: timeEntryData.taskId ? parseInt(timeEntryData.taskId) : null,
       duration: parseFloat(timeEntryData.duration),
       createdAt: new Date().toISOString()
     };
@@ -62,10 +64,11 @@ async create(timeEntryData) {
       throw new Error("Time entry not found");
     }
     
-    this.timeEntries[index] = {
+this.timeEntries[index] = {
       ...this.timeEntries[index],
       ...timeEntryData,
       projectId: parseInt(timeEntryData.projectId),
+      taskId: timeEntryData.taskId ? parseInt(timeEntryData.taskId) : null,
       duration: parseFloat(timeEntryData.duration)
     };
     
