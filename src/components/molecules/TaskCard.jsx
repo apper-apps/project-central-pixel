@@ -1,12 +1,13 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ApperIcon from "@/components/ApperIcon";
+import CollaborationSection from "@/components/molecules/CollaborationSection";
 import Button from "@/components/atoms/Button";
 import Card from "@/components/atoms/Card";
-import CollaborationSection from "@/components/molecules/CollaborationSection";
 
 const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact = false, kanban = false }) => {
   const [showCollaboration, setShowCollaboration] = useState(false);
-
+  const navigate = useNavigate();
   const handleToggleComplete = () => {
     onToggleComplete(task.Id, !task.completed);
   };
@@ -25,9 +26,12 @@ const TaskCard = ({ task, project, onEdit, onDelete, onToggleComplete, compact =
           >
             {task.completed && <ApperIcon name="Check" size={12} />}
           </button>
-          <div className="flex-1 min-w-0">
+<div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className={`font-semibold text-gray-900 ${task.completed ? 'line-through text-gray-500' : ''}`}>
+              <h3 
+                className={`font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors ${task.completed ? 'line-through text-gray-500' : ''}`}
+                onClick={() => navigate(`/tasks/${task.Id}`)}
+              >
                 {task.name}
               </h3>
               {task.priority && (

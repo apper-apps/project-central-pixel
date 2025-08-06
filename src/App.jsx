@@ -18,6 +18,7 @@ import MilestoneDetail from "@/components/pages/MilestoneDetail";
 import Dashboard from "@/components/pages/Dashboard";
 import Issues from "@/components/pages/Issues";
 import IssueDetail from "@/components/pages/IssueDetail";
+import TaskDetail from "@/components/pages/TaskDetail";
 function App() {
   return (
 <BrowserRouter>
@@ -29,7 +30,8 @@ function App() {
 <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/projects/:projectId/milestones/:id" element={<MilestoneDetail />} />
-          <Route path="/tasks" element={<Tasks />} />
+<Route path="/tasks" element={<Tasks />} />
+          <Route path="/tasks/:id" element={<TaskDetail />} />
           <Route path="/issues" element={<Issues />} />
           <Route path="/issues/:id" element={<IssueDetail />} />
           <Route path="/team" element={<TeamMembers />} />
