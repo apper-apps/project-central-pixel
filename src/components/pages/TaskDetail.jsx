@@ -19,29 +19,38 @@ import Card from "@/components/atoms/Card";
 const TaskDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [task, setTask] = useState(null);
+const [task, setTask] = useState(null);
   const [project, setProject] = useState(null);
   const [client, setClient] = useState(null);
+  const [projects, setProjects] = useState([]);
+  const [milestones, setMilestones] = useState([]);
+  const [taskLists, setTaskLists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-const [showEditModal, setShowEditModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showCollaboration, setShowCollaboration] = useState(false);
   useEffect(() => {
     loadTaskData();
   }, [id]);
 
-  const loadTaskData = async () => {
+const loadTaskData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const taskData = await taskService.getById(parseInt(id));
+      // Load all required data for the edit form
+      const [taskData, projectsData] = await Promise.all([
+        taskService.getById(parseInt(id)),
+        projectService.getAll()
+      ]);
+
       if (!taskData) {
         setError("Task not found");
         return;
       }
 
       setTask(taskData);
+      setProjects(projectsData);
 
       // Load related project data
       if (taskData.projectId) {
@@ -399,9 +408,11 @@ const [showEditModal, setShowEditModal] = useState(false);
         onClose={() => setShowEditModal(false)}
         title="Edit Task"
       >
-        <TaskForm
+<TaskForm
           task={task}
-          project={project}
+          projects={projects}
+          milestones={milestones}
+          taskLists={taskLists}
           onSubmit={handleEditTask}
           onCancel={() => setShowEditModal(false)}
         />
