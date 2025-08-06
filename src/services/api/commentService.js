@@ -1,7 +1,7 @@
 import commentsData from "@/services/mockData/comments.json";
 import activityService from "./activityService.js";
-import React from "react";
-import { create, getAll, getById, update } from "@/services/api/teamMemberService";
+// Note: React import removed as not needed in service file
+// teamMemberService import removed as not used in this service
 // Removed improper React component import - services should use native Error objects
 
 let comments = [...commentsData];
@@ -64,8 +64,8 @@ const commentService = {
     if (!taskId && !projectId) {
       throw new Error('Either task ID or project ID is required');
     }
-    if (taskId && projectId) {
-      throw new Error('Comment cannot be associated with both task and project');
+if (taskId && projectId) {
+      throw new Error('Comment cannot be associated with both task and project. Please specify either taskId OR projectId, not both.');
     }
 
     // Extract mentions from content
