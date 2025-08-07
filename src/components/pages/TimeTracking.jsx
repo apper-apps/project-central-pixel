@@ -121,17 +121,19 @@ useEffect(() => {
     setModalMode("create");
   };
 
-  const getFilteredEntries = () => {
+const getFilteredEntries = () => {
     let filtered = [...timeEntries];
 
     // Apply date filter
     if (filter !== "all") {
       const now = new Date();
-      let startDate;
+      let startDate, endDate;
 
       switch (filter) {
         case "today":
           startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          endDate = new Date(startDate);
+          endDate.setDate(endDate.getDate() + 1);
           break;
         case "week":
           startDate = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
@@ -139,13 +141,41 @@ useEffect(() => {
         case "month":
           startDate = new Date(now.getFullYear(), now.getMonth(), 1);
           break;
+        case "calendar-month":
+          // Filter for calendar's current month
+          startDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+          endDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
+          break;
         default:
           startDate = null;
       }
 
       if (startDate) {
-        filtered = filtered.filter(entry => new Date(entry.date) >= startDate);
+        filtered = filtered.filter(entry => {
+          const entryDate = new Date(entry.date);
+          if (endDate) {
+            return entryDate >= startDate && entryDate <= endDate;
+          }
+          return entryDate >= startDate;
+        });
       }
+    }
+
+    // For calendar view, always show entries for the visible calendar range
+    if (viewMode === "calendar" && filter === "all") {
+      const year = calendarDate.getFullYear();
+      const month = calendarDate.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDate = new Date(firstDay);
+      startDate.setDate(startDate.getDate() - firstDay.getDay());
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 42); // 6 weeks
+
+      filtered = filtered.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= startDate && entryDate < endDate;
+      });
     }
 
     // Apply search filter
@@ -160,28 +190,30 @@ useEffect(() => {
       });
     }
 
-    // Apply sorting
-    filtered.sort((a, b) => {
-      let comparison = 0;
-      
-      switch (sortBy) {
-        case "date":
-          comparison = new Date(a.date) - new Date(b.date);
-          break;
-        case "project":
-          const projectA = getProjectById(a.projectId)?.name || "";
-          const projectB = getProjectById(b.projectId)?.name || "";
-          comparison = projectA.localeCompare(projectB);
-          break;
-        case "duration":
-          comparison = a.duration - b.duration;
-          break;
-        default:
-          comparison = new Date(a.date) - new Date(b.date);
-      }
+    // Apply sorting (not needed for calendar view)
+    if (viewMode !== "calendar") {
+      filtered.sort((a, b) => {
+        let comparison = 0;
+        
+        switch (sortBy) {
+          case "date":
+            comparison = new Date(a.date) - new Date(b.date);
+            break;
+          case "project":
+            const projectA = getProjectById(a.projectId)?.name || "";
+            const projectB = getProjectById(b.projectId)?.name || "";
+            comparison = projectA.localeCompare(projectB);
+            break;
+          case "duration":
+            comparison = a.duration - b.duration;
+            break;
+          default:
+            comparison = new Date(a.date) - new Date(b.date);
+        }
 
-      return sortOrder === "desc" ? -comparison : comparison;
-    });
+        return sortOrder === "desc" ? -comparison : comparison;
+      });
+    }
 
     return filtered;
   };
@@ -305,15 +337,18 @@ useEffect(() => {
           {/* Filters Row */}
           <div className="flex flex-wrap gap-2">
             {/* Date Filter */}
-            <select
+<select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="all">All Time</option>
+              <option value="all">{viewMode === "calendar" ? "All Entries" : "All Time"}</option>
               <option value="today">Today</option>
               <option value="week">This Week</option>
               <option value="month">This Month</option>
+              {viewMode === "calendar" && (
+                <option value="calendar-month">Current Calendar Month</option>
+              )}
             </select>
 
             {/* Sort Options - Hide in calendar view */}
