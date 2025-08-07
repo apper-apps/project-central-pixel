@@ -53,12 +53,16 @@ const [editingEntry, setEditingEntry] = useState(null);
     } finally {
       setLoading(false);
     }
+};
+
+  // Helper function to find project by ID
+  const getProjectById = (projectId) => {
+    return projects.find(project => project.Id === parseInt(projectId));
   };
 
 useEffect(() => {
     loadData();
   }, []);
-
   // Filter and search logic
   const filteredAndSortedEntries = useMemo(() => {
     let filtered = [...timeEntries];
@@ -156,9 +160,6 @@ useEffect(() => {
     };
   }, [filteredAndSortedEntries]);
 
-  const getProjectById = (projectId) => {
-    return projects.find(project => project.Id === parseInt(projectId));
-  };
 
   const handleCreateEntry = async (entryData) => {
     try {
