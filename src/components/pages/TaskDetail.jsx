@@ -8,6 +8,7 @@ import clientService from "@/services/api/clientService";
 import activityService from "@/services/api/activityService";
 import ApperIcon from "@/components/ApperIcon";
 import TaskForm from "@/components/molecules/TaskForm";
+import TimeEntryForm from "@/components/molecules/TimeEntryForm";
 import CommentThread from "@/components/molecules/CommentThread";
 import CollaborationSection from "@/components/molecules/CollaborationSection";
 import Loading from "@/components/ui/Loading";
@@ -15,6 +16,7 @@ import Error from "@/components/ui/Error";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 import Card from "@/components/atoms/Card";
+import timeEntryService from "@/services/api/timeEntryService";
 
 const TaskDetail = () => {
   const { id } = useParams();
@@ -25,11 +27,12 @@ const [task, setTask] = useState(null);
   const [projects, setProjects] = useState([]);
   const [milestones, setMilestones] = useState([]);
   const [taskLists, setTaskLists] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showCollaboration, setShowCollaboration] = useState(false);
-  useEffect(() => {
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState(null);
+const [showEditModal, setShowEditModal] = useState(false);
+const [showTimeModal, setShowTimeModal] = useState(false);
+const [showCollaboration, setShowCollaboration] = useState(false);
+useEffect(() => {
     loadTaskData();
   }, [id]);
 
@@ -148,7 +151,32 @@ const loadTaskData = async () => {
       console.error("Error deleting task:", error);
       toast.error("Failed to delete task");
     }
-  };
+};
+
+const handleAddTime = async (timeData) => {
+  try {
+    const timeEntry = await timeEntryService.create({
+      ...timeData,
+      taskId: task.Id,
+      projectId: task.projectId
+    });
+    setShowTimeModal(false);
+    toast.success("Time entry logged successfully");
+
+    // Log activity
+    await activityService.create({
+      type: "time",
+      action: "logged",
+      description: `${timeData.duration} hours logged for task "${task.name}"`,
+      entityId: timeEntry.Id,
+      projectId: task.projectId,
+      userId: 1
+    });
+  } catch (error) {
+    console.error("Error logging time:", error);
+    toast.error("Failed to log time entry");
+  }
+};
 
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -252,15 +280,23 @@ const loadTaskData = async () => {
             )}
           </div>
 
-          <div className="flex items-center gap-2 ml-6">
-            <Button
-              variant="outline"
-              onClick={() => setShowEditModal(true)}
-              className="flex items-center gap-2"
-            >
-              <ApperIcon name="Edit" size={16} />
-              Edit
-            </Button>
+<div className="flex items-center gap-2 ml-6">
+<Button
+variant="outline"
+onClick={() => setShowTimeModal(true)}
+className="flex items-center gap-2"
+>
+<ApperIcon name="Clock" size={16} />
+Add Time
+</Button>
+<Button
+variant="outline"
+onClick={() => setShowEditModal(true)}
+className="flex items-center gap-2"
+>
+<ApperIcon name="Edit" size={16} />
+Edit
+</Button>
             <Button
               variant={task.completed ? "outline" : "primary"}
               onClick={handleToggleComplete}
@@ -416,7 +452,25 @@ const loadTaskData = async () => {
           onSubmit={handleEditTask}
           onCancel={() => setShowEditModal(false)}
         />
-      </Modal>
+</Modal>
+
+{/* Add Time Modal */}
+<Modal 
+isOpen={showTimeModal} 
+onClose={() => setShowTimeModal(false)}
+title="Log Time"
+>
+<TimeEntryForm
+projects={projects}
+timeEntry={{
+projectId: task.projectId,
+taskId: task.Id,
+description: `Work on ${task.name}`
+}}
+onSubmit={handleAddTime}
+onCancel={() => setShowTimeModal(false)}
+/>
+</Modal>
     </div>
   );
 };

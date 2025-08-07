@@ -179,12 +179,12 @@ const stopTimer = async () => {
     }
   };
 
-  const addManualTime = (hours) => {
-    if (isRunning && hours > 0) {
-      setDuration(prev => prev + (hours * 3600));
-      toast.success(`Added ${hours} hours to current timer`);
-    }
-  };
+const addManualTime = (hours, taskId = null) => {
+if (isRunning && hours > 0) {
+setDuration(prev => prev + (hours * 3600));
+toast.success(`Added ${hours} hours to current timer`);
+}
+};
 
   const getTodaysTotal = () => {
     const today = new Date().toISOString().split('T')[0];
