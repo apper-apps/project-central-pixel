@@ -22,7 +22,7 @@ export const TimerProvider = ({ children }) => {
   const [startTime, setStartTime] = useState(null);
   const [projects, setProjects] = useState([]);
   const [isWidgetVisible, setIsWidgetVisible] = useState(false);
-  
+  const [sessions, setSessions] = useState([]);
   const intervalRef = useRef(null);
 
   // Load projects on mount
@@ -58,6 +58,7 @@ export const TimerProvider = ({ children }) => {
   }, []);
 
   // Save timer state to localStorage whenever it changes
+// Save timer state to localStorage whenever it changes
   useEffect(() => {
     const state = {
       isRunning,
@@ -66,10 +67,11 @@ export const TimerProvider = ({ children }) => {
       selectedProjectId,
       description,
       startTime: startTime?.toISOString(),
-      isWidgetVisible
+      isWidgetVisible,
+      sessions
     };
     localStorage.setItem('timerState', JSON.stringify(state));
-  }, [isRunning, isPaused, duration, selectedProjectId, description, startTime, isWidgetVisible]);
+  }, [isRunning, isPaused, duration, selectedProjectId, description, startTime, isWidgetVisible, sessions]);
 
   // Timer tick effect
   useEffect(() => {
@@ -128,7 +130,7 @@ export const TimerProvider = ({ children }) => {
     }
   };
 
-  const stopTimer = async () => {
+const stopTimer = async () => {
     if (!isRunning || duration === 0) {
       resetTimer();
       return;
@@ -144,6 +146,19 @@ export const TimerProvider = ({ children }) => {
         date: new Date().toISOString().split('T')[0],
         duration: Math.round(durationInHours * 100) / 100 // Round to 2 decimal places
       };
+
+      // Store session data
+      const sessionData = {
+        id: Date.now(),
+        projectId: selectedProjectId,
+        description: description,
+        startTime: startTime?.toISOString(),
+        endTime: new Date().toISOString(),
+        duration: durationInHours,
+        date: new Date().toISOString().split('T')[0]
+      };
+      
+      setSessions(prev => [...prev, sessionData]);
 
       await timeEntryService.createFromTimer(timeEntryData);
       
@@ -162,6 +177,31 @@ export const TimerProvider = ({ children }) => {
       console.error('Failed to save time entry:', error);
       toast.error('Failed to save time entry. Timer data preserved.');
     }
+  };
+
+  const addManualTime = (hours) => {
+    if (isRunning && hours > 0) {
+      setDuration(prev => prev + (hours * 3600));
+      toast.success(`Added ${hours} hours to current timer`);
+    }
+  };
+
+  const getTodaysTotal = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const todaySessions = sessions.filter(session => session.date === today);
+    const totalHours = todaySessions.reduce((sum, session) => sum + session.duration, 0);
+    return Math.round(totalHours * 100) / 100;
+  };
+
+  const getWeekTotal = () => {
+    const today = new Date();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay());
+    const weekStartStr = weekStart.toISOString().split('T')[0];
+    
+    const weekSessions = sessions.filter(session => session.date >= weekStartStr);
+    const totalHours = weekSessions.reduce((sum, session) => sum + session.duration, 0);
+    return Math.round(totalHours * 100) / 100;
   };
 
   const resetTimer = () => {
@@ -185,7 +225,7 @@ export const TimerProvider = ({ children }) => {
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const value = {
+const value = {
     // State
     isRunning,
     isPaused,
@@ -195,6 +235,7 @@ export const TimerProvider = ({ children }) => {
     startTime,
     projects,
     isWidgetVisible,
+    sessions,
     
     // Actions
     startTimer,
@@ -204,9 +245,12 @@ export const TimerProvider = ({ children }) => {
     resetTimer,
     setDescription,
     setIsWidgetVisible,
+    addManualTime,
     
     // Utils
-    formatDuration
+    formatDuration,
+    getTodaysTotal,
+    getWeekTotal
   };
 
   return (
