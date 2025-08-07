@@ -2,12 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { addDays, addMonths, differenceInDays, endOfDay, endOfMonth, endOfWeek, format, formatDistanceToNow, getDay, isFuture, isPast, isSameDay, isSameMonth, isToday, parseISO, startOfDay, startOfMonth, startOfWeek, subMonths } from "date-fns";
-import timeEntryService from "@/services/api/timeEntryService";
+import { create as createIssue, getAll as getAllIssues, getById as getIssueById, update as updateIssue } from "@/services/api/issueService";
 import taskService from "@/services/api/taskService";
+import timeEntryService from "@/services/api/timeEntryService";
 import clientService from "@/services/api/clientService";
 import taskListService from "@/services/api/taskListService";
 import projectService from "@/services/api/projectService";
-import { create, getAll, getById, update } from "@/services/api/teamMemberService";
+import teamMemberService from "@/services/api/teamMemberService";
 import activityService from "@/services/api/activityService";
 import ApperIcon from "@/components/ApperIcon";
 import TaskListCard from "@/components/molecules/TaskListCard";
@@ -32,6 +33,7 @@ import Card from "@/components/atoms/Card";
 const ProjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [projectTimeEntries, setProjectTimeEntries] = useState([]);
   
 const [project, setProject] = useState(null);
   const [client, setClient] = useState(null);
@@ -87,9 +89,9 @@ const [projectData, tasksData, taskListsData, clientsData, projectsData, milesto
         projectService.getMilestonesByProjectId(id),
         projectService.getWikiDocuments(id),
         projectService.getCalendarEvents(id),
-        getAll(),
-        activityService.getByProjectId(parseInt(id)),
-        timeEntryService.getByProjectId(parseInt(id))
+teamMemberService.getAll(),
+activityService.getByProjectId(parseInt(id)),
+timeEntryService.getByProjectId(parseInt(id))
       ]);
 setProject(projectData);
       setMilestones(milestonesData || []);
@@ -1199,7 +1201,7 @@ const getMilestoneTaskLists = (milestoneId) => {
                 <ApperIcon name="Flag" size={16} />
                 Milestones
               </button>
-<button
+              <button
                 onClick={() => setActiveTab('tasks')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
                   activeTab === 'tasks'
@@ -1221,8 +1223,18 @@ const getMilestoneTaskLists = (milestoneId) => {
                 <ApperIcon name="Columns" size={16} />
                 Kanban
               </button>
+              <button
+                onClick={() => setActiveTab('time')}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
+                  activeTab === 'time'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <ApperIcon name="Clock" size={16} />
+                Time Spent
+              </button>
             </div>
-            
             {activeTab === 'timeline' && (
               <div className="flex bg-gray-100 rounded-lg p-1">
                 <button
@@ -1881,9 +1893,7 @@ const getMilestoneTaskLists = (milestoneId) => {
             </Card>
 
             {/* Main Calendar */}
-            <Card className="p-6">
-              {renderCalendarWidget()}
-            </Card>
+{renderCalendarWidget()}
 {/* Calendar Overview Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Upcoming Events */}
@@ -2014,6 +2024,62 @@ const getMilestoneTaskLists = (milestoneId) => {
         )}
         {/* Activity Tab */}
         {activeTab === 'activity' && renderActivitySection()}
+{/* Time Spent Tab */}
+        {activeTab === 'time' && (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Project Time Tracking</h3>
+              <div className="text-sm text-gray-600">
+                Total: {timeEntries.reduce((total, entry) => total + entry.duration, 0).toFixed(1)} hours
+              </div>
+            </div>
+            
+            {timeEntries.length === 0 ? (
+              <div className="text-center py-12">
+                <ApperIcon name="Clock" size={48} className="mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No time entries yet</h3>
+                <p className="text-gray-600">Time entries will appear here when work is logged on project tasks</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+{timeEntries.map((entry) => {
+const task = tasks.find(t => t.Id === entry.taskId);
+return (
+                    <div key={entry.Id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">{entry.description}</h4>
+                          {task && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              Task: {task.title}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right ml-4">
+                          <div className="text-lg font-semibold text-blue-600">
+                            {entry.duration.toFixed(1)}h
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {format(parseISO(entry.date), 'MMM d, yyyy')}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">Total Project Time:</span>
+                    <span className="text-xl font-bold text-blue-600">
+                      {timeEntries.reduce((total, entry) => total + entry.duration, 0).toFixed(1)} hours
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
 
         {activeTab === 'gantt' && (
           <Card className="p-6">

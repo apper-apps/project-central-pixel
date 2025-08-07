@@ -26,6 +26,11 @@ class TimeEntryService {
       .map(entry => ({ ...entry }))
       .sort((a, b) => new Date(b.date) - new Date(a.date));
   }
+// Get time entries by task ID
+async getByTaskId(taskId) {
+  await this.delay(200);
+  return this.timeEntries.filter(entry => entry.taskId === parseInt(taskId));
+}
 
 async create(timeEntryData) {
     await this.delay(400);

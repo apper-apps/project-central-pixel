@@ -7,7 +7,9 @@ import taskListService from '@/services/api/taskListService';
 import taskService from '@/services/api/taskService';
 import clientService from '@/services/api/clientService';
 import activityService from '@/services/api/activityService';
+import timeEntryService from '@/services/api/timeEntryService';
 import ApperIcon from '@/components/ApperIcon';
+import TimeEntryCard from '@/components/molecules/TimeEntryCard';
 import Button from '@/components/atoms/Button';
 import Card from '@/components/atoms/Card';
 import Modal from '@/components/atoms/Modal';
@@ -30,9 +32,9 @@ function MilestoneDetail() {
   const [project, setProject] = useState(null);
   const [taskLists, setTaskLists] = useState([]);
   const [tasks, setTasks] = useState([]);
-  const [activities, setActivities] = useState([]);
+const [activities, setActivities] = useState([]);
   const [clients, setClients] = useState([]);
-  
+  const [timeEntries, setTimeEntries] = useState([]);
   // Modal states
   const [showEditMilestoneModal, setShowEditMilestoneModal] = useState(false);
   const [showTaskListModal, setShowTaskListModal] = useState(false);
@@ -54,12 +56,13 @@ function MilestoneDetail() {
       setError(null);
 
       // Load project and milestone data
-      const [projectData, allMilestones, allTaskLists, allTasks, clientsData] = await Promise.all([
+const [projectData, allMilestones, allTaskLists, allTasks, clientsData, allTimeEntries] = await Promise.all([
         projectService.getById(parseInt(projectId)),
         projectService.getMilestonesByProjectId(parseInt(projectId)),
         taskListService.getAll(),
         taskService.getAll(),
-        clientService.getAll()
+        clientService.getAll(),
+        timeEntryService.getAll()
       ]);
 
       const currentMilestone = allMilestones.find(m => m.Id === parseInt(id));
@@ -76,6 +79,11 @@ function MilestoneDetail() {
           const taskList = milestoneTaskLists.find(tl => tl.Id === tlId);
           return taskList && taskList.tasks && taskList.tasks.includes(task.Id);
         })
+      );
+
+      // Filter time entries for milestone tasks
+      const milestoneTimeEntries = allTimeEntries.filter(entry => 
+        milestoneTasks.some(task => task.Id === entry.taskId)
       );
 
       // Load recent activities
@@ -95,6 +103,7 @@ function MilestoneDetail() {
       setTasks(milestoneTasks);
       setActivities(milestoneActivities);
       setClients(clientsData);
+      setTimeEntries(milestoneTimeEntries);
       
     } catch (err) {
       console.error('Error loading milestone data:', err);
@@ -464,7 +473,7 @@ function MilestoneDetail() {
         {/* Tab Navigation */}
         <div className="px-6">
           <div className="flex space-x-8">
-            {['overview', 'timeline', 'activity'].map((tab) => (
+{['overview', 'timeline', 'activity', 'time'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -474,7 +483,7 @@ function MilestoneDetail() {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                {tab}
+                {tab === 'time' ? 'Time Spent' : tab}
               </button>
             ))}
           </div>
@@ -666,9 +675,65 @@ function MilestoneDetail() {
               )}
             </Card>
           </div>
+)}
+
+        {/* Time Spent Tab */}
+        {activeTab === 'time' && (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Time Entries</h3>
+              <div className="text-sm text-gray-600">
+                Total: {timeEntries.reduce((total, entry) => total + entry.duration, 0).toFixed(1)} hours
+              </div>
+            </div>
+            
+            {timeEntries.length === 0 ? (
+              <div className="text-center py-12">
+                <ApperIcon name="Clock" size={48} className="mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No time entries yet</h3>
+                <p className="text-gray-600">Time entries will appear here when tasks in this milestone are worked on</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {timeEntries.map((entry) => {
+                  const task = tasks.find(t => t.Id === entry.taskId);
+                  return (
+                    <div key={entry.Id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">{entry.description}</h4>
+                          {task && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              Task: {task.title}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right ml-4">
+                          <div className="text-lg font-semibold text-blue-600">
+                            {entry.duration.toFixed(1)}h
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {format(parseISO(entry.date), 'MMM d, yyyy')}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">Total Time Spent:</span>
+                    <span className="text-xl font-bold text-blue-600">
+                      {timeEntries.reduce((total, entry) => total + entry.duration, 0).toFixed(1)} hours
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
         )}
       </div>
-
       {/* Edit Milestone Modal */}
       <Modal
         isOpen={showEditMilestoneModal}

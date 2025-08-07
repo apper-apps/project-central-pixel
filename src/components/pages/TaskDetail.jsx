@@ -2,22 +2,25 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { format, formatDistanceToNow, parseISO } from "date-fns";
+import { create as createIssue, getAll as getAllIssues, getById as getIssueById, update as updateIssue } from "@/services/api/issueService";
 import taskService from "@/services/api/taskService";
-import projectService from "@/services/api/projectService";
+import timeEntryService from "@/services/api/timeEntryService";
 import clientService from "@/services/api/clientService";
+import projectService from "@/services/api/projectService";
+import { create as createTeamMember, getAll as getAllTeamMembers, getById as getTeamMemberById, update as updateTeamMember } from "@/services/api/teamMemberService";
 import activityService from "@/services/api/activityService";
 import ApperIcon from "@/components/ApperIcon";
-import TaskForm from "@/components/molecules/TaskForm";
+import TimeEntryCard from "@/components/molecules/TimeEntryCard";
 import TimeEntryForm from "@/components/molecules/TimeEntryForm";
+import TaskForm from "@/components/molecules/TaskForm";
 import CommentThread from "@/components/molecules/CommentThread";
 import CollaborationSection from "@/components/molecules/CollaborationSection";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
+import Tasks from "@/components/pages/Tasks";
 import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 import Card from "@/components/atoms/Card";
-import timeEntryService from "@/services/api/timeEntryService";
-
 const TaskDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -32,6 +35,11 @@ const [error, setError] = useState(null);
 const [showEditModal, setShowEditModal] = useState(false);
 const [showTimeModal, setShowTimeModal] = useState(false);
 const [showCollaboration, setShowCollaboration] = useState(false);
+const [timeEntries, setTimeEntries] = useState([]);
+const [timeEntriesLoading, setTimeEntriesLoading] = useState(false);
+const [activeTab, setActiveTab] = useState('details');
+const [showTimeForm, setShowTimeForm] = useState(false);
+const [editingTime, setEditingTime] = useState(null);
 useEffect(() => {
     loadTaskData();
   }, [id]);
@@ -42,9 +50,10 @@ const loadTaskData = async () => {
       setError(null);
 
       // Load all required data for the edit form
-      const [taskData, projectsData] = await Promise.all([
+const [taskData, projectsData, taskTimeEntries] = await Promise.all([
         taskService.getById(parseInt(id)),
-        projectService.getAll()
+        projectService.getAll(),
+        timeEntryService.getByTaskId(parseInt(id))
       ]);
 
       if (!taskData) {
@@ -54,7 +63,7 @@ const loadTaskData = async () => {
 
       setTask(taskData);
       setProjects(projectsData);
-
+      setTimeEntries(taskTimeEntries);
       // Load related project data
       if (taskData.projectId) {
         const projectData = await projectService.getById(taskData.projectId);
@@ -152,6 +161,7 @@ const loadTaskData = async () => {
       toast.error("Failed to delete task");
     }
 };
+};
 
 const handleAddTime = async (timeData) => {
   try {
@@ -160,7 +170,14 @@ const handleAddTime = async (timeData) => {
       taskId: task.Id,
       projectId: task.projectId
     });
+    
+    // Refresh time entries
+    const updatedTimeEntries = await timeEntryService.getByTaskId(parseInt(id));
+    setTimeEntries(updatedTimeEntries);
+    
     setShowTimeModal(false);
+    setShowTimeForm(false);
+    setEditingTime(null);
     toast.success("Time entry logged successfully");
 
     // Log activity
@@ -177,6 +194,24 @@ const handleAddTime = async (timeData) => {
     toast.error("Failed to log time entry");
   }
 };
+
+const handleDeleteTime = async (timeEntryId) => {
+  if (!confirm("Are you sure you want to delete this time entry?")) {
+    return;
+  }
+
+  try {
+    await timeEntryService.delete(timeEntryId);
+    
+    // Refresh time entries
+    const updatedTimeEntries = await timeEntryService.getByTaskId(parseInt(id));
+    setTimeEntries(updatedTimeEntries);
+    
+    toast.success("Time entry deleted successfully");
+  } catch (error) {
+    console.error("Error deleting time entry:", error);
+    toast.error("Failed to delete time entry");
+  }
 
   const getPriorityColor = (priority) => {
     switch (priority) {
@@ -356,11 +391,41 @@ Edit
             </div>
           </div>
         </div>
-      </Card>
+</Card>
 
-      {/* Collaboration Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-<div className="lg:col-span-2">
+      {/* Tab Navigation */}
+      <Card className="p-0 overflow-hidden">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex">
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'details'
+                  ? 'border-blue-500 text-blue-600 bg-blue-50'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Details & Comments
+            </button>
+            <button
+              onClick={() => setActiveTab('time')}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'time'
+                  ? 'border-blue-500 text-blue-600 bg-blue-50'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Time Entries
+            </button>
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'details' && (
+          <div className="p-6">
+            {/* Collaboration Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
           <CollaborationSection 
             taskId={task.Id}
             projectId={task.projectId}
@@ -434,10 +499,72 @@ Edit
                 )}
               </div>
             </Card>
+)}
+            </div>
+          </div>
           )}
-        </div>
-      </div>
+        )}
 
+        {/* Time Spent Tab Content */}
+        {activeTab === 'time' && (
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Time Entries</h3>
+              <Button 
+                variant="primary" 
+                size="sm"
+                onClick={() => setShowTimeForm(true)}
+                className="flex items-center gap-2"
+              >
+                <ApperIcon name="Plus" size={16} />
+                Log Time
+              </Button>
+            </div>
+            
+            {timeEntriesLoading ? (
+              <Loading />
+            ) : timeEntries.length === 0 ? (
+              <div className="text-center py-12">
+                <ApperIcon name="Clock" size={48} className="mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No time entries yet</h3>
+                <p className="text-gray-600 mb-4">Start tracking time spent on this task</p>
+                <Button 
+                  variant="primary"
+                  onClick={() => setShowTimeForm(true)}
+                  className="flex items-center gap-2 mx-auto"
+                >
+                  <ApperIcon name="Plus" size={16} />
+                  Log Time
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {timeEntries.map((entry) => (
+                  <TimeEntryCard
+                    key={entry.Id}
+                    timeEntry={entry}
+                    project={projects.find(p => p.Id === entry.projectId)}
+                    onEdit={() => {
+                      setEditingTime(entry);
+                      setShowTimeForm(true);
+                    }}
+                    onDelete={() => handleDeleteTime(entry.Id)}
+                  />
+                ))}
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">Total Time:</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {timeEntries.reduce((total, entry) => total + entry.duration, 0).toFixed(1)} hours
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
+      </div>
       {/* Edit Task Modal */}
       <Modal 
         isOpen={showEditModal} 
@@ -470,6 +597,30 @@ description: `Work on ${task.name}`
 onSubmit={handleAddTime}
 onCancel={() => setShowTimeModal(false)}
 />
+</Modal>
+
+{/* Time Entry Form Modal */}
+<Modal 
+  isOpen={showTimeForm} 
+  onClose={() => {
+    setShowTimeForm(false);
+    setEditingTime(null);
+  }}
+  title={editingTime ? "Edit Time Entry" : "Log Time"}
+>
+  <TimeEntryForm
+    projects={projects}
+    timeEntry={editingTime || {
+      projectId: task.projectId,
+      taskId: task.Id,
+      description: `Work on ${task.name}`
+    }}
+    onSubmit={handleAddTime}
+    onCancel={() => {
+      setShowTimeForm(false);
+      setEditingTime(null);
+    }}
+  />
 </Modal>
     </div>
   );
