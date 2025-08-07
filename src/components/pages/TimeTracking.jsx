@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
+import { create as createIssue, getAll as getAllIssues, update as updateIssue } from "@/services/api/issueService";
 import timeEntryService from "@/services/api/timeEntryService";
 import projectService from "@/services/api/projectService";
-import { create as createTeamMember, getAll as getAllTeamMembers, update as updateTeamMember } from "@/services/api/teamMemberService";
+import { create as createTeamMember, createTeamMember as createTeamMemberDirect, getAll as getAllTeamMembers, getAllTeamMembers as getAllTeamMembersDirect, search as searchTeamMembers, update as updateTeamMember, updateTeamMember as updateTeamMemberDirect } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
 import TimeEntryCard from "@/components/molecules/TimeEntryCard";
 import TimeEntryForm from "@/components/molecules/TimeEntryForm";
@@ -652,134 +653,10 @@ if (loading) return <Loading />;
         />
       </Modal>
     </div>
-  );
-const getFilteredEntries = () => {
-    let filtered = [...timeEntries];
-
-    // Apply date filter
-    if (filter !== "all") {
-      const now = new Date();
-      let startDate, endDate;
-
-      switch (filter) {
-        case "today":
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          endDate = new Date(startDate);
-          endDate.setDate(endDate.getDate() + 1);
-          break;
-        case "week":
-          startDate = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
-          break;
-        case "month":
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-          break;
-        case "calendar-month":
-          // Filter for calendar's current month
-          startDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
-          endDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
-          break;
-        default:
-          startDate = null;
-      }
-
-      if (startDate) {
-        filtered = filtered.filter(entry => {
-          const entryDate = new Date(entry.date);
-          if (endDate) {
-            return entryDate >= startDate && entryDate <= endDate;
-          }
-          return entryDate >= startDate;
-        });
-      }
-    }
-
-    // For calendar view, always show entries for the visible calendar range
-    if (viewMode === "calendar" && filter === "all") {
-      const year = calendarDate.getFullYear();
-      const month = calendarDate.getMonth();
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const startDate = new Date(firstDay);
-      startDate.setDate(startDate.getDate() - firstDay.getDay());
-      const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 42); // 6 weeks
-
-      filtered = filtered.filter(entry => {
-        const entryDate = new Date(entry.date);
-        return entryDate >= startDate && entryDate < endDate;
-      });
-    }
-
-    // Apply search filter
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(entry => {
-        const project = getProjectById(entry.projectId);
-        return (
-          entry.description.toLowerCase().includes(term) ||
-          project?.name.toLowerCase().includes(term)
-        );
-      });
-    }
-
-    // Apply sorting (not needed for calendar view)
-    if (viewMode !== "calendar") {
-      filtered.sort((a, b) => {
-        let comparison = 0;
-        
-        switch (sortBy) {
-          case "date":
-            comparison = new Date(a.date) - new Date(b.date);
-            break;
-          case "project":
-            const projectA = getProjectById(a.projectId)?.name || "";
-            const projectB = getProjectById(b.projectId)?.name || "";
-            comparison = projectA.localeCompare(projectB);
-            break;
-          case "duration":
-            comparison = a.duration - b.duration;
-            break;
-          default:
-            comparison = new Date(a.date) - new Date(b.date);
-        }
-
-        return sortOrder === "desc" ? -comparison : comparison;
-      });
-    }
-
-    return filtered;
-  };
-
-  const filteredEntries = getFilteredEntries();
-  const totalHours = filteredEntries.reduce((sum, entry) => sum + entry.duration, 0);
-
-  if (loading && timeEntries.length === 0) {
-    return <Loading />;
-  }
-
-  if (error) {
-    return <Error message={error} onRetry={loadData} />;
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Time Tracking</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Track and manage your project time entries
-          </p>
-        </div>
-        <Button onClick={openCreateModal} variant="primary">
-          <ApperIcon name="Plus" size={16} className="mr-2" />
-          Log Time
-        </Button>
-      </div>
+);
 };
 
 export default TimeTracking;
-      {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-lg border border-gray-200">
           <div className="flex items-center">
@@ -816,7 +693,7 @@ export default TimeTracking;
         </div>
       </div>
 
-{/* Filters and Search */}
+      {/* Filters and Search */}
       <div className="bg-white p-4 rounded-lg border border-gray-200">
         <div className="flex flex-col gap-4">
           {/* Search and View Mode Row */}
@@ -871,7 +748,7 @@ export default TimeTracking;
           {/* Filters Row */}
           <div className="flex flex-wrap gap-2">
             {/* Date Filter */}
-<select
+            <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -922,7 +799,7 @@ export default TimeTracking;
         </div>
       </div>
 
-{/* Calendar View */}
+      {/* Calendar View */}
       {viewMode === "calendar" ? (
         <div className="bg-white rounded-lg border border-gray-200">
           {/* Calendar Header */}
@@ -1116,6 +993,3 @@ export default TimeTracking;
       </Modal>
     </div>
   );
-};
-
-export default TimeTracking;
