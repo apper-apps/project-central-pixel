@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { format, formatDistanceToNow, parseISO } from "date-fns";
-import { create as createIssue, getAll as getAllIssues, getById as getIssueById, update as updateIssue } from "@/services/api/issueService";
+import { create as createIssue, createIssue as createIssueAlt, getAll as getAllIssues, getAllIssues as getAllIssuesAlt, getById as getIssueById, getIssueById as getIssueByIdAlt, update as updateIssue, updateIssue as updateIssueAlt } from "@/services/api/issueService";
 import taskService from "@/services/api/taskService";
 import timeEntryService from "@/services/api/timeEntryService";
 import clientService from "@/services/api/clientService";
 import projectService from "@/services/api/projectService";
-import { create as createTeamMember, getAll as getAllTeamMembers, getById as getTeamMemberById, update as updateTeamMember } from "@/services/api/teamMemberService";
+import { create as createTeamMember, createTeamMember as createTeamMemberAlt, getAll as getAllTeamMembers, getAllTeamMembers as getAllTeamMembersAlt, getById as getTeamMemberById, getTeamMemberById as getTeamMemberByIdAlt, update as updateTeamMember, updateTeamMember as updateTeamMemberAlt } from "@/services/api/teamMemberService";
 import activityService from "@/services/api/activityService";
 import ApperIcon from "@/components/ApperIcon";
 import TimeEntryCard from "@/components/molecules/TimeEntryCard";
@@ -151,7 +151,7 @@ const [taskData, projectsData, taskTimeEntries] = await Promise.all([
       });
 
       // Navigate back to project or tasks page
-      if (project) {
+if (project) {
         navigate(`/projects/${project.Id}`);
       } else {
         navigate('/tasks');
@@ -160,9 +160,7 @@ const [taskData, projectsData, taskTimeEntries] = await Promise.all([
       console.error("Error deleting task:", error);
       toast.error("Failed to delete task");
     }
-};
-};
-
+  };
 const handleAddTime = async (timeData) => {
   try {
     const timeEntry = await timeEntryService.create({
@@ -209,11 +207,12 @@ const handleDeleteTime = async (timeEntryId) => {
     
     toast.success("Time entry deleted successfully");
   } catch (error) {
-    console.error("Error deleting time entry:", error);
+console.error("Error deleting time entry:", error);
     toast.error("Failed to delete time entry");
   }
+};
 
-  const getPriorityColor = (priority) => {
+const getPriorityColor = (priority) => {
     switch (priority) {
       case 'High':
         return 'status-urgent';
@@ -496,16 +495,15 @@ Edit
                       {client.name}
                     </button>
                   </div>
-                )}
+)}
               </div>
             </Card>
-)}
-            </div>
-          </div>
           )}
+            </div>
+</div>
         )}
 
-        {/* Time Spent Tab Content */}
+        {/* Time Spent Tab Content */
         {activeTab === 'time' && (
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
@@ -563,9 +561,9 @@ Edit
             )}
           </div>
         )}
-      </Card>
-      </div>
-      {/* Edit Task Modal */}
+</Card>
+
+      {/* Edit Task Modal */
       <Modal 
         isOpen={showEditModal} 
         onClose={() => setShowEditModal(false)}
