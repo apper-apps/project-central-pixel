@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { format, formatDistanceToNow, parseISO } from "date-fns";
-import clientService from "@/services/api/clientService";
 import { 
   create as createIssue, 
   getAll as getAllIssues, 
@@ -11,26 +10,27 @@ import {
 } from "@/services/api/issueService";
 import taskService from "@/services/api/taskService";
 import timeEntryService from "@/services/api/timeEntryService";
+import clientService from "@/services/api/clientService";
 import projectService from "@/services/api/projectService";
-import activityService from "@/services/api/activityService";
 import { 
   create as createTeamMember, 
   getAll as getAllTeamMembers, 
   getById as getTeamMemberById, 
   update as updateTeamMember 
 } from "@/services/api/teamMemberService";
+import activityService from "@/services/api/activityService";
 import ApperIcon from "@/components/ApperIcon";
-import Tasks from "@/components/pages/Tasks";
-import TimeEntryForm from "@/components/molecules/TimeEntryForm";
-import CommentThread from "@/components/molecules/CommentThread";
-import TaskForm from "@/components/molecules/TaskForm";
 import TimeEntryCard from "@/components/molecules/TimeEntryCard";
+import TimeEntryForm from "@/components/molecules/TimeEntryForm";
+import TaskForm from "@/components/molecules/TaskForm";
+import CommentThread from "@/components/molecules/CommentThread";
 import CollaborationSection from "@/components/molecules/CollaborationSection";
-import Error from "@/components/ui/Error";
 import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Tasks from "@/components/pages/Tasks";
+import Button from "@/components/atoms/Button";
 import Modal from "@/components/atoms/Modal";
 import Card from "@/components/atoms/Card";
-import Button from "@/components/atoms/Button";
 const TaskDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -577,9 +577,9 @@ Edit
       <Modal 
         isOpen={showEditModal} 
         onClose={() => setShowEditModal(false)}
-        title="Edit Task"
+title="Edit Task"
       >
-<TaskForm
+        <TaskForm
           task={task}
           projects={projects}
           milestones={milestones}
@@ -587,7 +587,7 @@ Edit
           onSubmit={handleEditTask}
           onCancel={() => setShowEditModal(false)}
         />
-</Modal>
+      </Modal>
 
       {/* Add Time Modal */
 <Modal 
