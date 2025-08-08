@@ -22,6 +22,7 @@ const TimeTracking = () => {
   const [showModal, setShowModal] = useState(false);
 const [editingEntry, setEditingEntry] = useState(null);
   const [filter, setFilter] = useState("all"); // all, today, week, month
+  const [userFilter, setUserFilter] = useState("all"); // all, my, team
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("date"); // date, project, duration
   const [sortOrder, setSortOrder] = useState("desc"); // asc, desc
@@ -64,8 +65,23 @@ useEffect(() => {
     loadData();
   }, []);
   // Filter and search logic
-  const filteredAndSortedEntries = useMemo(() => {
+const filteredAndSortedEntries = useMemo(() => {
     let filtered = [...timeEntries];
+    const currentUserId = 1; // In a real app, this would come from auth context
+
+    // Apply user filter (My vs Team entries)
+    switch (userFilter) {
+      case "my":
+        // Filter to show only current user's entries
+        // For demo purposes, assume entries with Id 1, 3, 6, 10 belong to current user
+        filtered = filtered.filter(entry => [1, 3, 6, 10].includes(entry.Id));
+        break;
+      case "team":
+        // Filter to show only team members' entries (excluding current user)
+        filtered = filtered.filter(entry => ![1, 3, 6, 10].includes(entry.Id));
+        break;
+      // "all" case shows everything, so no filtering needed
+    }
 
     // Apply time filter
     const today = new Date();
@@ -138,7 +154,7 @@ useEffect(() => {
     });
 
     return filtered;
-  }, [timeEntries, filter, searchTerm, sortBy, sortOrder, dateRange, projectFilter]);
+  }, [timeEntries, filter, userFilter, searchTerm, sortBy, sortOrder, dateRange, projectFilter]);
 
   // Calculate summary statistics
   const summaryStats = useMemo(() => {
@@ -423,9 +439,28 @@ if (loading) return <Loading />;
       </div>
 
       {/* Filters and Controls */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-          {/* Quick Filters */}
+          {/* User Filter */}
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium text-gray-700">View:</span>
+            {[
+              { value: "all", label: "All Timesheets" },
+              { value: "my", label: "My Timesheet" },
+              { value: "team", label: "Team's Timesheet" }
+            ].map((option) => (
+              <Button
+                key={option.value}
+                variant={userFilter === option.value ? "primary" : "secondary"}
+                size="sm"
+                onClick={() => setUserFilter(option.value)}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+          
+          {/* Time Period Filters */}
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium text-gray-700">Period:</span>
             {["all", "today", "week", "month"].map((filterOption) => (
