@@ -511,8 +511,7 @@ Edit
           )}
         </div>
       </div>
-    </div>
-        {/* Time Spent Tab Content */
+</div>
         {activeTab === 'time' && (
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
