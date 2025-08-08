@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { format, formatDistanceToNow, parseISO } from "date-fns";
-import clientService from "@/services/api/clientService";
+clientService from "@/services/api/clientService";
 import { 
   create as createIssue, 
   getAll as getAllIssues, 
@@ -589,7 +589,7 @@ Edit
         />
 </Modal>
 
-{/* Add Time Modal */}
+      {/* Add Time Modal */
 <Modal 
 isOpen={showTimeModal} 
 onClose={() => setShowTimeModal(false)}
