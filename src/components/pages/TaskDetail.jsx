@@ -509,9 +509,11 @@ Edit
               </div>
             </Card>
           )}
-        </div>
-      </div>
 </div>
+      </div>
+          </div>
+        )}
+
         {activeTab === 'time' && (
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
