@@ -2,25 +2,25 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { format, formatDistanceToNow, parseISO } from "date-fns";
-import { create as createIssue, createIssue as createIssueAlt, getAll as getAllIssues, getAllIssues as getAllIssuesAlt, getById as getIssueById, getIssueById as getIssueByIdAlt, update as updateIssue, updateIssue as updateIssueAlt } from "@/services/api/issueService";
+import clientService from "@/services/api/clientService";
+import { create as createIssue, createIssue as createIssueAlt, createIssueAlt as createIssueAlt2, getAll as getAllIssues, getAllIssues as getAllIssuesAlt, getAllIssuesAlt as getAllIssuesAlt2, getById as getIssueById, getIssueById as getIssueByIdAlt, getIssueByIdAlt as getIssueByIdAlt2, update as updateIssue, updateIssue as updateIssueAlt, updateIssueAlt as updateIssueAlt2 } from "@/services/api/issueService";
 import taskService from "@/services/api/taskService";
 import timeEntryService from "@/services/api/timeEntryService";
-import clientService from "@/services/api/clientService";
 import projectService from "@/services/api/projectService";
-import { create as createTeamMember, createTeamMember as createTeamMemberAlt, getAll as getAllTeamMembers, getAllTeamMembers as getAllTeamMembersAlt, getById as getTeamMemberById, getTeamMemberById as getTeamMemberByIdAlt, update as updateTeamMember, updateTeamMember as updateTeamMemberAlt } from "@/services/api/teamMemberService";
 import activityService from "@/services/api/activityService";
+import { create as createTeamMember, createTeamMember as createTeamMemberAlt, createTeamMemberAlt as createTeamMemberAlt2, getAll as getAllTeamMembers, getAllTeamMembers as getAllTeamMembersAlt, getAllTeamMembersAlt as getAllTeamMembersAlt2, getById as getTeamMemberById, getTeamMemberById as getTeamMemberByIdAlt, getTeamMemberByIdAlt as getTeamMemberByIdAlt2, update as updateTeamMember, updateTeamMember as updateTeamMemberAlt, updateTeamMemberAlt as updateTeamMemberAlt2 } from "@/services/api/teamMemberService";
 import ApperIcon from "@/components/ApperIcon";
-import TimeEntryCard from "@/components/molecules/TimeEntryCard";
-import TimeEntryForm from "@/components/molecules/TimeEntryForm";
-import TaskForm from "@/components/molecules/TaskForm";
-import CommentThread from "@/components/molecules/CommentThread";
-import CollaborationSection from "@/components/molecules/CollaborationSection";
-import Loading from "@/components/ui/Loading";
-import Error from "@/components/ui/Error";
 import Tasks from "@/components/pages/Tasks";
-import Button from "@/components/atoms/Button";
+import TimeEntryForm from "@/components/molecules/TimeEntryForm";
+import CommentThread from "@/components/molecules/CommentThread";
+import TaskForm from "@/components/molecules/TaskForm";
+import TimeEntryCard from "@/components/molecules/TimeEntryCard";
+import CollaborationSection from "@/components/molecules/CollaborationSection";
+import Error from "@/components/ui/Error";
+import Loading from "@/components/ui/Loading";
 import Modal from "@/components/atoms/Modal";
 import Card from "@/components/atoms/Card";
+import Button from "@/components/atoms/Button";
 const TaskDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -497,12 +497,11 @@ Edit
                   </div>
 )}
               </div>
-            </Card>
+</Card>
           )}
             </div>
-</div>
+          </div>
         )}
-
         {/* Time Spent Tab Content */
         {activeTab === 'time' && (
           <div className="p-6">
