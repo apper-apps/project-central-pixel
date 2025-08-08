@@ -327,9 +327,9 @@ useEffect(() => {
             return (
               <div key={day} className="bg-white p-2 min-h-24 border-r border-b border-gray-100">
                 <div className="text-sm font-medium text-gray-900 mb-1">{day}</div>
-                {dayEntries.length > 0 && (
-                  <div className="text-xs text-blue-600 mb-1">
-                    {totalHours.toFixed(1)}h
+{dayEntries.length > 0 && (
+                  <div className="text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-1 rounded-md mb-2 text-center shadow-sm">
+                    {totalHours.toFixed(1)}h tracked
                   </div>
                 )}
                 <div className="space-y-1">
@@ -340,8 +340,17 @@ useEffect(() => {
                         key={entry.Id}
                         className="text-xs p-1 rounded bg-blue-50 text-blue-700 cursor-pointer hover:bg-blue-100"
                         onClick={() => openEditModal(entry)}
+title={`${project?.name || 'Unknown Project'} - ${entry.duration}h\n${entry.description || 'No description'}`}
                       >
-                        {project?.name} - {entry.duration}h
+                        <div className="flex items-center justify-between">
+                          <span className="truncate text-xs font-medium">{project?.name || 'Unknown'}</span>
+                          <span className="text-xs font-bold ml-1">{entry.duration}h</span>
+                        </div>
+                        {entry.description && (
+                          <div className="text-xs text-blue-600 truncate mt-0.5 opacity-75">
+                            {entry.description}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
