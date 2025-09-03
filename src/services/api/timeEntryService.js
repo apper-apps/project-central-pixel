@@ -1,109 +1,386 @@
-import timeEntriesData from "@/services/mockData/timeEntries.json";
-import teamMembersData from "@/services/mockData/teamMembers.json";
-
 class TimeEntryService {
   constructor() {
-    this.timeEntries = [...timeEntriesData];
+    const { ApperClient } = window.ApperSDK;
+    this.apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    this.tableName = 'time_entry_c';
   }
 
-  async getAll() {
-    await this.delay(300);
-    return [...this.timeEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
+async getAll() {
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "date_c" } },
+          { field: { Name: "duration_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "project_id_c" } },
+          { field: { Name: "task_id_c" } }
+        ],
+        orderBy: [
+          {
+            fieldName: "date_c",
+            sorttype: "DESC"
+          }
+        ]
+      };
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching time entries:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
   }
 
   async getById(id) {
-    await this.delay(200);
-    const timeEntry = this.timeEntries.find(entry => entry.Id === parseInt(id));
-    if (!timeEntry) {
-      throw new Error("Time entry not found");
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "date_c" } },
+          { field: { Name: "duration_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "project_id_c" } },
+          { field: { Name: "task_id_c" } }
+        ]
+      };
+
+      const response = await this.apperClient.getRecordById(this.tableName, parseInt(id), params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error(`Error fetching time entry with ID ${id}:`, error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
     }
-    return { ...timeEntry };
   }
 
   async getByProjectId(projectId) {
-    await this.delay(200);
-    return this.timeEntries
-      .filter(entry => entry.projectId === parseInt(projectId))
-      .map(entry => ({ ...entry }))
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
-  }
-// Get time entries by task ID
-async getByTaskId(taskId) {
-  await this.delay(200);
-  return this.timeEntries.filter(entry => entry.taskId === parseInt(taskId));
-}
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "date_c" } },
+          { field: { Name: "duration_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "project_id_c" } },
+          { field: { Name: "task_id_c" } }
+        ],
+        where: [
+          {
+            FieldName: "project_id_c",
+            Operator: "EqualTo",
+            Values: [parseInt(projectId)]
+          }
+        ],
+        orderBy: [
+          {
+            fieldName: "date_c",
+            sorttype: "DESC"
+          }
+        ]
+      };
 
-async create(timeEntryData) {
-    await this.delay(400);
-    const newId = this.timeEntries.length > 0 ? Math.max(...this.timeEntries.map(entry => entry.Id)) + 1 : 1;
-    const newTimeEntry = {
-      Id: newId,
-      ...timeEntryData,
-      projectId: parseInt(timeEntryData.projectId),
-      taskId: timeEntryData.taskId ? parseInt(timeEntryData.taskId) : null,
-      duration: parseFloat(timeEntryData.duration),
-      createdAt: new Date().toISOString()
-    };
-    this.timeEntries.push(newTimeEntry);
-    return { ...newTimeEntry };
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching project time entries:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
+  }
+
+  // Get time entries by task ID
+  async getByTaskId(taskId) {
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "date_c" } },
+          { field: { Name: "duration_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "project_id_c" } },
+          { field: { Name: "task_id_c" } }
+        ],
+        where: [
+          {
+            FieldName: "task_id_c",
+            Operator: "EqualTo",
+            Values: [parseInt(taskId)]
+          }
+        ]
+      };
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching task time entries:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
+  }
+
+  async create(timeEntryData) {
+    try {
+      const params = {
+        records: [{
+          Name: timeEntryData.Name || `Time Entry ${Date.now()}`,
+          Tags: timeEntryData.Tags || '',
+          description_c: timeEntryData.description_c || timeEntryData.description,
+          date_c: timeEntryData.date_c || timeEntryData.date,
+          duration_c: parseFloat(timeEntryData.duration_c || timeEntryData.duration),
+          created_at_c: new Date().toISOString(),
+          project_id_c: timeEntryData.project_id_c ? parseInt(timeEntryData.project_id_c) : (timeEntryData.projectId ? parseInt(timeEntryData.projectId) : null),
+          task_id_c: timeEntryData.task_id_c ? parseInt(timeEntryData.task_id_c) : (timeEntryData.taskId ? parseInt(timeEntryData.taskId) : null)
+        }]
+      };
+
+      const response = await this.apperClient.createRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const successfulRecords = response.results.filter(result => result.success);
+        const failedRecords = response.results.filter(result => !result.success);
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create time entries ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+          
+          failedRecords.forEach(record => {
+            record.errors?.forEach(error => {
+              console.error(`${error.fieldLabel}: ${error}`);
+            });
+            if (record.message) console.error(record.message);
+          });
+        }
+        
+        return successfulRecords.length > 0 ? successfulRecords[0].data : null;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error creating time entry:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
   }
 
   async createFromTimer(timeEntryData) {
-    // Specialized method for timer-generated entries (no delay for better UX)
-    const newId = this.timeEntries.length > 0 ? Math.max(...this.timeEntries.map(entry => entry.Id)) + 1 : 1;
-    const newTimeEntry = {
-      Id: newId,
-...timeEntryData,
-      projectId: parseInt(timeEntryData.projectId),
-      taskId: timeEntryData.taskId ? parseInt(timeEntryData.taskId) : null,
-      duration: parseFloat(timeEntryData.duration),
-      createdAt: new Date().toISOString()
-    };
-    this.timeEntries.push(newTimeEntry);
-    return { ...newTimeEntry };
+    // Specialized method for timer-generated entries
+    return this.create(timeEntryData);
   }
 
   async update(id, timeEntryData) {
-    await this.delay(400);
-    const index = this.timeEntries.findIndex(entry => entry.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Time entry not found");
+    try {
+      const params = {
+        records: [{
+          Id: parseInt(id),
+          Name: timeEntryData.Name,
+          Tags: timeEntryData.Tags,
+          description_c: timeEntryData.description_c || timeEntryData.description,
+          date_c: timeEntryData.date_c || timeEntryData.date,
+          duration_c: parseFloat(timeEntryData.duration_c || timeEntryData.duration),
+          project_id_c: timeEntryData.project_id_c ? parseInt(timeEntryData.project_id_c) : (timeEntryData.projectId ? parseInt(timeEntryData.projectId) : null),
+          task_id_c: timeEntryData.task_id_c ? parseInt(timeEntryData.task_id_c) : (timeEntryData.taskId ? parseInt(timeEntryData.taskId) : null)
+        }]
+      };
+
+      const response = await this.apperClient.updateRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const successfulUpdates = response.results.filter(result => result.success);
+        const failedUpdates = response.results.filter(result => !result.success);
+        
+        if (failedUpdates.length > 0) {
+          console.error(`Failed to update time entries ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
+          
+          failedUpdates.forEach(record => {
+            record.errors?.forEach(error => {
+              console.error(`${error.fieldLabel}: ${error}`);
+            });
+            if (record.message) console.error(record.message);
+          });
+        }
+        
+        return successfulUpdates.length > 0 ? successfulUpdates[0].data : null;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error updating time entry:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
     }
-    
-this.timeEntries[index] = {
-      ...this.timeEntries[index],
-      ...timeEntryData,
-      projectId: parseInt(timeEntryData.projectId),
-      taskId: timeEntryData.taskId ? parseInt(timeEntryData.taskId) : null,
-      duration: parseFloat(timeEntryData.duration)
-    };
-    
-    return { ...this.timeEntries[index] };
+  }
+
+  async delete(id) {
+    try {
+      const params = {
+        RecordIds: [parseInt(id)]
+      };
+
+      const response = await this.apperClient.deleteRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failedDeletions = response.results.filter(result => !result.success);
+        
+        if (failedDeletions.length > 0) {
+          console.error(`Failed to delete Time Entries ${failedDeletions.length} records:${JSON.stringify(failedDeletions)}`);
+          
+          failedDeletions.forEach(record => {
+            if (record.message) console.error(record.message);
+          });
+        }
+        
+        return response.results.some(result => result.success);
+      }
+      
+      return true;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error deleting time entry:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
   }
 
   async bulkDelete(entryIds) {
-    await this.delay(500);
-    const idsToDelete = entryIds.map(id => parseInt(id));
-    
-    this.timeEntries = this.timeEntries.filter(entry => !idsToDelete.includes(entry.Id));
-    return true;
+    try {
+      const params = {
+        RecordIds: entryIds.map(id => parseInt(id))
+      };
+
+      const response = await this.apperClient.deleteRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failedDeletions = response.results.filter(result => !result.success);
+        
+        if (failedDeletions.length > 0) {
+          console.error(`Failed to delete Time Entries ${failedDeletions.length} records:${JSON.stringify(failedDeletions)}`);
+          
+          failedDeletions.forEach(record => {
+            if (record.message) console.error(record.message);
+          });
+        }
+        
+        return response.results.every(result => result.success);
+      }
+      
+      return true;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error bulk deleting time entries:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
   }
 
   async exportToCSV(entries, projects = []) {
     await this.delay(200);
     
     const projectMap = projects.reduce((acc, project) => {
-      acc[project.Id] = project.name;
+      acc[project.Id] = project.Name;
       return acc;
     }, {});
 
     const csvHeaders = ['Date', 'Project', 'Description', 'Duration (hours)', 'Created At'];
     const csvRows = entries.map(entry => [
-      entry.date,
-      projectMap[entry.projectId] || 'Unknown Project',
-      `"${entry.description.replace(/"/g, '""')}"`, // Escape quotes
-      entry.duration,
-      entry.createdAt
+      entry.date_c || entry.date,
+      projectMap[entry.project_id_c || entry.projectId] || 'Unknown Project',
+      `"${(entry.description_c || entry.description || '').replace(/"/g, '""')}"`, // Escape quotes
+      entry.duration_c || entry.duration,
+      entry.created_at_c || entry.createdAt
     ]);
 
     const csvContent = [
@@ -126,85 +403,204 @@ this.timeEntries[index] = {
   }
 
   async getTimesByProject(projectId, startDate, endDate) {
-    await this.delay(200);
-    
-    let entries = this.timeEntries.filter(entry => entry.projectId === parseInt(projectId));
-    
-    if (startDate) {
-      entries = entries.filter(entry => entry.date >= startDate);
+    try {
+      let params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "date_c" } },
+          { field: { Name: "duration_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "project_id_c" } },
+          { field: { Name: "task_id_c" } }
+        ],
+        where: [
+          {
+            FieldName: "project_id_c",
+            Operator: "EqualTo",
+            Values: [parseInt(projectId)]
+          }
+        ]
+      };
+
+      if (startDate) {
+        params.where.push({
+          FieldName: "date_c",
+          Operator: "GreaterThanOrEqualTo",
+          Values: [startDate]
+        });
+      }
+
+      if (endDate) {
+        params.where.push({
+          FieldName: "date_c",
+          Operator: "LessThanOrEqualTo",
+          Values: [endDate]
+        });
+      }
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching project times:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      return [];
     }
-    
-    if (endDate) {
-      entries = entries.filter(entry => entry.date <= endDate);
-    }
-    
-    return entries.map(entry => ({ ...entry }));
   }
 
   async getTimesByDateRange(startDate, endDate) {
-    await this.delay(200);
-    
-    return this.timeEntries
-      .filter(entry => entry.date >= startDate && entry.date <= endDate)
-      .map(entry => ({ ...entry }))
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "date_c" } },
+          { field: { Name: "duration_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "project_id_c" } },
+          { field: { Name: "task_id_c" } }
+        ],
+        where: [
+          {
+            FieldName: "date_c",
+            Operator: "GreaterThanOrEqualTo",
+            Values: [startDate]
+          },
+          {
+            FieldName: "date_c",
+            Operator: "LessThanOrEqualTo",
+            Values: [endDate]
+          }
+        ],
+        orderBy: [
+          {
+            fieldName: "date_c",
+            sorttype: "DESC"
+          }
+        ]
+      };
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching time entries by date range:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      return [];
+    }
   }
 
   async getTimeSummaryByProject() {
-    await this.delay(200);
-    
-    const summary = this.timeEntries.reduce((acc, entry) => {
-      const projectId = entry.projectId;
-      if (!acc[projectId]) {
-        acc[projectId] = {
-          projectId,
-          totalHours: 0,
-          totalEntries: 0,
-          dates: []
-        };
-      }
+    try {
+      const entries = await this.getAll();
       
-      acc[projectId].totalHours += entry.duration;
-      acc[projectId].totalEntries += 1;
-      acc[projectId].dates.push(entry.date);
-      
-      return acc;
-    }, {});
+      const summary = entries.reduce((acc, entry) => {
+        const projectId = entry.project_id_c || entry.projectId;
+        if (!acc[projectId]) {
+          acc[projectId] = {
+            projectId,
+            totalHours: 0,
+            totalEntries: 0,
+            dates: []
+          };
+        }
+        
+        acc[projectId].totalHours += entry.duration_c || entry.duration;
+        acc[projectId].totalEntries += 1;
+        acc[projectId].dates.push(entry.date_c || entry.date);
+        
+        return acc;
+      }, {});
 
-    // Get unique dates and sort them
-    Object.values(summary).forEach(project => {
-      project.dates = [...new Set(project.dates)].sort();
-      project.totalHours = Math.round(project.totalHours * 100) / 100;
-    });
+      // Get unique dates and sort them
+      Object.values(summary).forEach(project => {
+        project.dates = [...new Set(project.dates)].sort();
+        project.totalHours = Math.round(project.totalHours * 100) / 100;
+      });
 
-    return Object.values(summary);
+      return Object.values(summary);
+    } catch (error) {
+      console.error("Error getting time summary:", error);
+      return [];
+    }
   }
 
   async searchEntries(searchTerm) {
-    await this.delay(200);
-    
-    if (!searchTerm || searchTerm.trim() === '') {
-      return [...this.timeEntries];
-    }
-    
-    const term = searchTerm.toLowerCase();
-    return this.timeEntries
-      .filter(entry => 
-        entry.description.toLowerCase().includes(term) ||
-        entry.date.includes(term)
-      )
-      .map(entry => ({ ...entry }));
-  }
+    try {
+      if (!searchTerm || searchTerm.trim() === '') {
+        return await this.getAll();
+      }
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "date_c" } },
+          { field: { Name: "duration_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "project_id_c" } },
+          { field: { Name: "task_id_c" } }
+        ],
+        where: [
+          {
+            FieldName: "description_c",
+            Operator: "Contains",
+            Values: [searchTerm.toLowerCase()]
+          }
+        ]
+      };
 
-  async delete(id) {
-    await this.delay(300);
-    const index = this.timeEntries.findIndex(entry => entry.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Time entry not found");
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error searching time entries:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      return [];
     }
-    
-    this.timeEntries.splice(index, 1);
-    return true;
   }
 
   delay(ms) {

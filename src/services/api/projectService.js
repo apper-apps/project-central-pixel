@@ -1,16 +1,54 @@
-import projectsData from "@/services/mockData/projects.json";
-
 class ProjectService {
   constructor() {
-    this.projects = [...projectsData];
+    const { ApperClient } = window.ApperSDK;
+    this.apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    this.tableName = 'project_c';
   }
 
   async getAll() {
-    await this.delay(300);
-    return [...this.projects];
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "status_c" } },
+          { field: { Name: "deadline_c" } },
+          { field: { Name: "deliverables_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "chat_enabled_c" } },
+          { field: { Name: "start_date_c" } },
+          { field: { Name: "client_id_c" } }
+        ]
+      };
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching projects:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
   }
 
-async getById(id) {
+  async getById(id) {
     // Validate project ID
     if (!id || id === null || id === undefined || id === '') {
       throw new Error("Valid project ID is required");
@@ -21,317 +59,247 @@ async getById(id) {
       throw new Error("Valid project ID is required");
     }
     
-    await this.delay(200);
-    const project = this.projects.find(p => p.Id === numericId);
-    if (!project) {
-      throw new Error("Project not found");
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "status_c" } },
+          { field: { Name: "deadline_c" } },
+          { field: { Name: "deliverables_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "chat_enabled_c" } },
+          { field: { Name: "start_date_c" } },
+          { field: { Name: "client_id_c" } }
+        ]
+      };
+
+      const response = await this.apperClient.getRecordById(this.tableName, numericId, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error(`Error fetching project with ID ${id}:`, error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
     }
-    return { ...project };
   }
 
-async create(projectData) {
-    await this.delay(400);
-    const newId = this.projects.length > 0 ? Math.max(...this.projects.map(p => p.Id)) + 1 : 1;
-    const newProject = {
-      Id: newId,
-      ...projectData,
-      clientId: parseInt(projectData.clientId),
-      status: projectData.status || "Planning",
-      startDate: projectData.startDate || "",
-      deadline: projectData.deadline || "",
-      deliverables: projectData.deliverables || "",
-      milestones: [],
-      chatEnabled: true,
-      createdAt: new Date().toISOString()
-    };
-    this.projects.push(newProject);
-    return { ...newProject };
+  async create(projectData) {
+    try {
+      const params = {
+        records: [{
+          Name: projectData.Name || projectData.name,
+          Tags: projectData.Tags || '',
+          description_c: projectData.description_c || projectData.description,
+          status_c: projectData.status_c || projectData.status || "Planning",
+          deadline_c: projectData.deadline_c || projectData.deadline,
+          deliverables_c: projectData.deliverables_c || projectData.deliverables,
+          created_at_c: new Date().toISOString(),
+          chat_enabled_c: projectData.chat_enabled_c !== undefined ? projectData.chat_enabled_c : (projectData.chatEnabled !== undefined ? projectData.chatEnabled : true),
+          start_date_c: projectData.start_date_c || projectData.startDate,
+          client_id_c: projectData.client_id_c ? parseInt(projectData.client_id_c) : (projectData.clientId ? parseInt(projectData.clientId) : null)
+        }]
+      };
+
+      const response = await this.apperClient.createRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const successfulRecords = response.results.filter(result => result.success);
+        const failedRecords = response.results.filter(result => !result.success);
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create projects ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+          
+          failedRecords.forEach(record => {
+            record.errors?.forEach(error => {
+              console.error(`${error.fieldLabel}: ${error}`);
+            });
+            if (record.message) console.error(record.message);
+          });
+        }
+        
+        return successfulRecords.length > 0 ? successfulRecords[0].data : null;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error creating project:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
   }
 
-async update(id, projectData) {
-    await this.delay(400);
-    const index = this.projects.findIndex(p => p.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Project not found");
+  async update(id, projectData) {
+    try {
+      const params = {
+        records: [{
+          Id: parseInt(id),
+          Name: projectData.Name || projectData.name,
+          Tags: projectData.Tags || projectData.tags,
+          description_c: projectData.description_c || projectData.description,
+          status_c: projectData.status_c || projectData.status,
+          deadline_c: projectData.deadline_c || projectData.deadline,
+          deliverables_c: projectData.deliverables_c || projectData.deliverables,
+          chat_enabled_c: projectData.chat_enabled_c !== undefined ? projectData.chat_enabled_c : projectData.chatEnabled,
+          start_date_c: projectData.start_date_c || projectData.startDate,
+          client_id_c: projectData.client_id_c ? parseInt(projectData.client_id_c) : (projectData.clientId ? parseInt(projectData.clientId) : null)
+        }]
+      };
+
+      const response = await this.apperClient.updateRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const successfulUpdates = response.results.filter(result => result.success);
+        const failedUpdates = response.results.filter(result => !result.success);
+        
+        if (failedUpdates.length > 0) {
+          console.error(`Failed to update projects ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
+          
+          failedUpdates.forEach(record => {
+            record.errors?.forEach(error => {
+              console.error(`${error.fieldLabel}: ${error}`);
+            });
+            if (record.message) console.error(record.message);
+          });
+        }
+        
+        return successfulUpdates.length > 0 ? successfulUpdates[0].data : null;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error updating project:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
     }
-    
-    this.projects[index] = {
-      ...this.projects[index],
-      ...projectData,
-      clientId: parseInt(projectData.clientId),
-      status: projectData.status || this.projects[index].status,
-      startDate: projectData.startDate || this.projects[index].startDate,
-      deadline: projectData.deadline || this.projects[index].deadline,
-      deliverables: projectData.deliverables || this.projects[index].deliverables,
-      chatEnabled: projectData.chatEnabled !== undefined ? projectData.chatEnabled : this.projects[index].chatEnabled
-    };
-    
-    return { ...this.projects[index] };
   }
 
   async delete(id) {
-    await this.delay(300);
-    const index = this.projects.findIndex(p => p.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Project not found");
+    try {
+      const params = {
+        RecordIds: [parseInt(id)]
+      };
+
+      const response = await this.apperClient.deleteRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failedDeletions = response.results.filter(result => !result.success);
+        
+        if (failedDeletions.length > 0) {
+          console.error(`Failed to delete Projects ${failedDeletions.length} records:${JSON.stringify(failedDeletions)}`);
+          
+          failedDeletions.forEach(record => {
+            if (record.message) console.error(record.message);
+          });
+        }
+        
+        return response.results.some(result => result.success);
+      }
+      
+      return true;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error deleting project:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
     }
-    
-    this.projects.splice(index, 1);
-    return true;
   }
 
-  // Milestone operations
+  // Milestone operations - these would need a separate milestone table
+  // For now keeping them as placeholder methods
   async getMilestonesByProjectId(projectId) {
-    await this.delay(200);
-    const project = this.projects.find(p => p.Id === parseInt(projectId));
-    if (!project) {
-      throw new Error("Project not found");
-    }
-    return project.milestones ? [...project.milestones] : [];
+    // This would need to query a separate milestone table
+    return [];
   }
 
   async createMilestone(projectId, milestoneData) {
-    await this.delay(300);
-    const projectIndex = this.projects.findIndex(p => p.Id === parseInt(projectId));
-    if (projectIndex === -1) {
-      throw new Error("Project not found");
-    }
-
-    if (!this.projects[projectIndex].milestones) {
-      this.projects[projectIndex].milestones = [];
-    }
-
-const allMilestones = this.projects.flatMap(p => p.milestones || []);
-    const newId = allMilestones.length > 0 ? Math.max(...allMilestones.map(m => m.Id)) + 1 : 1;
-    
-    const newMilestone = {
-      Id: newId,
-      projectId: parseInt(projectId),
-      title: milestoneData.title,
-      description: milestoneData.description || "",
-      startDate: milestoneData.startDate || "",
-      dueDate: milestoneData.dueDate,
-      isCompleted: false,
-      completedDate: null,
-      createdAt: new Date().toISOString()
-    };
-
-    this.projects[projectIndex].milestones.push(newMilestone);
-    return { ...newMilestone };
+    // This would need to create in a separate milestone table
+    throw new Error("Milestone creation not yet implemented with database");
   }
 
-async updateMilestone(milestoneId, milestoneData) {
-    await this.delay(300);
-    
-    for (let project of this.projects) {
-      if (project.milestones) {
-        const milestoneIndex = project.milestones.findIndex(m => m.Id === parseInt(milestoneId));
-        if (milestoneIndex !== -1) {
-          project.milestones[milestoneIndex] = {
-            ...project.milestones[milestoneIndex],
-            ...milestoneData,
-            startDate: milestoneData.startDate || project.milestones[milestoneIndex].startDate
-          };
-          return { ...project.milestones[milestoneIndex] };
-        }
-      }
-    }
-    
-    throw new Error("Milestone not found");
+  async updateMilestone(milestoneId, milestoneData) {
+    // This would need to update in a separate milestone table
+    throw new Error("Milestone update not yet implemented with database");
   }
 
   async deleteMilestone(milestoneId) {
-    await this.delay(300);
-    
-    for (let project of this.projects) {
-      if (project.milestones) {
-        const milestoneIndex = project.milestones.findIndex(m => m.Id === parseInt(milestoneId));
-        if (milestoneIndex !== -1) {
-          project.milestones.splice(milestoneIndex, 1);
-          return true;
-        }
-      }
-    }
-    
-    throw new Error("Milestone not found");
+    // This would need to delete from a separate milestone table
+    throw new Error("Milestone deletion not yet implemented with database");
   }
 
-  delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-// Wiki document operations
+  // Wiki document operations - these would need a separate wiki table
   async getWikiDocuments(projectId) {
-    await this.delay(200);
-    const project = this.projects.find(p => p.Id === parseInt(projectId));
-    if (!project) {
-      throw new Error("Project not found");
-    }
-    return project.wikiDocuments ? [...project.wikiDocuments] : [];
+    // This would need to query a separate wiki table
+    return [];
   }
 
   async createWikiDocument(projectId, docData) {
-    await this.delay(300);
-    const projectIndex = this.projects.findIndex(p => p.Id === parseInt(projectId));
-    if (projectIndex === -1) {
-      throw new Error("Project not found");
-    }
-
-    if (!this.projects[projectIndex].wikiDocuments) {
-      this.projects[projectIndex].wikiDocuments = [];
-    }
-
-    const allDocs = this.projects.flatMap(p => p.wikiDocuments || []);
-    const newId = allDocs.length > 0 ? Math.max(...allDocs.map(d => d.Id)) + 1 : 1;
-    
-    const newDoc = {
-      Id: newId,
-      projectId: parseInt(projectId),
-      title: docData.title,
-      type: docData.type || 'documentation',
-      content: docData.content || '',
-      tags: docData.tags || [],
-      authorId: docData.authorId,
-      versions: [{
-        id: 1,
-        content: docData.content || '',
-        authorId: docData.authorId,
-        createdAt: new Date().toISOString(),
-        comment: 'Initial version'
-      }],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    this.projects[projectIndex].wikiDocuments.push(newDoc);
-    return { ...newDoc };
+    // This would need to create in a separate wiki table
+    throw new Error("Wiki document creation not yet implemented with database");
   }
 
   async updateWikiDocument(docId, docData) {
-    await this.delay(300);
-    
-    for (let project of this.projects) {
-      if (project.wikiDocuments) {
-        const docIndex = project.wikiDocuments.findIndex(d => d.Id === parseInt(docId));
-        if (docIndex !== -1) {
-          const currentDoc = project.wikiDocuments[docIndex];
-          
-          // Create new version if content changed
-          const newVersion = {
-            id: (currentDoc.versions?.length || 0) + 1,
-            content: docData.content || currentDoc.content,
-            authorId: docData.authorId || currentDoc.authorId,
-            createdAt: new Date().toISOString(),
-            comment: 'Updated content'
-          };
-
-          project.wikiDocuments[docIndex] = {
-            ...currentDoc,
-            ...docData,
-            versions: [...(currentDoc.versions || []), newVersion],
-            updatedAt: new Date().toISOString()
-          };
-          return { ...project.wikiDocuments[docIndex] };
-        }
-      }
-    }
-    
-    throw new Error("Wiki document not found");
+    // This would need to update in a separate wiki table
+    throw new Error("Wiki document update not yet implemented with database");
   }
 
   async deleteWikiDocument(docId) {
-    await this.delay(300);
-    
-    for (let project of this.projects) {
-      if (project.wikiDocuments) {
-        const docIndex = project.wikiDocuments.findIndex(d => d.Id === parseInt(docId));
-        if (docIndex !== -1) {
-          project.wikiDocuments.splice(docIndex, 1);
-          return true;
-        }
-      }
-    }
-    
-    throw new Error("Wiki document not found");
+    // This would need to delete from a separate wiki table
+    throw new Error("Wiki document deletion not yet implemented with database");
   }
 
-  // Calendar event operations
+  // Calendar event operations - these would need a separate calendar table
   async getCalendarEvents(projectId) {
-    await this.delay(200);
-    const project = this.projects.find(p => p.Id === parseInt(projectId));
-    if (!project) {
-      throw new Error("Project not found");
-    }
-    return project.calendarEvents ? [...project.calendarEvents] : [];
+    // This would need to query a separate calendar table
+    return [];
   }
 
   async createCalendarEvent(projectId, eventData) {
-    await this.delay(300);
-    const projectIndex = this.projects.findIndex(p => p.Id === parseInt(projectId));
-    if (projectIndex === -1) {
-      throw new Error("Project not found");
-    }
-
-    if (!this.projects[projectIndex].calendarEvents) {
-      this.projects[projectIndex].calendarEvents = [];
-    }
-
-    const allEvents = this.projects.flatMap(p => p.calendarEvents || []);
-    const newId = allEvents.length > 0 ? Math.max(...allEvents.map(e => e.Id)) + 1 : 1;
-    
-    const newEvent = {
-      Id: newId,
-      projectId: parseInt(projectId),
-      title: eventData.title,
-      description: eventData.description || '',
-      type: eventData.type || 'meeting',
-      startDate: eventData.startDate,
-      endDate: eventData.endDate,
-      location: eventData.location || '',
-      isAllDay: eventData.isAllDay || false,
-      invitees: eventData.invitees || [],
-      createdBy: eventData.createdBy,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    this.projects[projectIndex].calendarEvents.push(newEvent);
-    return { ...newEvent };
+    // This would need to create in a separate calendar table
+    throw new Error("Calendar event creation not yet implemented with database");
   }
 
   async updateCalendarEvent(eventId, eventData) {
-    await this.delay(300);
-    
-    for (let project of this.projects) {
-      if (project.calendarEvents) {
-        const eventIndex = project.calendarEvents.findIndex(e => e.Id === parseInt(eventId));
-        if (eventIndex !== -1) {
-          project.calendarEvents[eventIndex] = {
-            ...project.calendarEvents[eventIndex],
-            ...eventData,
-            updatedAt: new Date().toISOString()
-          };
-          return { ...project.calendarEvents[eventIndex] };
-        }
-      }
-    }
-    
-    throw new Error("Calendar event not found");
+    // This would need to update in a separate calendar table
+    throw new Error("Calendar event update not yet implemented with database");
   }
 
   async deleteCalendarEvent(eventId) {
-    await this.delay(300);
-    
-    for (let project of this.projects) {
-      if (project.calendarEvents) {
-        const eventIndex = project.calendarEvents.findIndex(e => e.Id === parseInt(eventId));
-        if (eventIndex !== -1) {
-          project.calendarEvents.splice(eventIndex, 1);
-          return true;
-        }
-      }
-    }
-    
-    throw new Error("Calendar event not found");
+    // This would need to delete from a separate calendar table
+    throw new Error("Calendar event deletion not yet implemented with database");
   }
 
   delay(ms) {

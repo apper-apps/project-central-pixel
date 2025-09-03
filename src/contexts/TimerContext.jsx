@@ -25,7 +25,7 @@ export const TimerProvider = ({ children }) => {
   const [sessions, setSessions] = useState([]);
   const intervalRef = useRef(null);
 
-  // Load projects on mount
+// Load projects on mount
   useEffect(() => {
     const loadProjects = async () => {
       try {
@@ -99,7 +99,7 @@ export const TimerProvider = ({ children }) => {
       return;
     }
 
-    const project = projects.find(p => p.Id === parseInt(projectId));
+const project = projects.find(p => p.Id === parseInt(projectId));
     if (!project) {
       toast.error('Selected project not found');
       return;
@@ -137,7 +137,7 @@ const stopTimer = async () => {
     }
 
     try {
-      const project = projects.find(p => p.Id === selectedProjectId);
+const project = projects.find(p => p.Id === selectedProjectId);
       const durationInHours = duration / 3600; // Convert seconds to hours
       
       const timeEntryData = {
@@ -160,8 +160,7 @@ const stopTimer = async () => {
       
       setSessions(prev => [...prev, sessionData]);
 
-      await timeEntryService.createFromTimer(timeEntryData);
-      
+await timeEntryService.createFromTimer(timeEntryData);
       const formatDuration = (seconds) => {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);

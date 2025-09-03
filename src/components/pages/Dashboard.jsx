@@ -16,7 +16,7 @@ import Card from "@/components/atoms/Card";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({
+const [stats, setStats] = useState({
     totalActiveClients: 0,
     activeProjects: 0,
     tasksDueToday: 0,
@@ -26,7 +26,7 @@ const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const loadDashboardData = async () => {
+const loadDashboardData = async () => {
     try {
       setLoading(true);
       setError("");
@@ -38,19 +38,19 @@ const [loading, setLoading] = useState(true);
       ]);
       
       // Calculate metrics
-      const activeClients = clients.filter(client => client.status === "Active").length;
+      const activeClients = clients.filter(client => client.status_c === "Active").length;
       const activeProjects = projects.filter(project => 
-        project.status === "In Progress" || project.status === "Planning"
+        project.status_c === "In Progress" || project.status_c === "Planning"
       ).length;
       
       const today = new Date().toISOString().split('T')[0];
       const tasksDueToday = tasks.filter(task => 
-        !task.completed && task.dueDate === today
+        !task.completed_c && task.due_date_c === today
       ).length;
       
       const overdueTasks = tasks.filter(task => {
-        if (task.completed || !task.dueDate) return false;
-        return new Date(task.dueDate) < new Date(today);
+        if (task.completed_c || !task.due_date_c) return false;
+        return new Date(task.due_date_c) < new Date(today);
       }).length;
       
       setStats({

@@ -46,7 +46,7 @@ const TeamChat = () => {
         <div className="flex-1 overflow-y-auto">
           {channels.map(channel => (
             <button
-              key={channel.Id}
+key={channel.Id}
               onClick={() => setSelectedChannel(channel)}
               className={`w-full text-left p-3 hover:bg-gray-100 border-b border-gray-100 transition-colors ${
                 selectedChannel?.Id === channel.Id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
@@ -54,7 +54,7 @@ const TeamChat = () => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <ApperIcon name="Hash" size={16} className="text-gray-500" />
+<ApperIcon name="Hash" size={16} className="text-gray-500" />
                   <span className="font-medium text-gray-900">{channel.name}</span>
                 </div>
                 <span className="text-xs text-gray-500">{channel.memberCount}</span>

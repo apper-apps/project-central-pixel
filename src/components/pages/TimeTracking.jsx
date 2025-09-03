@@ -57,7 +57,7 @@ const [editingEntry, setEditingEntry] = useState(null);
 };
 
   // Helper function to find project by ID
-  const getProjectById = (projectId) => {
+const getProjectById = (projectId) => {
     return projects.find(project => project.Id === parseInt(projectId));
   };
 
@@ -116,17 +116,17 @@ const filteredAndSortedEntries = useMemo(() => {
       filtered = filtered.filter(entry => entry.date <= dateRange.end);
     }
 
-    // Apply project filter
+// Apply project filter
     if (projectFilter) {
-      filtered = filtered.filter(entry => entry.projectId === parseInt(projectFilter));
+      filtered = filtered.filter(entry => (entry.project_id_c?.Id || entry.projectId) === parseInt(projectFilter));
     }
 
     // Apply search filter
     if (searchTerm) {
-      const search = searchTerm.toLowerCase();
+const search = searchTerm.toLowerCase();
       filtered = filtered.filter(entry => 
-        entry.description.toLowerCase().includes(search) ||
-        getProjectById(entry.projectId)?.name.toLowerCase().includes(search)
+        (entry.description_c || entry.description || '').toLowerCase().includes(search) ||
+        getProjectById(entry.project_id_c?.Id || entry.projectId)?.Name?.toLowerCase().includes(search)
       );
     }
 
@@ -138,13 +138,13 @@ const filteredAndSortedEntries = useMemo(() => {
         case "date":
           comparison = new Date(a.date) - new Date(b.date);
           break;
-        case "project":
-          const projectA = getProjectById(a.projectId)?.name || "";
-          const projectB = getProjectById(b.projectId)?.name || "";
+case "project":
+          const projectA = getProjectById(a.project_id_c?.Id || a.projectId)?.Name || "";
+          const projectB = getProjectById(b.project_id_c?.Id || b.projectId)?.Name || "";
           comparison = projectA.localeCompare(projectB);
           break;
         case "duration":
-          comparison = a.duration - b.duration;
+          comparison = (a.duration_c || a.duration) - (b.duration_c || b.duration);
           break;
         default:
           comparison = new Date(a.date) - new Date(b.date);
@@ -158,13 +158,13 @@ const filteredAndSortedEntries = useMemo(() => {
 
   // Calculate summary statistics
   const summaryStats = useMemo(() => {
-    const totalHours = filteredAndSortedEntries.reduce((sum, entry) => sum + entry.duration, 0);
+const totalHours = filteredAndSortedEntries.reduce((sum, entry) => sum + (entry.duration_c || entry.duration), 0);
     const totalEntries = filteredAndSortedEntries.length;
     const projectBreakdown = {};
     
-    filteredAndSortedEntries.forEach(entry => {
-      const project = getProjectById(entry.projectId);
-      const projectName = project?.name || "Unknown";
+filteredAndSortedEntries.forEach(entry => {
+      const project = getProjectById(entry.project_id_c?.Id || entry.projectId);
+      const projectName = project?.Name || "Unknown";
       projectBreakdown[projectName] = (projectBreakdown[projectName] || 0) + entry.duration;
     });
 
@@ -279,14 +279,14 @@ const filteredAndSortedEntries = useMemo(() => {
   };
 
   const renderCalendarView = () => {
-    const calendarEntries = filteredAndSortedEntries.filter(entry => {
-      const entryDate = new Date(entry.date);
+const calendarEntries = filteredAndSortedEntries.filter(entry => {
+      const entryDate = new Date(entry.date_c || entry.date);
       return entryDate.getMonth() === calendarDate.getMonth() && 
              entryDate.getFullYear() === calendarDate.getFullYear();
     });
 
     const groupedByDate = calendarEntries.reduce((acc, entry) => {
-      const date = entry.date;
+      const date = entry.date_c || entry.date;
       if (!acc[date]) acc[date] = [];
       acc[date].push(entry);
       return acc;
@@ -350,21 +350,21 @@ const filteredAndSortedEntries = useMemo(() => {
                 )}
                 <div className="space-y-1">
                   {dayEntries.slice(0, 2).map(entry => {
-                    const project = getProjectById(entry.projectId);
+const project = getProjectById(entry.project_id_c?.Id || entry.projectId);
                     return (
                       <div
                         key={entry.Id}
                         className="text-xs p-1 rounded bg-blue-50 text-blue-700 cursor-pointer hover:bg-blue-100"
                         onClick={() => openEditModal(entry)}
-title={`${project?.name || 'Unknown Project'} - ${entry.duration}h\n${entry.description || 'No description'}`}
+title={`${project?.Name || 'Unknown Project'} - ${entry.duration_c || entry.duration}h\n${entry.description_c || entry.description || 'No description'}`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="truncate text-xs font-medium">{project?.name || 'Unknown'}</span>
-                          <span className="text-xs font-bold ml-1">{entry.duration}h</span>
+                          <span className="truncate text-xs font-medium">{project?.Name || 'Unknown'}</span>
+                          <span className="text-xs font-bold ml-1">{entry.duration_c || entry.duration}h</span>
                         </div>
-                        {entry.description && (
+                        {(entry.description_c || entry.description) && (
                           <div className="text-xs text-blue-600 truncate mt-0.5 opacity-75">
-                            {entry.description}
+                            {entry.description_c || entry.description}
                           </div>
                         )}
                       </div>
@@ -674,9 +674,9 @@ if (loading) return <Loading />;
                     </div>
                   )}
                   <TimeEntryCard
-                    key={timeEntry.Id}
+key={timeEntry.Id}
                     timeEntry={timeEntry}
-                    project={getProjectById(timeEntry.projectId)}
+                    project={getProjectById(timeEntry.project_id_c?.Id || timeEntry.projectId)}
                     onEdit={() => openEditModal(timeEntry)}
                     onDelete={() => handleDeleteEntry(timeEntry.Id)}
                     viewMode={viewMode}

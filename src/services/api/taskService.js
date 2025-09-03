@@ -1,226 +1,298 @@
-import mockTasks from "@/services/mockData/tasks.json";
-
-let tasks = [...mockTasks];
-let nextId = Math.max(...tasks.map(task => task.Id)) + 1;
-
-const taskService = {
-  getAll: () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([...tasks]);
-      }, 200);
+class TaskService {
+  constructor() {
+    const { ApperClient } = window.ApperSDK;
+    this.apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
     });
-  },
+    this.tableName = 'task_c';
+  }
 
-  getById: (id) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const task = tasks.find(t => t.Id === parseInt(id));
-        if (task) {
-          resolve({ ...task });
-        } else {
-          reject(new Error("Task not found"));
-        }
-      }, 100);
-    });
-  },
+  async getAll() {
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "completed_c" } },
+          { field: { Name: "priority_c" } },
+          { field: { Name: "start_date_c" } },
+          { field: { Name: "due_date_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "status_c" } },
+          { field: { Name: "project_id_c" } },
+          { field: { Name: "assigned_to_c" } },
+          { field: { Name: "created_by_c" } }
+        ]
+      };
 
-create: (taskData) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const newTask = {
-          ...taskData,
-          Id: nextId++,
-          createdAt: new Date().toISOString(),
-          completed: false,
-          priority: taskData.priority || "Medium",
-          dueDate: taskData.dueDate || null,
-          startDate: taskData.startDate || new Date().toISOString(),
-          dependencies: taskData.dependencies || [],
-          progress: taskData.progress || 0,
-          estimatedHours: taskData.estimatedHours || 0,
-          actualHours: taskData.actualHours || 0
-        };
-        tasks.push(newTask);
-        resolve({ ...newTask });
-      }, 300);
-    });
-  },
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
 
-update: (id, taskData) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const index = tasks.findIndex(t => t.Id === parseInt(id));
-        if (index !== -1) {
-          const updatedTask = { 
-            ...tasks[index], 
-            ...taskData,
-            updatedAt: new Date().toISOString()
-          };
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching tasks:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
+  }
+
+  async getById(id) {
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "completed_c" } },
+          { field: { Name: "priority_c" } },
+          { field: { Name: "start_date_c" } },
+          { field: { Name: "due_date_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "status_c" } },
+          { field: { Name: "project_id_c" } },
+          { field: { Name: "assigned_to_c" } },
+          { field: { Name: "created_by_c" } }
+        ]
+      };
+
+      const response = await this.apperClient.getRecordById(this.tableName, parseInt(id), params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error(`Error fetching task with ID ${id}:`, error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
+  }
+
+  async create(taskData) {
+    try {
+      const params = {
+        records: [{
+          Name: taskData.Name || taskData.name,
+          Tags: taskData.Tags || '',
+          description_c: taskData.description_c || taskData.description,
+          completed_c: taskData.completed_c || false,
+          priority_c: taskData.priority_c || taskData.priority || "Medium",
+          start_date_c: taskData.start_date_c || taskData.startDate,
+          due_date_c: taskData.due_date_c || taskData.dueDate,
+          created_at_c: new Date().toISOString(),
+          status_c: taskData.status_c || taskData.status || "pending",
+          project_id_c: taskData.project_id_c ? parseInt(taskData.project_id_c) : (taskData.projectId ? parseInt(taskData.projectId) : null),
+          assigned_to_c: taskData.assigned_to_c || taskData.assignedTo,
+          created_by_c: taskData.created_by_c || taskData.createdBy
+        }]
+      };
+
+      const response = await this.apperClient.createRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const successfulRecords = response.results.filter(result => result.success);
+        const failedRecords = response.results.filter(result => !result.success);
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create tasks ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
           
-          // Validate dependencies to prevent circular references
-          if (taskData.dependencies) {
-            const validateDependencies = (taskId, deps, visited = new Set()) => {
-              if (visited.has(taskId)) return false;
-              visited.add(taskId);
-              
-              for (const depId of deps) {
-                const depTask = tasks.find(t => t.Id === depId);
-                if (depTask && depTask.dependencies) {
-                  if (!validateDependencies(depId, depTask.dependencies, visited)) {
-                    return false;
-                  }
-                }
-              }
-              return true;
-            };
-            
-            if (!validateDependencies(parseInt(id), taskData.dependencies)) {
-              reject(new Error("Circular dependency detected"));
-              return;
-            }
+          failedRecords.forEach(record => {
+            record.errors?.forEach(error => {
+              console.error(`${error.fieldLabel}: ${error}`);
+            });
+            if (record.message) console.error(record.message);
+          });
+        }
+        
+        return successfulRecords.length > 0 ? successfulRecords[0].data : null;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error creating task:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
+  }
+
+  async update(id, taskData) {
+    try {
+      const params = {
+        records: [{
+          Id: parseInt(id),
+          Name: taskData.Name || taskData.name,
+          Tags: taskData.Tags || taskData.tags,
+          description_c: taskData.description_c || taskData.description,
+          completed_c: taskData.completed_c !== undefined ? taskData.completed_c : taskData.completed,
+          priority_c: taskData.priority_c || taskData.priority,
+          start_date_c: taskData.start_date_c || taskData.startDate,
+          due_date_c: taskData.due_date_c || taskData.dueDate,
+          status_c: taskData.status_c || taskData.status,
+          project_id_c: taskData.project_id_c ? parseInt(taskData.project_id_c) : (taskData.projectId ? parseInt(taskData.projectId) : null),
+          assigned_to_c: taskData.assigned_to_c || taskData.assignedTo,
+          created_by_c: taskData.created_by_c || taskData.createdBy
+        }]
+      };
+
+      const response = await this.apperClient.updateRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const successfulUpdates = response.results.filter(result => result.success);
+        const failedUpdates = response.results.filter(result => !result.success);
+        
+        if (failedUpdates.length > 0) {
+          console.error(`Failed to update tasks ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
+          
+          failedUpdates.forEach(record => {
+            record.errors?.forEach(error => {
+              console.error(`${error.fieldLabel}: ${error}`);
+            });
+            if (record.message) console.error(record.message);
+          });
+        }
+        
+        return successfulUpdates.length > 0 ? successfulUpdates[0].data : null;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error updating task:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
+  }
+
+  async delete(id) {
+    try {
+      const params = {
+        RecordIds: [parseInt(id)]
+      };
+
+      const response = await this.apperClient.deleteRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failedDeletions = response.results.filter(result => !result.success);
+        
+        if (failedDeletions.length > 0) {
+          console.error(`Failed to delete Tasks ${failedDeletions.length} records:${JSON.stringify(failedDeletions)}`);
+          
+          failedDeletions.forEach(record => {
+            if (record.message) console.error(record.message);
+          });
+        }
+        
+        return response.results.some(result => result.success);
+      }
+      
+      return true;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error deleting task:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
+  }
+
+  async getByProjectId(projectId) {
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "CreatedBy" } },
+          { field: { Name: "ModifiedOn" } },
+          { field: { Name: "ModifiedBy" } },
+          { field: { Name: "description_c" } },
+          { field: { Name: "completed_c" } },
+          { field: { Name: "priority_c" } },
+          { field: { Name: "start_date_c" } },
+          { field: { Name: "due_date_c" } },
+          { field: { Name: "created_at_c" } },
+          { field: { Name: "status_c" } },
+          { field: { Name: "project_id_c" } },
+          { field: { Name: "assigned_to_c" } },
+          { field: { Name: "created_by_c" } }
+        ],
+        where: [
+          {
+            FieldName: "project_id_c",
+            Operator: "EqualTo",
+            Values: [parseInt(projectId)]
           }
-          
-          tasks[index] = updatedTask;
-          resolve({ ...updatedTask });
-        } else {
-          reject(new Error("Task not found"));
-        }
-      }, 300);
-    });
-  },
+        ]
+      };
 
-  updateStatus: (id, status) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const index = tasks.findIndex(t => t.Id === parseInt(id));
-        if (index !== -1) {
-          const updatedTask = { 
-            ...tasks[index], 
-            status: status,
-            completed: status === 'completed',
-            updatedAt: new Date().toISOString()
-          };
-          
-          tasks[index] = updatedTask;
-          resolve({ ...updatedTask });
-        } else {
-          reject(new Error("Task not found"));
-        }
-      }, 200);
-    });
-  },
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
 
-delete: (id) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const index = tasks.findIndex(t => t.Id === parseInt(id));
-        if (index !== -1) {
-          tasks.splice(index, 1);
-          resolve();
-        } else {
-          reject(new Error("Task not found"));
-        }
-      }, 200);
-    });
-  },
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching project tasks:", error.response.data.message);
+      } else {
+        console.error(error);
+      }
+      throw error;
+    }
+  }
 
-getByProjectId: (projectId) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const projectTasks = tasks.filter(task => task.projectId === parseInt(projectId));
-        resolve([...projectTasks]);
-      }, 200);
-    });
-  },
+  async markComplete(id) {
+    return this.update(id, { completed_c: true });
+  }
 
-  markComplete: (id) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const index = tasks.findIndex(t => t.Id === parseInt(id));
-        if (index !== -1) {
-          tasks[index] = { 
-            ...tasks[index], 
-            completed: true,
-            completedAt: new Date().toISOString()
-          };
-          resolve({ ...tasks[index] });
-        } else {
-          reject(new Error("Task not found"));
-        }
-      }, 300);
-    });
+  async updateStatus(id, status) {
+    return this.update(id, { status_c: status, completed_c: status === 'completed' });
+  }
 }
-};
 
-// Import activity service to track task activities
-import activityService from './activityService.js';
-
-// Override create method to track activity
-const originalCreate = taskService.create;
-taskService.create = async (taskData) => {
-  const newTask = await originalCreate(taskData);
-  
-  // Track task creation activity
-  await activityService.create({
-    type: activityService.ACTIVITY_TYPES.TASK_CREATED,
-    userId: taskData.assignedTo || 1, // Default to user 1 if no assignee
-    projectId: taskData.projectId,
-    taskId: newTask.Id,
-    description: `created task "${newTask.name}"${taskData.projectId ? '' : ' in project'}`
-  });
-  
-  return newTask;
-};
-
-// Override update method to track activity
-const originalUpdate = taskService.update;
-taskService.update = async (id, taskData) => {
-  const updatedTask = await originalUpdate(id, taskData);
-  
-  // Track task update activity
-  await activityService.create({
-    type: activityService.ACTIVITY_TYPES.TASK_UPDATED,
-    userId: taskData.assignedTo || updatedTask.assignedTo || 1,
-    projectId: updatedTask.projectId,
-    taskId: updatedTask.Id,
-    description: `updated task "${updatedTask.name}"`
-  });
-  
-  return updatedTask;
-};
-
-// Override delete method to track activity
-const originalDelete = taskService.delete;
-taskService.delete = async (id) => {
-  const task = await taskService.getById(id);
-  await originalDelete(id);
-  
-  // Track task deletion activity
-  await activityService.create({
-    type: activityService.ACTIVITY_TYPES.TASK_DELETED,
-    userId: task.assignedTo || 1,
-    projectId: task.projectId,
-    taskId: task.Id,
-    description: `deleted task "${task.name}"`
-  });
-};
-
-// Override markComplete method to track activity
-const originalMarkComplete = taskService.markComplete;
-taskService.markComplete = async (id) => {
-  const completedTask = await originalMarkComplete(id);
-  
-  // Track task completion activity
-  await activityService.create({
-    type: activityService.ACTIVITY_TYPES.TASK_COMPLETED,
-    userId: completedTask.assignedTo || 1,
-    projectId: completedTask.projectId,
-    taskId: completedTask.Id,
-    description: `completed task "${completedTask.name}"`
-  });
-  
-  return completedTask;
-};
-
+const taskService = new TaskService();
 export default taskService;

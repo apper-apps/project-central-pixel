@@ -66,7 +66,7 @@ const [itemsPerPage, setItemsPerPage] = useState(25);
     loadData();
   }, []);
 
-  const getClientById = (clientId) => {
+const getClientById = (clientId) => {
     return clients.find(client => client.Id === parseInt(clientId));
   };
 
@@ -208,12 +208,12 @@ setEditingProject(null);
 
       {/* Filter and paginate projects */}
       {(() => {
-        const filteredProjects = projects.filter(project => {
+const filteredProjects = projects.filter(project => {
           if (!searchTerm) return true;
-          const client = getClientById(project.clientId);
-          return project.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+          const client = getClientById(project.client_id_c?.Id || project.clientId);
+          return project.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            project.description_c?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            client?.Name?.toLowerCase().includes(searchTerm.toLowerCase());
         });
 
         // Pagination calculations
@@ -239,10 +239,10 @@ setEditingProject(null);
             {viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {paginatedProjects.map((project) => (
-                  <ProjectCard
+<ProjectCard
                     key={project.Id}
                     project={project}
-                    client={getClientById(project.clientId)}
+                    client={getClientById(project.client_id_c?.Id || project.clientId)}
                     onEdit={openEditModal}
                     onDelete={handleDeleteProject}
                   />
@@ -263,8 +263,8 @@ setEditingProject(null);
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {paginatedProjects.map((project) => {
-                        const client = getClientById(project.clientId);
+{paginatedProjects.map((project) => {
+                        const client = getClientById(project.client_id_c?.Id || project.clientId);
 return (
                           <tr key={project.Id} className="hover:bg-gray-50">
                             <td className="px-6 py-4">
@@ -273,26 +273,26 @@ return (
                                   className="text-sm font-medium text-gray-900 hover:text-blue-600 cursor-pointer"
                                   onClick={() => navigate(`/projects/${project.Id}`)}
                                 >
-                                  {project.name}
+{project.Name}
                                 </div>
-                                {project.description && (
+                                {project.description_c && (
                                   <div className="text-sm text-gray-500 max-w-xs truncate">
-                                    {project.description}
+                                    {project.description_c}
                                   </div>
                                 )}
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {client?.name || 'No Client'}
+<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {client?.Name || 'No Client'}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+<td className="px-6 py-4 whitespace-nowrap">
                               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                project.status === 'Active' ? 'bg-green-100 text-green-800' :
-                                project.status === 'On Hold' ? 'bg-yellow-100 text-yellow-800' :
-                                project.status === 'Completed' ? 'bg-blue-100 text-blue-800' :
+                                project.status_c === 'In Progress' ? 'bg-green-100 text-green-800' :
+                                project.status_c === 'On Hold' ? 'bg-yellow-100 text-yellow-800' :
+                                project.status_c === 'Completed' ? 'bg-blue-100 text-blue-800' :
                                 'bg-gray-100 text-gray-800'
                               }`}>
-                                {project.status}
+                                {project.status_c}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -306,8 +306,8 @@ return (
                                 <span className="text-sm text-gray-600">{project.progress || 0}%</span>
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'No due date'}
+<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {project.deadline_c ? new Date(project.deadline_c).toLocaleDateString() : 'No due date'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <div className="flex items-center justify-end space-x-2">

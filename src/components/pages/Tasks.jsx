@@ -38,7 +38,7 @@ const loadData = async () => {
           taskService.getAll(),
           projectService.getAll()
         ]);
-        const projectTasks = tasksData.filter(task => task.projectId === project.Id);
+        const projectTasks = tasksData.filter(task => (task.project_id_c?.Id || task.projectId) === project.Id);
         setTasks(projectTasks);
         setProjects(projectsData);
       } else {
@@ -62,7 +62,7 @@ const loadData = async () => {
     loadData();
   }, [project]);
 
-  const getProjectById = (projectId) => {
+const getProjectById = (projectId) => {
     return projects.find(project => project.Id === parseInt(projectId));
   };
 
@@ -110,7 +110,7 @@ const loadData = async () => {
 
   const handleToggleComplete = async (taskId, completed) => {
     try {
-      const updatedTask = await taskService.update(taskId, { completed });
+const updatedTask = await taskService.update(taskId, { completed_c: completed });
       setTasks(prev => 
         prev.map(task => 
           task.Id === taskId ? updatedTask : task
@@ -144,13 +144,13 @@ const loadData = async () => {
 
 const filteredTasks = tasks.filter(task => {
     const matchesStatus = filter === "all" || 
-      (filter === "completed" && task.completed) ||
-      (filter === "pending" && !task.completed);
+      (filter === "completed" && task.completed_c) ||
+      (filter === "pending" && !task.completed_c);
     
     const matchesSearch = !searchTerm || 
-      task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getProjectById(task.projectId)?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      task.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.description_c?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getProjectById(task.project_id_c?.Id || task.projectId)?.Name?.toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesStatus && matchesSearch;
   });
@@ -162,10 +162,10 @@ const filteredTasks = tasks.filter(task => {
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
   const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
 
-  const taskCounts = {
+const taskCounts = {
     all: tasks.length,
-    pending: tasks.filter(t => !t.completed).length,
-    completed: tasks.filter(t => t.completed).length
+    pending: tasks.filter(t => !t.completed_c).length,
+    completed: tasks.filter(t => t.completed_c).length
   };
 
   const handlePageChange = (page) => {
@@ -311,9 +311,9 @@ const filteredTasks = tasks.filter(task => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedTasks.map((task) => (
               <TaskCard
-                key={task.Id}
+key={task.Id}
                 task={task}
-                project={getProjectById(task.projectId)}
+                project={getProjectById(task.project_id_c?.Id || task.projectId)}
                 onEdit={openEditModal}
                 onDelete={handleDeleteTask}
                 onToggleComplete={handleToggleComplete}
@@ -337,24 +337,24 @@ const filteredTasks = tasks.filter(task => {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {paginatedTasks.map((task) => {
-                    const project = getProjectById(task.projectId);
+const project = getProjectById(task.project_id_c?.Id || task.projectId);
                     return (
                       <tr key={task.Id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div className="flex items-center">
                             <input
                               type="checkbox"
-                              checked={task.completed}
-                              onChange={() => handleToggleComplete(task.Id, !task.completed)}
+                              checked={task.completed_c}
+                              onChange={() => handleToggleComplete(task.Id, !task.completed_c)}
                               className="mr-3 h-4 w-4 text-blue-600 rounded border-gray-300"
                             />
                             <div>
-                              <div className={`text-sm font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                                {task.title}
+<div className={`text-sm font-medium ${task.completed_c ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                                {task.Name}
                               </div>
-                              {task.description && (
+                              {task.description_c && (
                                 <div className="text-sm text-gray-500 max-w-xs truncate">
-                                  {task.description}
+                                  {task.description_c}
                                 </div>
                               )}
                             </div>
@@ -362,30 +362,30 @@ const filteredTasks = tasks.filter(task => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: project?.color || '#4A90E2'}}></div>
+<div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: project?.color || '#4A90E2'}}></div>
                             <span className="text-sm text-gray-900">{project?.name || 'No Project'}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            task.priority === 'High' ? 'bg-red-100 text-red-800' :
-                            task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+<span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            task.priority_c === 'High' ? 'bg-red-100 text-red-800' :
+                            task.priority_c === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-green-100 text-green-800'
                           }`}>
-                            {task.priority}
+                            {task.priority_c}
                           </span>
                         </td>
 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {task.startDate ? format(parseISO(task.startDate), 'MMM dd, yyyy') : '-'}
+                          {task.start_date_c ? format(parseISO(task.start_date_c), 'MMM dd, yyyy') : '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
+                          {task.due_date_c ? new Date(task.due_date_c).toLocaleDateString() : 'No due date'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             task.completed ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {task.completed ? 'Completed' : 'Pending'}
+}`}>
+                            {task.completed_c ? 'Completed' : 'Pending'}
                           </span>
                         </td>
 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
