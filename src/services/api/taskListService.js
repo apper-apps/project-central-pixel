@@ -1,8 +1,14 @@
-import taskListsData from "@/services/mockData/taskLists.json";
+// TaskList Service - Apper Backend Integration
 
 class TaskListService {
   constructor() {
-    this.taskLists = [...taskListsData];
+// Initialize ApperClient with Project ID and Public Key
+    const { ApperClient } = window.ApperSDK;
+    this.apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    this.tableName = 'task_list_c';
   }
 
   async getAll() {
