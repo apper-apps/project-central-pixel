@@ -1,10 +1,87 @@
-import commentsData from "@/services/mockData/comments.json";
-import activityService from "./activityService.js";
-// Note: React import removed as not needed in service file
-// teamMemberService import removed as not used in this service
-// Removed improper React component import - services should use native Error objects
+import activityService from "@/services/api/activityService";
 
-let comments = [...commentsData];
+// Comment service with ApperClient integration
+const { ApperClient } = window.ApperSDK;
+
+// Initialize ApperClient
+const apperClient = new ApperClient({
+  apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+  apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+});
+
+// Table name from database schema
+const TABLE_NAME = 'comment_c';
+
+// Field configuration based on comment_c table schema
+const COMMENT_FIELDS = [
+  { field: { Name: "Name" } },
+  { field: { Name: "Tags" } },
+  { field: { Name: "Owner" } },
+  { field: { Name: "CreatedOn" } },
+  { field: { Name: "CreatedBy" } },
+  { field: { Name: "ModifiedOn" } },
+  { field: { Name: "ModifiedBy" } },
+  { field: { Name: "content_c" } },
+  { field: { Name: "created_at_c" } },
+  { field: { Name: "updated_at_c" } },
+  { field: { Name: "mentions_c" } },
+  { field: { Name: "is_edited_c" } },
+  { field: { Name: "task_id_c" } },
+  { field: { Name: "author_id_c" } },
+  { field: { Name: "parent_id_c" } }
+];
+
+// Updateable fields only (excluding System fields)
+const UPDATEABLE_FIELDS = [
+  'Name',
+  'content_c', 
+  'created_at_c',
+  'updated_at_c',
+  'mentions_c',
+  'is_edited_c',
+  'task_id_c',
+  'author_id_c',
+  'parent_id_c'
+];
+
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Mock comments data for development/testing
+let comments = [
+  {
+    Id: 1,
+    taskId: 1,
+    authorId: 1,
+    content: "This looks great! Let's move forward with this approach.",
+    createdAt: "2024-01-15T10:30:00.000Z",
+    updatedAt: "2024-01-15T10:30:00.000Z",
+    parentId: null,
+    mentions: [],
+    isEdited: false
+  },
+  {
+    Id: 2,
+    taskId: 1,
+    authorId: 2,
+    content: "I agree with @john.doe. Should we add some unit tests?",
+    createdAt: "2024-01-15T11:15:00.000Z",
+    updatedAt: "2024-01-15T11:15:00.000Z",
+    parentId: 1,
+    mentions: [1],
+    isEdited: false
+  },
+  {
+    Id: 3,
+    taskId: 2,
+    authorId: 3,
+    content: "Working on the implementation now. Will update soon.",
+    createdAt: "2024-01-15T14:20:00.000Z",
+    updatedAt: "2024-01-15T14:20:00.000Z",
+    parentId: null,
+    mentions: [],
+    isEdited: false
+  }
+];
 
 const commentService = {
   // Get all comments for a specific task or project
